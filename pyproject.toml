@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "training-framework-comparison-tutorial"
+version = "0.1.0"
+description = "5개 프레임워크(Megatron·torchtitan·TRL·Unsloth·verl)로 사전학습→사후학습을 통제비교하는 학습 lab — Vast.ai, 스케일 3단계, W&B 로깅"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Jaegook You", email = "jaegookyou@gmail.com" }]
+dependencies = [
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/training_framework_comparison_tutorial"]
