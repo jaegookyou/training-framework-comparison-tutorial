@@ -21,7 +21,7 @@ name: tfct-sft-trl
 resources:
   accelerators: RTX4090:1                              # 통제비교 1GPU 스케일. GPU 이름은 `sky show-gpus` 로 확인
   use_spot: true                                       # 스팟; 끊기면 SkyPilot 이 자동 복구
-  image_id: docker:ghcr.io/jaegookyou/tfct-trl:latest  # 프레임워크별 deps 핀 고정 이미지. configs 의 image 와 일치시킬 것
+  image_id: docker:ghcr.io/jaegookyou/training-framework-comparison-tutorial/trl:latest  # 프레임워크별 deps 핀 고정 이미지. configs 의 image 와 일치시킬 것
 
 workdir: .                                             # 이 repo 를 통째로 박스로 업로드 (코드는 런타임에, 이미지 재빌드 없이)
 

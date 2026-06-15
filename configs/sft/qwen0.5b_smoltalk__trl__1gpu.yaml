@@ -1,7 +1,7 @@
 extends: _base.yaml
 
 framework: trl
-image: ghcr.io/jaegookyou/tfct-trl:latest
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/trl:latest
 
 # 실험 스케일(통제비교 축). 실제 프로비저닝(GPU 종류·스팟·이미지)은
 # sky/sft.trl.sky.yaml 에서 SkyPilot 이 처리한다.
