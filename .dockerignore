@@ -1,9 +1,13 @@
+# 주의: .dockerignore 패턴은 .gitignore 와 달리 재귀가 아니다.
+# 중첩 경로까지 막으려면 **/ 를 써야 한다(__pycache__/ 는 최상위만 매칭됨).
 .git
-__pycache__/
-*.pyc
+.claude/
+**/__pycache__/
+**/*.pyc
 .venv/
 .pytest_cache/
 .ruff_cache/
 dist/
 wandb/
 out/
+*.log
