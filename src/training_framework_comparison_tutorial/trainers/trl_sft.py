@@ -10,6 +10,20 @@ from ..adapters import get_format, get_source
 from ..config import RunConfig
 
 
+def _lora_config(cfg: RunConfig):
+    """config 의 lora 블록 → peft LoraConfig. tuning=lora 일 때만 호출."""
+    from peft import LoraConfig
+
+    lora = cfg.section("lora")
+    return LoraConfig(
+        r=lora.get("r", 16),
+        lora_alpha=lora.get("alpha", 32),
+        lora_dropout=lora.get("dropout", 0.0),
+        target_modules=lora.get("target_modules", "all-linear"),
+        task_type="CAUSAL_LM",
+    )
+
+
 def train(cfg: RunConfig) -> None:
     from datasets import load_dataset
     from transformers import AutoTokenizer
@@ -36,6 +50,9 @@ def train(cfg: RunConfig) -> None:
 
     tokenizer = AutoTokenizer.from_pretrained(model_cfg["name"])
 
+    # tuning=lora 면 peft LoraConfig 를 SFTTrainer 에 넘긴다. full 이면 None(전체 파라미터).
+    peft_config = _lora_config(cfg) if cfg.tuning == "lora" else None
+
     # NOTE: TRL 은 API churn 이 잦다. 정확한 인자 호환은 docker/trl.Dockerfile 의 핀 기준.
     args = SFTConfig(
         output_dir=out.get("local_dir", "out"),
@@ -47,6 +64,7 @@ def train(cfg: RunConfig) -> None:
         lr_scheduler_type=hp.get("lr_scheduler", "linear"),
         bf16=hp.get("bf16", False),
         max_length=model_cfg.get("max_seq_len", 2048),
+        assistant_only_loss=hp.get("assistant_only_loss", False),
         max_steps=debug.get("max_steps", -1),
         report_to="wandb",
         run_name=cfg.run_name(),
@@ -59,6 +77,7 @@ def train(cfg: RunConfig) -> None:
         args=args,
         train_dataset=dataset,
         processing_class=tokenizer,
+        peft_config=peft_config,
     )
     trainer.train()
     trainer.save_model(args.output_dir)

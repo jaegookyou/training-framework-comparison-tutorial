@@ -55,10 +55,15 @@ class RunConfig:
     def method(self) -> str:
         return self.data.get("method", "sft")
 
+    @property
+    def tuning(self) -> str:
+        """full | lora. 학습 방식 축(프레임워크와 독립적인 두 번째 변수)."""
+        return self.data.get("tuning", "full")
+
     def section(self, name: str) -> dict[str, Any]:
         return self.data.get(name, {})
 
     def run_name(self) -> str:
         ds = self.section("dataset").get("source", "?")
         model = self.section("model").get("name", "?").split("/")[-1]
-        return f"{self.method}-{model}-{ds}-{self.framework}"
+        return f"{self.method}-{model}-{ds}-{self.framework}-{self.tuning}"

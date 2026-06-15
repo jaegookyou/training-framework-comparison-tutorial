@@ -13,8 +13,18 @@ def from_smoltalk(row: dict[str, Any]) -> SFTExample:
     return normalize_messages(row["messages"])
 
 
+def from_traceinversion(row: dict[str, Any]) -> SFTExample:
+    """Jackrong/Claude-opus-4.7-TraceInversion-5000x: reasoning distill.
+
+    messages 컬럼이 user 질문 → assistant 응답(<think> 재구성 CoT + 최종 답)의
+    2-turn role/content 라 smoltalk 과 동일하게 그대로 정규화된다.
+    """
+    return normalize_messages(row["messages"])
+
+
 SOURCES: dict[str, Callable[[dict[str, Any]], SFTExample]] = {
     "smoltalk": from_smoltalk,
+    "traceinversion": from_traceinversion,
 }
 
 

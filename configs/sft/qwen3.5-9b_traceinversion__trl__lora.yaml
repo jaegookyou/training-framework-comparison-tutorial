@@ -1,0 +1,15 @@
+extends: _base.yaml
+
+framework: trl
+tuning: lora
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/trl:latest
+
+# LoRA 는 어댑터만 학습 → full 보다 큰 lr 가 표준.
+hp:
+  learning_rate: 2.0e-4
+
+# bf16 LoRA 9B 는 A100 40GB 한 장에 들어간다(통제비교 1GPU 스케일).
+# 실제 프로비저닝(GPU 종류·스팟·이미지)은 sky/sft.trl.sky.yaml 에서 처리.
+scale:
+  nodes: 1
+  gpus: 1

@@ -1,35 +1,47 @@
 # 통제비교 공통 축 — "프레임워크만 변수, 나머지는 고정".
-# 각 프레임워크별 run 파일이 이걸 extends 로 상속하고 framework/image/scale 만 바꾼다.
+# 각 프레임워크별 run 파일이 이걸 extends 로 상속하고 framework/image/tuning/scale 만 바꾼다.
 method: sft
 
+# 튜닝 방식 축: full | lora. 기본은 full, lora run 파일이 override.
+# (Unsloth 는 단일 GPU 라 lora 만, 나머지 프레임워크는 full/lora 둘 다.)
+tuning: full
+
 model:
-  name: Qwen/Qwen2.5-0.5B
-  max_seq_len: 2048
+  name: Qwen/Qwen3.5-9B-Base    # reasoning 을 직접 심는 base (instruct 는 RL 이 박혀 실험 흐려짐)
+  max_seq_len: 16384            # reasoning CoT 가 길다 → 16k
 
 dataset:
-  source: smoltalk            # adapters.sources 의 키
-  hf_path: HuggingFaceTB/smoltalk
-  hf_name: all
+  source: traceinversion        # adapters.sources 의 키
+  hf_path: Jackrong/Claude-opus-4.7-TraceInversion-5000x
+  hf_name: null
   split: train
-  subsample: 20000            # 통제비교용 서브샘플 크기
+  subsample: null               # 4.7k 라 전량 사용
   seed: 42
 
-# 고정 HP = 비교의 눈금. 프레임워크별로 바꾸지 않는다.
+# 고정 HP = 비교의 눈금. 프레임워크별로 바꾸지 않는다(tuning 방식별로는 다를 수 있음).
 hp:
-  learning_rate: 2.0e-5
-  per_device_batch_size: 8
-  gradient_accumulation: 1
-  epochs: 1
+  learning_rate: 2.0e-5         # full FT 기준; lora run 이 더 큰 lr 로 override
+  per_device_batch_size: 1      # 9B/16k → 토큰 길이 부담
+  gradient_accumulation: 8
+  epochs: 3
   warmup_ratio: 0.03
   lr_scheduler: cosine
   bf16: true
+  assistant_only_loss: true     # reasoning: assistant 응답(<think>+답)에만 loss
+
+# tuning=lora 일 때만 소비. full 이면 무시.
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.0
+  target_modules: all-linear
 
 output:
   local_dir: /workspace/out
-  hf_repo: null               # "user/repo" 로 채우면 체크포인트를 HF Hub 로 push
+  hf_repo: null                 # "user/repo" 로 채우면 체크포인트를 HF Hub 로 push
 
 wandb:
-  project: tfct-sft           # throughput·VRAM·loss 를 한 화면에 겹쳐 보기 위한 공통 프로젝트
+  project: tfct-sft             # throughput·VRAM·loss 를 한 화면에 겹쳐 보기 위한 공통 프로젝트
 
 # 로컬/CI 스모크용. max_steps>0 이면 몇 step 만 돌고 끝.
 debug:
