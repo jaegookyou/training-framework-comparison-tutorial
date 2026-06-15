@@ -17,7 +17,7 @@ def test_extends_inherits_base():
 def test_run_overrides_win():
     cfg = RunConfig.from_file(CONFIGS / "sft" / "qwen0.5b_smoltalk__trl__1gpu.yaml")
     # run 파일에만 있는 값
-    assert cfg.image.endswith("tfct-trl:latest")
+    assert cfg.image.endswith("/trl:latest")
     assert cfg.section("scale")["gpus"] == 1
 
 
