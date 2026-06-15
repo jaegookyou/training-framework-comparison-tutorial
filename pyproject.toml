@@ -10,11 +10,20 @@ readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [{ name = "Jaegook You", email = "jaegookyou@gmail.com" }]
+# 코어는 가볍게: config 로딩 + dispatcher 만.
+# torch/trl/transformers 등 무거운 학습 deps 는 프레임워크별 Docker 이미지에만 둔다.
+# 인스턴스 프로비저닝은 SkyPilot(sky/*.sky.yaml)이 담당 — 코어 의존성 아님.
 dependencies = [
+    "pyyaml>=6.0",
 ]
 
 [project.optional-dependencies]
 dev = ["pytest", "ruff"]
+# 로컬 스모크 테스트용(이미지 밖에서 TRL 경로를 돌려보고 싶을 때). 실제 버전 핀은 docker/trl.Dockerfile 가 기준.
+trl = ["torch", "transformers", "trl", "datasets", "accelerate"]
+
+[project.scripts]
+tfct-run = "training_framework_comparison_tutorial.run:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/training_framework_comparison_tutorial"]

@@ -1,0 +1,36 @@
+# 통제비교 공통 축 — "프레임워크만 변수, 나머지는 고정".
+# 각 프레임워크별 run 파일이 이걸 extends 로 상속하고 framework/image/scale 만 바꾼다.
+method: sft
+
+model:
+  name: Qwen/Qwen2.5-0.5B
+  max_seq_len: 2048
+
+dataset:
+  source: smoltalk            # adapters.sources 의 키
+  hf_path: HuggingFaceTB/smoltalk
+  hf_name: all
+  split: train
+  subsample: 20000            # 통제비교용 서브샘플 크기
+  seed: 42
+
+# 고정 HP = 비교의 눈금. 프레임워크별로 바꾸지 않는다.
+hp:
+  learning_rate: 2.0e-5
+  per_device_batch_size: 8
+  gradient_accumulation: 1
+  epochs: 1
+  warmup_ratio: 0.03
+  lr_scheduler: cosine
+  bf16: true
+
+output:
+  local_dir: /workspace/out
+  hf_repo: null               # "user/repo" 로 채우면 체크포인트를 HF Hub 로 push
+
+wandb:
+  project: tfct-sft           # throughput·VRAM·loss 를 한 화면에 겹쳐 보기 위한 공통 프로젝트
+
+# 로컬/CI 스모크용. max_steps>0 이면 몇 step 만 돌고 끝.
+debug:
+  max_steps: -1
