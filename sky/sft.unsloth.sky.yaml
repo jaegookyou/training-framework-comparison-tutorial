@@ -1,0 +1,32 @@
+# tfct SFT 런 (Unsloth) — SkyPilot task.
+#
+# Unsloth 는 단일 GPU·LoRA 전용 → full FT / 멀티GPU override 가 없다(trl sky 와 다른 점).
+# 나머지(SkyPilot 이 오퍼검색→생성→업로드→run→자폭+스팟복구)는 trl sky 와 동일.
+#
+# 사용:
+#   export WANDB_API_KEY=...  HF_TOKEN=...
+#   sky launch -c tfct-unsloth sky/sft.unsloth.sky.yaml --env WANDB_API_KEY --env HF_TOKEN
+#   sky logs tfct-unsloth             # 로그 스트리밍
+#   sky down tfct-unsloth             # 끝나면 파기 (idle 과금 방지)
+#
+# Vast.ai 백엔드: ~/.config/vastai/vast_api_key 에 키 저장 → SkyPilot 이 Vast 오퍼를 띄운다.
+
+name: tfct-sft-unsloth
+
+resources:
+  accelerators: A100:1                                 # LoRA 9B 단일 GPU(Unsloth 는 멀티GPU 없음)
+  use_spot: true                                       # 스팟; 끊기면 SkyPilot 이 자동 복구
+  image_id: docker:ghcr.io/jaegookyou/training-framework-comparison-tutorial/unsloth:latest
+
+workdir: .                                             # 이 repo 를 통째로 박스로 업로드 (코드는 런타임에)
+
+envs:
+  CONFIG: configs/sft/qwen3.5-9b_traceinversion__unsloth__lora.yaml
+  WANDB_API_KEY: ""                                    # `--env WANDB_API_KEY` 로 주입
+  HF_TOKEN: ""                                         # `--env HF_TOKEN` 로 주입 (HF Hub push 시)
+
+setup: |
+  pip install -e .                                     # 코드만 (무거운 deps 는 image 에 이미 있음)
+
+run: |
+  tfct-run --config $CONFIG

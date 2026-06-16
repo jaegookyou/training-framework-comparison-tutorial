@@ -13,6 +13,7 @@ from .config import RunConfig
 # framework -> trainer 모듈. 프레임워크 추가 시 여기에 한 줄.
 TRAINERS: dict[str, str] = {
     "trl": "training_framework_comparison_tutorial.trainers.trl_sft",
+    "unsloth": "training_framework_comparison_tutorial.trainers.unsloth_sft",
 }
 
 

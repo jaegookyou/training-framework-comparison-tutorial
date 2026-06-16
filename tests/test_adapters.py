@@ -42,6 +42,11 @@ def test_normalize_rejects_empty():
         normalize_messages([])
 
 
+def test_unsloth_reuses_trl_format():
+    # Unsloth 는 trl SFTTrainer 를 감싸므로 동일 conversational 포맷.
+    assert get_format("unsloth") is get_format("trl")
+
+
 def test_unknown_source_and_format_raise():
     with pytest.raises(ValueError):
         get_source("nope")

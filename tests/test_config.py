@@ -5,6 +5,7 @@ from training_framework_comparison_tutorial.config import RunConfig
 CONFIGS = Path(__file__).resolve().parents[1] / "configs"
 FULL = CONFIGS / "sft" / "qwen3.5-9b_traceinversion__trl__full.yaml"
 LORA = CONFIGS / "sft" / "qwen3.5-9b_traceinversion__trl__lora.yaml"
+UNSLOTH = CONFIGS / "sft" / "qwen3.5-9b_traceinversion__unsloth__lora.yaml"
 
 
 def test_extends_inherits_base():
@@ -34,3 +35,12 @@ def test_tuning_axis_defaults_and_overrides():
 def test_run_name_is_descriptive():
     cfg = RunConfig.from_file(LORA)
     assert cfg.run_name() == "sft-Qwen3.5-9B-Base-traceinversion-trl-lora"
+
+
+def test_unsloth_config_is_single_gpu_lora():
+    cfg = RunConfig.from_file(UNSLOTH)
+    assert cfg.framework == "unsloth"
+    assert cfg.tuning == "lora"
+    assert cfg.section("scale")["gpus"] == 1
+    assert cfg.image.endswith("/unsloth:latest")
+    assert cfg.run_name() == "sft-Qwen3.5-9B-Base-traceinversion-unsloth-lora"

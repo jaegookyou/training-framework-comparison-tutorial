@@ -1,0 +1,14 @@
+extends: _base.yaml
+
+framework: unsloth
+tuning: lora                  # Unsloth 는 LoRA 전용(full 은 trl/megatron)
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/unsloth:latest
+
+# LoRA 는 어댑터만 학습 → full 보다 큰 lr (trl lora 와 동일 눈금).
+hp:
+  learning_rate: 2.0e-4
+
+# Unsloth 는 단일 GPU 전용 — 멀티GPU/멀티노드 스케일 없음.
+scale:
+  nodes: 1
+  gpus: 1

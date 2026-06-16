@@ -46,7 +46,8 @@ sky down  tfct                         # 끝나면 파기
 Vast.ai 백엔드는 계정 페이지의 API 키를 `~/.config/vastai/vast_api_key` 에 저장하면 붙는다.
 `--cloud vast` 로 클라우드를 고정할 수 있다.
 
-현재 구현: **TRL SFT** 경로(통제비교 첫 프레임워크). 프레임워크 추가 = docker 이미지 +
+현재 구현: **TRL**(SFT, full|lora) · **Unsloth**(SFT, lora·단일 GPU) 경로. 모델/데이터는
+reasoning SFT 트랙(Qwen3.5-9B-Base + TraceInversion). 프레임워크 추가 = docker 이미지 +
 `sky/sft.<fw>.sky.yaml` + adapters.formats + trainers + run.TRAINERS 에 항목 하나씩.
 
 ## 개발

@@ -13,13 +13,17 @@ from .schema import SFTExample
 
 
 def to_trl(example: SFTExample) -> dict[str, Any]:
-    """TRL SFTTrainer 의 conversational 포맷(messages 컬럼)."""
+    """TRL SFTTrainer 의 conversational 포맷(messages 컬럼).
+
+    Unsloth 도 내부적으로 trl SFTTrainer 를 감싸므로 같은 포맷을 재사용한다.
+    """
     return {"messages": example}
 
 
-# 프레임워크 추가 시 등록 (예정): verl, megatron, unsloth, torchtitan
+# 프레임워크 추가 시 등록 (예정): verl, megatron, torchtitan
 FORMATS: dict[str, Callable[[SFTExample], dict[str, Any]]] = {
     "trl": to_trl,
+    "unsloth": to_trl,  # trl SFTTrainer 래핑 → conversational 포맷 동일
 }
 
 
