@@ -13,7 +13,7 @@ RUN pip install \
         "trl==1.6.0" \
         "datasets==5.0.0" \
         "accelerate==1.14.0" \
-        "peft==0.18.0"
+        "peft==0.19.1"
 
 # repo 연결: 이 LABEL 이 패키지를 GitHub repo 의 Packages 에 붙이고 visibility 를 상속시킨다.
 LABEL org.opencontainers.image.source=https://github.com/jaegookyou/training-framework-comparison-tutorial
