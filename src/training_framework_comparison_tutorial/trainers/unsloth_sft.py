@@ -58,7 +58,8 @@ def train(cfg: RunConfig) -> None:
         remove_columns=raw.column_names,
     )
 
-    # bf16 LoRA (QLoRA 아님 — Qwen3.5 는 4bit 양자화 오차 커서 Unsloth 도 비권장).
+    # bf16 LoRA (QLoRA 아님). 8B/16k 는 A100 40GB 에 bf16 으로 올라가고, 4bit 양자화
+    # 오차 없이 reasoning-distill 충실도를 지킨다(통제비교에서 TRL LoRA 와도 정합).
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name=model_cfg["name"],
         max_seq_length=model_cfg.get("max_seq_len", 2048),

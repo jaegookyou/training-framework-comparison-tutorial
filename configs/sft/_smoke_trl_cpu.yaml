@@ -1,7 +1,7 @@
 # 로컬 CPU 스모크 전용 — TRL 경로가 end-to-end 로 도는지만 본다(통제비교 run 아님).
-# 실제 run 은 qwen3.5-9b_traceinversion__trl__{lora,full}.yaml. 여기선 CPU 에 맞춰
-# 모델·seq·배치를 축소한다(9B 는 CPU 에 안 올라감). tuning=lora 는 lora config 에서 상속.
-extends: qwen3.5-9b_traceinversion__trl__lora.yaml
+# 실제 run 은 qwen3-8b_traceinversion__trl__{lora,full}.yaml. 여기선 CPU 에 맞춰
+# 모델·seq·배치를 축소한다(8B 는 CPU 에 안 올라감). tuning=lora 는 lora config 에서 상속.
+extends: qwen3-8b_traceinversion__trl__lora.yaml
 
 model:
   name: Qwen/Qwen2.5-0.5B       # CPU 에 올릴 수 있는 소형 표준 모델

@@ -1,9 +1,9 @@
 """캐논 학습용 chat template.
 
-왜 필요한가: 통제비교 대상 모델이 **base 모델**(Qwen3.5-9B-Base)이라 그 토크나이저의
+왜 필요한가: 통제비교 대상 모델이 **base 모델**(Qwen3-8B-Base)이라 그 토크나이저의
 기본 template 에는 `assistant_only_loss` 가 요구하는 `{% generation %}` 마커가 없다
-(공식 template 은 멀티모달·tool·reasoning-split 까지 얹힌 7.7k 자 ChatML 인데
-generation 마커만 빠져 있음). 그러면 TRL 이 assistant 토큰 마스크를 못 뽑아 깨진다.
+(base 의 ChatML template 에 generation 마커만 빠져 있음). 그러면 TRL 이 assistant
+토큰 마스크를 못 뽑아 깨진다.
 
 해결: reasoning SFT 트랙용 **단순 ChatML 학습 template 한 장**을 코드에 캐논으로 정의하고
 모든 프레임워크가 같은 걸 쓰게 한다(데이터·포맷 동일 = 통제비교). assistant 응답을
