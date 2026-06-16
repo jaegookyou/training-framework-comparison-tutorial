@@ -13,7 +13,9 @@ dataset:
 hp:
   per_device_batch_size: 2     # CPU 메모리
   bf16: false                  # CPU 는 bf16 학습 비호환
-  assistant_only_loss: false   # 소형 모델 chat template 가정 제거(스모크는 경로만 본다)
+  # 캐논 reasoning_chatml(_base 상속)이 {% generation %} 마커를 가지므로 모델 무관하게
+  # assistant 마스크 경로까지 CPU 에서 검증된다(GPU 없이 generation-mask machinery 점검).
+  assistant_only_loss: true
 
 output:
   local_dir: ./out/smoke       # 로컬 쓰기 가능 경로 (_base 의 /workspace 컨테이너 경로 대체)

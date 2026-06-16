@@ -9,6 +9,7 @@ tuning: full
 model:
   name: Qwen/Qwen3.5-9B-Base    # reasoning 을 직접 심는 base (instruct 는 RL 이 박혀 실험 흐려짐)
   max_seq_len: 16384            # reasoning CoT 가 길다 → 16k
+  chat_template: reasoning_chatml  # base 라 기본 template 에 {% generation %} 없음 → 캐논 학습 template (null=토크나이저 자체 사용)
 
 dataset:
   source: traceinversion        # adapters.sources 의 키

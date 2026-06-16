@@ -6,7 +6,7 @@ torch/trl/transformers/datasets 는 docker/trl.Dockerfile 안에만 있다 → �
 
 from __future__ import annotations
 
-from ..adapters import get_format, get_source
+from ..adapters import get_format, get_source, resolve_chat_template
 from ..config import RunConfig
 
 
@@ -49,6 +49,12 @@ def train(cfg: RunConfig) -> None:
     )
 
     tokenizer = AutoTokenizer.from_pretrained(model_cfg["name"])
+
+    # base 모델은 assistant_only_loss 가 요구하는 {% generation %} 마커가 토크나이저 기본
+    # template 에 없다 → config 가 지정한 캐논 학습 template 으로 덮어쓴다(통제비교 = 동일 포맷).
+    chat_template = resolve_chat_template(model_cfg.get("chat_template"))
+    if chat_template:
+        tokenizer.chat_template = chat_template
 
     # tuning=lora 면 peft LoraConfig 를 SFTTrainer 에 넘긴다. full 이면 None(전체 파라미터).
     peft_config = _lora_config(cfg) if cfg.tuning == "lora" else None
