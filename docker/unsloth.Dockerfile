@@ -3,7 +3,8 @@
 #
 # trl 이미지와 핀 우주가 충돌해 별도 이미지로 분리한다(="1 프레임워크 1 이미지" 근거):
 #   unsloth 2026.6.7 제약(PyPI requires_dist 확인): torch<2.11 · trl<=0.24.0 ·
-#   transformers<=5.5.0 · peft>=0.18.0. trl 이미지는 torch 2.12 / trl 1.6 / transformers 5.12.
+#   transformers<=5.5.0 · peft>=0.18.0 · datasets>=3.4.1,<4.4.0(4.0.*/4.1.0 제외).
+#   trl 이미지는 torch 2.12 / trl 1.6 / transformers 5.12 / datasets 5.0.
 #
 # 베이스 CUDA 가 12.4 → cu124 → unsloth cu124 extra 의 상한인 torch 2.6.0 을 쓴다
 # (torch 2.7+ 는 cu126/cu128 extra). 아래 핀은 제약에서 도출한 값이며, 정확한
@@ -18,7 +19,7 @@ RUN pip install "torch==2.6.0" "torchvision" \
         "transformers==5.5.0" \
         "trl==0.24.0" \
         "peft==0.19.1" \
-        "datasets==5.0.0" \
+        "datasets==4.3.0" \
         "accelerate==1.14.0"
 
 # repo 연결: 이 LABEL 이 패키지를 GitHub repo 의 Packages 에 붙이고 visibility 를 상속시킨다.
