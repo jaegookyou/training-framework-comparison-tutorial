@@ -1,0 +1,35 @@
+# tfct SFT 런 (순수 Megatron-LM, full 전용) — SkyPilot task.
+#
+# Megatron-LM 은 convert→finetune→export 3단계를 torchrun 으로 돈다. 우리 entrypoint(tfct-run)가
+# RunConfig 를 읽어 그 셸 오케스트레이션을 띄우므로 run 블록은 다른 sky 와 동일하게 한 줄.
+# 9B full SFT 는 TP 샤딩이 필요 → 멀티GPU 노드(기본 A100:8). 나머지(오퍼검색→생성→자폭+스팟복구) 동일.
+#
+# 사용:
+#   export WANDB_API_KEY=...  HF_TOKEN=...
+#   sky launch -c tfct-megatron-lm sky/sft.megatron-lm.sky.yaml --gpus A100:8 \
+#     --env WANDB_API_KEY --env HF_TOKEN
+#   sky logs tfct-megatron-lm
+#   sky down tfct-megatron-lm
+#
+# Vast.ai 백엔드: ~/.config/vastai/vast_api_key 에 키 저장 → SkyPilot 이 Vast 오퍼를 띄운다.
+# (멀티노드 3단계는 추후 — 단일 노드 멀티GPU 까지가 이 yaml 범위.)
+
+name: tfct-sft-megatron-lm
+
+resources:
+  accelerators: A100:8                                 # 9B full SFT = TP 샤딩. config 의 megatron.tensor_model_parallel_size 와 곱(TP×PP×DP) 일치시킬 것
+  use_spot: true                                       # 스팟; 끊기면 SkyPilot 이 자동 복구
+  image_id: docker:ghcr.io/jaegookyou/training-framework-comparison-tutorial/megatron-lm:latest
+
+workdir: .                                             # 이 repo 를 통째로 박스로 업로드 (코드는 런타임에)
+
+envs:
+  CONFIG: configs/sft/qwen3-8b_traceinversion__megatron-lm__full.yaml
+  WANDB_API_KEY: ""                                    # `--env WANDB_API_KEY` 로 주입
+  HF_TOKEN: ""                                         # `--env HF_TOKEN` 로 주입 (HF 가중치 다운로드/push 시)
+
+setup: |
+  pip install -e .                                     # 코드만 (무거운 deps 는 image 에 이미 있음)
+
+run: |
+  tfct-run --config $CONFIG

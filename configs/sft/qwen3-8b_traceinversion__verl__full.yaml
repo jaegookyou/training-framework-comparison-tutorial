@@ -1,0 +1,12 @@
+extends: _base.yaml
+
+framework: verl
+tuning: full
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/verl:latest
+
+# 9B full FT 는 단일 GPU 불가 → verl 은 FSDP(torchrun --nproc_per_node)로 노드 내 샤딩.
+# gpus 는 빌리는 노드에 맞춰 조정. 실제 프로비저닝은 sky/sft.verl.sky.yaml 에서 처리.
+# (멀티노드 3단계는 verl ray 변형 필요 — 추후 배선)
+scale:
+  nodes: 1
+  gpus: 8

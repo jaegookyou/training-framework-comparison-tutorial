@@ -1,0 +1,13 @@
+extends: _base.yaml
+
+framework: verl
+tuning: lora                  # verl 은 model.lora_rank>0 으로 LoRA (full 은 __verl__full)
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/verl:latest
+
+# LoRA 는 어댑터만 학습 → full 보다 큰 lr (trl/unsloth lora 와 동일 눈금).
+hp:
+  learning_rate: 2.0e-4
+
+scale:
+  nodes: 1
+  gpus: 1

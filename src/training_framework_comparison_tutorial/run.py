@@ -14,6 +14,8 @@ from .config import RunConfig
 TRAINERS: dict[str, str] = {
     "trl": "training_framework_comparison_tutorial.trainers.trl_sft",
     "unsloth": "training_framework_comparison_tutorial.trainers.unsloth_sft",
+    "verl": "training_framework_comparison_tutorial.trainers.verl_sft",
+    "megatron-lm": "training_framework_comparison_tutorial.trainers.megatron_lm_sft",
 }
 
 

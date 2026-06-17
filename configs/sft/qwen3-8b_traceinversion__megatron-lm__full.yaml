@@ -1,0 +1,17 @@
+extends: _base.yaml
+
+framework: megatron-lm
+tuning: full                  # 순수 Megatron-LM post_training/finetune 는 full SFT 전용(LoRA 없음 → megatron-bridge 가 PEFT 담당)
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/megatron-lm:latest
+
+# Megatron 고유 knob (다른 프레임워크엔 없는 축). 모델 arch args 는 Megatron-LM repo 의
+# conf/<model_cfg>.sh 가 제공(NVIDIA 유지보수) — 우리는 그걸 가리키기만 한다.
+megatron:
+  model_cfg: Qwen/Qwen3-8B     # repo conf 이름(arch=36층/4096/ffn12288/GQA8/qk-layernorm). HF_MODEL_CKPT 은 trainer 가 _base 의 Qwen3-8B-Base 로 override
+  tensor_model_parallel_size: 8  # 9B full = TP 샤딩(노드 내). gpus 와 곱셈 일관 유지(TP×PP×DP = gpus)
+  pipeline_model_parallel_size: 1
+  train_samples: 15000         # ≈ epochs(3) × traceinversion(~5k). Megatron 은 epoch 아닌 sample 단위 → trainer 가 이 값을 --train-samples 로 전달
+
+scale:
+  nodes: 1
+  gpus: 8

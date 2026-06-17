@@ -5,7 +5,7 @@ from __future__ import annotations
 from .chat_template import CHAT_TEMPLATES, REASONING_CHATML, resolve_chat_template
 from .formats import FORMATS, get_format, to_trl
 from .schema import Message, SFTExample, normalize_messages
-from .sources import SOURCES, from_smoltalk, from_traceinversion, get_source
+from .sources import SOURCES, from_traceinversion, get_source
 
 __all__ = [
     "CHAT_TEMPLATES",
@@ -14,7 +14,6 @@ __all__ = [
     "SOURCES",
     "Message",
     "SFTExample",
-    "from_smoltalk",
     "from_traceinversion",
     "get_format",
     "get_source",
