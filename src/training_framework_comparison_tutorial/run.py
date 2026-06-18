@@ -16,6 +16,8 @@ TRAINERS: dict[str, str] = {
     "unsloth": "training_framework_comparison_tutorial.trainers.unsloth_sft",
     "verl": "training_framework_comparison_tutorial.trainers.verl_sft",
     "megatron-lm": "training_framework_comparison_tutorial.trainers.megatron_lm_sft",
+    "megatron-bridge": "training_framework_comparison_tutorial.trainers.megatron_bridge_sft",
+    "torchtitan": "training_framework_comparison_tutorial.trainers.torchtitan_sft",
 }
 
 

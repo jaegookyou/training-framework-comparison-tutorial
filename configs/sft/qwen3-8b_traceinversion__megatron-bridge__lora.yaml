@@ -1,0 +1,18 @@
+extends: _base.yaml
+
+framework: megatron-bridge
+tuning: lora                  # Megatron-Bridge PEFT 레시피(qwen3_8b_peft_config("lora")). = Megatron 네이티브 PEFT.
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/megatron-bridge:latest
+
+# PEFT 는 어댑터만 학습 → TP=1 단일 GPU 로 충분(NVIDIA qwen3-8b PEFT 권장). full 가중치는 frozen.
+megatron:
+  tensor_model_parallel_size: 1
+  pipeline_model_parallel_size: 1
+  train_samples: 15000            # full 과 동일 눈금
+
+hp:
+  learning_rate: 2.0e-4         # LoRA 는 더 큰 lr (trl/unsloth/verl lora 와 동일 눈금)
+
+scale:
+  nodes: 1
+  gpus: 1

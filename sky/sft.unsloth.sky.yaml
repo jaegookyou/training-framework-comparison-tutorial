@@ -1,11 +1,16 @@
 # tfct SFT 런 (Unsloth) — SkyPilot task.
 #
-# Unsloth 는 단일 GPU·LoRA 전용 → full FT / 멀티GPU override 가 없다(trl sky 와 다른 점).
+# Unsloth 는 단일 GPU 전용 → 멀티GPU override 는 없다(trl sky 와 다른 점). 단 full|lora 둘 다 됨.
 # 나머지(SkyPilot 이 오퍼검색→생성→업로드→run→자폭+스팟복구)는 trl sky 와 동일.
 #
 # 사용:
 #   export WANDB_API_KEY=...  HF_TOKEN=...
+#   # LoRA (기본, A100:40GB 면 충분):
 #   sky launch -c tfct-unsloth sky/sft.unsloth.sky.yaml --env WANDB_API_KEY --env HF_TOKEN
+#   # full FT (단일 GPU but ~4x VRAM → A100:80GB 권장):
+#   sky launch -c tfct-unsloth sky/sft.unsloth.sky.yaml --gpus A100-80GB:1 \
+#     --env CONFIG=configs/sft/qwen3-8b_traceinversion__unsloth__full.yaml \
+#     --env WANDB_API_KEY --env HF_TOKEN
 #   sky logs tfct-unsloth             # 로그 스트리밍
 #   sky down tfct-unsloth             # 끝나면 파기 (idle 과금 방지)
 #
@@ -14,7 +19,7 @@
 name: tfct-sft-unsloth
 
 resources:
-  accelerators: A100:1                                 # LoRA 9B 단일 GPU(Unsloth 는 멀티GPU 없음)
+  accelerators: A100:1                                 # LoRA 단일 GPU. full 은 launch 때 --gpus A100-80GB:1 (full=~4x VRAM)
   use_spot: true                                       # 스팟; 끊기면 SkyPilot 이 자동 복구
   image_id: docker:ghcr.io/jaegookyou/training-framework-comparison-tutorial/unsloth:latest
 

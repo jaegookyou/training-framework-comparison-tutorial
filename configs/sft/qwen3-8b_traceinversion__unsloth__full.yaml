@@ -1,0 +1,12 @@
+extends: _base.yaml
+
+framework: unsloth
+tuning: full                  # Unsloth 단일 GPU full FT (full_finetuning=True). lr 등은 _base full 기본 사용.
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/unsloth:latest
+
+# Unsloth 는 단일 GPU 전용 — full FT 도 1 GPU 에서 한다(멀티GPU 샤딩은 trl/verl/megatron).
+# ⚠️ full 은 QLoRA 대비 ~4x VRAM. 8B 는 짧은 seq 면 48GB 단일 GPU 에 올라가지만, _base 의 16k seq
+# 에선 activation 이 커져 큰 VRAM(A100 80GB 권장) 필요 → sky 에서 GPU 메모리 확인(검증 대상).
+scale:
+  nodes: 1
+  gpus: 1

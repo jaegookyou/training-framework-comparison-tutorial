@@ -6,9 +6,13 @@ CONFIGS = Path(__file__).resolve().parents[1] / "configs"
 FULL = CONFIGS / "sft" / "qwen3-8b_traceinversion__trl__full.yaml"
 LORA = CONFIGS / "sft" / "qwen3-8b_traceinversion__trl__lora.yaml"
 UNSLOTH = CONFIGS / "sft" / "qwen3-8b_traceinversion__unsloth__lora.yaml"
+UNSLOTH_FULL = CONFIGS / "sft" / "qwen3-8b_traceinversion__unsloth__full.yaml"
 VERL_FULL = CONFIGS / "sft" / "qwen3-8b_traceinversion__verl__full.yaml"
 VERL_LORA = CONFIGS / "sft" / "qwen3-8b_traceinversion__verl__lora.yaml"
 MEGATRON_LM = CONFIGS / "sft" / "qwen3-8b_traceinversion__megatron-lm__full.yaml"
+MEGATRON_BRIDGE_FULL = CONFIGS / "sft" / "qwen3-8b_traceinversion__megatron-bridge__full.yaml"
+MEGATRON_BRIDGE_LORA = CONFIGS / "sft" / "qwen3-8b_traceinversion__megatron-bridge__lora.yaml"
+TORCHTITAN = CONFIGS / "sft" / "qwen3-8b_traceinversion__torchtitan__full.yaml"
 
 
 def test_extends_inherits_base():
@@ -49,6 +53,17 @@ def test_unsloth_config_is_single_gpu_lora():
     assert cfg.run_name() == "sft-Qwen3-8B-Base-traceinversion-unsloth-lora"
 
 
+def test_unsloth_full_config_is_single_gpu():
+    cfg = RunConfig.from_file(UNSLOTH_FULL)
+    assert cfg.framework == "unsloth"
+    assert cfg.tuning == "full"  # Unsloth 단일 GPU full FT (full_finetuning=True)
+    assert cfg.section("scale")["gpus"] == 1  # full 도 단일 GPU
+    assert cfg.image.endswith("/unsloth:latest")
+    # full 은 _base 의 full lr 을 그대로 쓴다(lora 만 2e-4 override)
+    assert float(cfg.section("hp")["learning_rate"]) == 2.0e-5
+    assert cfg.run_name() == "sft-Qwen3-8B-Base-traceinversion-unsloth-full"
+
+
 def test_verl_full_and_lora_configs():
     full = RunConfig.from_file(VERL_FULL)
     assert full.framework == "verl"
@@ -76,3 +91,36 @@ def test_megatron_lm_config_is_full_only_with_megatron_section():
     assert mg["model_cfg"] == "Qwen/Qwen3-8B"
     assert mg["tensor_model_parallel_size"] == cfg.section("scale")["gpus"]
     assert cfg.run_name() == "sft-Qwen3-8B-Base-traceinversion-megatron-lm-full"
+
+
+def test_megatron_bridge_full_and_lora_configs():
+    full = RunConfig.from_file(MEGATRON_BRIDGE_FULL)
+    assert full.framework == "megatron-bridge"
+    assert full.tuning == "full"
+    assert full.image.endswith("/megatron-bridge:latest")
+    # _base 공통 축 상속 (모델/데이터/템플릿 = 통제비교)
+    assert full.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert full.section("dataset")["source"] == "traceinversion"
+    # Megatron 고유 knob (NVIDIA qwen3-8b SFT 권장 TP=4)
+    assert full.section("megatron")["tensor_model_parallel_size"] == 4
+    assert full.run_name() == "sft-Qwen3-8B-Base-traceinversion-megatron-bridge-full"
+
+    lora = RunConfig.from_file(MEGATRON_BRIDGE_LORA)
+    assert lora.tuning == "lora"  # 순수 Megatron-LM 과 달리 Bridge 는 네이티브 PEFT 지원
+    assert lora.section("scale")["gpus"] == 1
+    assert lora.section("megatron")["tensor_model_parallel_size"] == 1
+    # lora run 이 _base 의 lr 을 override (trl/unsloth/verl lora 와 동일 눈금)
+    assert float(lora.section("hp")["learning_rate"]) == 2.0e-4
+
+
+def test_torchtitan_config_is_full_only():
+    cfg = RunConfig.from_file(TORCHTITAN)
+    assert cfg.framework == "torchtitan"
+    assert cfg.tuning == "full"  # torchtitan SFT 는 full 전용(네이티브 LoRA 없음)
+    assert cfg.image.endswith("/torchtitan:latest")
+    # _base 공통 축 상속 (모델/데이터/템플릿 = 통제비교)
+    assert cfg.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert cfg.section("dataset")["source"] == "traceinversion"
+    # torchtitan 고유 knob (step 환산용 train_samples)
+    assert cfg.section("torchtitan")["train_samples"] == 15000
+    assert cfg.run_name() == "sft-Qwen3-8B-Base-traceinversion-torchtitan-full"

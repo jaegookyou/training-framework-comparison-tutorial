@@ -1,0 +1,14 @@
+extends: _base.yaml
+
+framework: torchtitan
+tuning: full                  # torchtitan = full SFT 전용 (네이티브 LoRA 없음 → 매트릭스 빈칸)
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/torchtitan:latest
+
+# torchtitan 고유 knob. 모델 arch(qwen3_8b)·dataloader 는 이미지 baked config(sft_qwen3_8b_traceinversion)
+# 가 제공. 병렬화는 단노드 FSDP 자동(dp=gpus) → TP/PP 명시 불필요.
+torchtitan:
+  train_samples: 15000        # ≈ epochs(3) × traceinversion(~5k). torchtitan 은 step 단위 → trainer 가 steps=train_samples/(batch×dp) 환산
+
+scale:
+  nodes: 1
+  gpus: 8                      # 8B full = FSDP 샤딩(단노드 8 GPU)

@@ -1,0 +1,17 @@
+extends: _base.yaml
+
+framework: megatron-bridge
+tuning: full                  # Megatron-Bridge SFT 레시피(qwen3_8b_sft_config). LoRA 는 __lora 파일이 PEFT 레시피로.
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/megatron-bridge:latest
+
+# Megatron 고유 knob (순수 Megatron-LM 과 같은 축). 모델 arch 는 Bridge 레시피
+# (qwen3_8b_sft_config = AutoBridge.from_hf_pretrained("Qwen/Qwen3-8B"))가 제공 — Qwen3-8B 와
+# Qwen3-8B-Base 는 동형 dense 라 arch 그대로, base 가중치는 convert 산출 체크포인트에서 온다.
+megatron:
+  tensor_model_parallel_size: 4   # NVIDIA qwen3-8b SFT 권장(TP=4, PP=1, 1노드 8GPU → DP=2)
+  pipeline_model_parallel_size: 1
+  train_samples: 15000            # ≈ epochs(3) × traceinversion(~5k). Bridge 는 iter 단위 → entry 가 train_samples/global_batch 로 train_iters 환산
+
+scale:
+  nodes: 1
+  gpus: 8

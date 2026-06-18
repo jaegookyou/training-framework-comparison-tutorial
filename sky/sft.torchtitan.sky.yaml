@@ -1,0 +1,38 @@
+# tfct SFT 런 (torchtitan, full 전용) — SkyPilot task.
+#
+# torchtitan 은 torchrun -m torchtitan.train 으로 돈다. entrypoint(tfct-run)가 RunConfig 를 읽어
+# hf_assets(캐논 template 주입) 준비 + torchrun 을 띄우므로 run 블록은 다른 sky 와 동일하게 한 줄.
+# 8B full SFT = FSDP 샤딩 → 멀티GPU 노드(기본 A100:8).
+#
+# ⚠️ 이미지는 nightly SHA 핀 + 박제 태그를 쓴다(torchtitan SFT 가 nightly 전용). image_id 는
+# 빌드 때 박제한 불변 태그(torchtitan:sft-<sha> = :latest)를 가리킨다 — Dockerfile 헤더 참고.
+#
+# 사용:
+#   export WANDB_API_KEY=...  HF_TOKEN=...
+#   sky launch -c tfct-torchtitan sky/sft.torchtitan.sky.yaml --gpus A100:8 \
+#     --env WANDB_API_KEY --env HF_TOKEN
+#   sky logs tfct-torchtitan
+#   sky down tfct-torchtitan
+#
+# Vast.ai 백엔드: ~/.config/vastai/vast_api_key 에 키 저장 → SkyPilot 이 Vast 오퍼를 띄운다.
+# (멀티노드 3단계는 추후 — 단일 노드 멀티GPU 까지가 이 yaml 범위.)
+
+name: tfct-sft-torchtitan
+
+resources:
+  accelerators: A100:8                                 # 8B full SFT = FSDP 샤딩(단노드)
+  use_spot: true                                       # 스팟; 끊기면 SkyPilot 이 자동 복구
+  image_id: docker:ghcr.io/jaegookyou/training-framework-comparison-tutorial/torchtitan:latest
+
+workdir: .                                             # 이 repo 를 통째로 박스로 업로드 (코드는 런타임에)
+
+envs:
+  CONFIG: configs/sft/qwen3-8b_traceinversion__torchtitan__full.yaml
+  WANDB_API_KEY: ""                                    # `--env WANDB_API_KEY` 로 주입
+  HF_TOKEN: ""                                         # `--env HF_TOKEN` 로 주입 (HF 가중치 다운로드 시)
+
+setup: |
+  pip install -e .                                     # 코드만 (무거운 deps 는 image 에 이미 있음)
+
+run: |
+  tfct-run --config $CONFIG

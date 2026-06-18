@@ -1,0 +1,40 @@
+# tfct SFT 런 (Megatron-Bridge, full|lora) — SkyPilot task.
+#
+# Megatron-Bridge 는 convert(HF→mcore)→finetune 2단계를 torchrun 으로 돈다. entrypoint(tfct-run)가
+# RunConfig 를 읽어 그 오케스트레이션을 띄우므로 run 블록은 다른 sky 와 동일하게 한 줄.
+# full SFT(TP=4)는 멀티GPU 노드(기본 A100:8). LoRA 는 단일 GPU → --gpus A100:1 + lora config override.
+#
+# 사용:
+#   export WANDB_API_KEY=...  HF_TOKEN=...
+#   # full SFT (TP=4, 8 GPU):
+#   sky launch -c tfct-megatron-bridge sky/sft.megatron-bridge.sky.yaml --gpus A100:8 \
+#     --env WANDB_API_KEY --env HF_TOKEN
+#   # LoRA (단일 GPU):
+#   sky launch -c tfct-megatron-bridge sky/sft.megatron-bridge.sky.yaml --gpus A100:1 \
+#     --env CONFIG=configs/sft/qwen3-8b_traceinversion__megatron-bridge__lora.yaml \
+#     --env WANDB_API_KEY --env HF_TOKEN
+#   sky logs tfct-megatron-bridge
+#   sky down tfct-megatron-bridge
+#
+# Vast.ai 백엔드: ~/.config/vastai/vast_api_key 에 키 저장 → SkyPilot 이 Vast 오퍼를 띄운다.
+# (멀티노드 3단계는 추후 — 단일 노드 멀티GPU 까지가 이 yaml 범위.)
+
+name: tfct-sft-megatron-bridge
+
+resources:
+  accelerators: A100:8                                 # full SFT(TP=4) 기본. lora 는 launch 때 --gpus A100:1 로 축소
+  use_spot: true                                       # 스팟; 끊기면 SkyPilot 이 자동 복구
+  image_id: docker:ghcr.io/jaegookyou/training-framework-comparison-tutorial/megatron-bridge:latest
+
+workdir: .                                             # 이 repo 를 통째로 박스로 업로드 (코드는 런타임에)
+
+envs:
+  CONFIG: configs/sft/qwen3-8b_traceinversion__megatron-bridge__full.yaml
+  WANDB_API_KEY: ""                                    # `--env WANDB_API_KEY` 로 주입
+  HF_TOKEN: ""                                         # `--env HF_TOKEN` 로 주입 (HF 가중치 다운로드/push 시)
+
+setup: |
+  pip install -e .                                     # 코드만 (무거운 deps 는 image 에 이미 있음)
+
+run: |
+  tfct-run --config $CONFIG
