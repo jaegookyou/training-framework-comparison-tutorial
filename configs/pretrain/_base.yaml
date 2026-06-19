@@ -1,0 +1,35 @@
+# 수직 파이프라인 1단계 — 사전학습 공통 축.
+# from-scratch 라 model.size(arch preset)를 정한다. 사후학습(sft/rl)은 이 단계 산출 HF ckpt 를
+# model.name 으로 상속한다(단계 간 인터페이스 = HF 체크포인트). 통제비교(configs/sft/)와는 별개 트랙.
+#
+# 스케일 knob: model.size(tiny→0.6b…) · dataset.hf_name(wikitext-2→103) · hp.steps · scale.gpus.
+# 이것만 바꾸면 같은 trainer 가 더 큰 사전학습으로 확장된다(코드 불변).
+method: pretrain
+
+model:
+  size: tiny                     # model_sizes.SIZES preset → torchtitan flavor(tfct_tiny). vocab=Qwen3(151936)
+  tokenizer: Qwen/Qwen3-8B-Base  # 토크나이저 통일 — SFT/RL 이 이어 쓴다(파이프라인 정합)
+  max_seq_len: 2048              # 사전학습 컨텍스트(작은 코퍼스라 충분)
+  chat_template: null            # 사전학습은 raw text → chat template 불필요
+
+dataset:
+  source: wikitext               # 이미지 baked DATASETS["wikitext"] (Salesforce/wikitext)
+  hf_path: Salesforce/wikitext
+  hf_name: wikitext-2-raw-v1     # ~13.5MB 초소형. 스케일 시 wikitext-103-raw-v1
+
+# 고정 HP. from-scratch 라 lr 이 SFT(2e-5)보다 크다.
+hp:
+  learning_rate: 3.0e-4
+  per_device_batch_size: 8
+  steps: 2000                    # 작은 코퍼스 + 초소형 → 적은 step. 스케일 시 키움
+  warmup_ratio: 0.02
+  bf16: true
+
+output:
+  local_dir: /workspace/out      # 산출: out/hf (= 다음 파이프라인 단계의 model.name)
+
+wandb:
+  project: tfct-pretrain
+
+debug:
+  max_steps: -1                  # >0 이면 몇 step 만 (스모크)

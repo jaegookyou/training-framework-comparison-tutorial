@@ -10,14 +10,22 @@ import importlib
 
 from .config import RunConfig
 
-# framework -> trainer 모듈. 프레임워크 추가 시 여기에 한 줄.
-TRAINERS: dict[str, str] = {
-    "trl": "training_framework_comparison_tutorial.trainers.trl_sft",
-    "unsloth": "training_framework_comparison_tutorial.trainers.unsloth_sft",
-    "verl": "training_framework_comparison_tutorial.trainers.verl_sft",
-    "megatron-lm": "training_framework_comparison_tutorial.trainers.megatron_lm_sft",
-    "megatron-bridge": "training_framework_comparison_tutorial.trainers.megatron_bridge_sft",
-    "torchtitan": "training_framework_comparison_tutorial.trainers.torchtitan_sft",
+# (method, framework) -> trainer 모듈. method 축(pretrain/sft/rl)으로 네임스페이스를 나눠
+# 단일 모델 PT→SFT→RL 수직 파이프라인과 통제비교(가로)가 같은 dispatch 를 공유한다.
+# 새 경로 추가 = 해당 method 아래 한 줄.
+_PKG = "training_framework_comparison_tutorial.trainers"
+TRAINERS: dict[str, dict[str, str]] = {
+    "pretrain": {
+        "torchtitan": f"{_PKG}.torchtitan_pretrain",
+    },
+    "sft": {
+        "trl": f"{_PKG}.trl_sft",
+        "unsloth": f"{_PKG}.unsloth_sft",
+        "verl": f"{_PKG}.verl_sft",
+        "megatron-lm": f"{_PKG}.megatron_lm_sft",
+        "megatron-bridge": f"{_PKG}.megatron_bridge_sft",
+        "torchtitan": f"{_PKG}.torchtitan_sft",
+    },
 }
 
 
@@ -27,9 +35,14 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     cfg = RunConfig.from_file(args.config)
-    module_name = TRAINERS.get(cfg.framework)
+    by_method = TRAINERS.get(cfg.method)
+    if by_method is None:
+        raise SystemExit(f"no trainers registered for method: {cfg.method!r}")
+    module_name = by_method.get(cfg.framework)
     if module_name is None:
-        raise SystemExit(f"no trainer registered for framework: {cfg.framework!r}")
+        raise SystemExit(
+            f"no trainer registered for {cfg.method}/{cfg.framework!r}"
+        )
 
     trainer = importlib.import_module(module_name)
     trainer.train(cfg)

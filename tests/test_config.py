@@ -13,6 +13,7 @@ MEGATRON_LM = CONFIGS / "sft" / "qwen3-8b_traceinversion__megatron-lm__full.yaml
 MEGATRON_BRIDGE_FULL = CONFIGS / "sft" / "qwen3-8b_traceinversion__megatron-bridge__full.yaml"
 MEGATRON_BRIDGE_LORA = CONFIGS / "sft" / "qwen3-8b_traceinversion__megatron-bridge__lora.yaml"
 TORCHTITAN = CONFIGS / "sft" / "qwen3-8b_traceinversion__torchtitan__full.yaml"
+PRETRAIN = CONFIGS / "pretrain" / "qwen3-tiny_wikitext__torchtitan.yaml"
 
 
 def test_extends_inherits_base():
@@ -124,3 +125,35 @@ def test_torchtitan_config_is_full_only():
     # torchtitan 고유 knob (step 환산용 train_samples)
     assert cfg.section("torchtitan")["train_samples"] == 15000
     assert cfg.run_name() == "sft-Qwen3-8B-Base-traceinversion-torchtitan-full"
+
+
+def test_pretrain_config_torchtitan():
+    cfg = RunConfig.from_file(PRETRAIN)
+    assert cfg.method == "pretrain"
+    assert cfg.framework == "torchtitan"
+    # from-scratch 라 model.name 이 아니라 model.size (arch preset)
+    assert cfg.section("model")["size"] == "tiny"
+    assert cfg.section("model")["tokenizer"] == "Qwen/Qwen3-8B-Base"  # SFT/RL 과 동일 토크나이저
+    assert cfg.section("dataset")["source"] == "wikitext"
+    # 사전학습 run_name = method-size-ds-framework (tuning 축 없음)
+    assert cfg.run_name() == "pretrain-tiny-wikitext-torchtitan"
+
+
+def test_model_size_presets_map_to_torchtitan():
+    from training_framework_comparison_tutorial.model_sizes import (
+        torchtitan_config_fn,
+        torchtitan_flavor,
+    )
+
+    assert torchtitan_flavor("tiny") == "tfct_tiny"
+    assert torchtitan_config_fn("tiny") == "pretrain_qwen3_tiny_wikitext"
+
+
+def test_dispatch_namespaced_by_method():
+    from training_framework_comparison_tutorial.run import TRAINERS
+
+    # method 축으로 네임스페이스 — 같은 framework(torchtitan)가 pretrain·sft 양쪽에
+    assert "torchtitan" in TRAINERS["pretrain"]
+    assert "torchtitan" in TRAINERS["sft"]
+    assert TRAINERS["pretrain"]["torchtitan"].endswith("torchtitan_pretrain")
+    assert TRAINERS["sft"]["trl"].endswith("trl_sft")

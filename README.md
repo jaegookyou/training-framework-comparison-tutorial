@@ -54,6 +54,14 @@ full|lora·hydra+torchrun) · **Megatron-LM**(SFT, full·convert→finetune→ex
 모델/데이터는 reasoning SFT 트랙(Qwen3-8B-Base + TraceInversion). 프레임워크 추가 = docker
 이미지 + `sky/sft.<fw>.sky.yaml` + adapters.formats + trainers + run.TRAINERS 에 항목 하나씩.
 
+### 수직 파이프라인 (PT→SFT→RL, 단일 모델)
+통제비교(가로축)와 별개로, **단일 모델이 사전학습→SFT→RL 전 과정을 통과하는 종단 파이프라인**도
+설계돼 있다. 단계 간 인터페이스 = **HF 체크포인트**(각 단계 산출 `out/hf` → 다음 단계 `model.name`).
+크기 knob(`model.size`)·데이터·`scale.gpus` 만 바꾸면 코드 수정 없이 스케일된다.
+- **사전학습**(구현): `torchtitan` from-scratch (초소형 Qwen3 `tiny` + wikitext-2). `method: pretrain`
+  축, `configs/pretrain/`, `model_sizes.py`(size preset). `tfct-run --config configs/pretrain/...`.
+- 다음(로드맵): 파이프라인 러너(`tfct-pipeline`)로 PT→SFT(기존 TRL 재사용) 자동 연결 → RL(verl GRPO) 신설.
+
 ## 개발
 
 ```bash

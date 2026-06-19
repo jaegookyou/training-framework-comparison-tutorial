@@ -1,0 +1,33 @@
+# tfct 사전학습 런 (torchtitan, from-scratch) — SkyPilot task. 수직 파이프라인 1단계.
+#
+# 초소형 Qwen3 를 wikitext 로 from-scratch 사전학습 → out/hf 에 HF ckpt 산출(다음 단계 SFT 입력).
+# entrypoint(tfct-run)가 RunConfig 를 읽어 torchrun(torchtitan.train) + HF export 를 띄운다.
+# 초소형 → 단일 GPU. 스케일(0.6b / wikitext-103) 시 --gpus 키우면 FSDP 자동.
+#
+# 사용:
+#   export WANDB_API_KEY=...  HF_TOKEN=...
+#   sky launch -c tfct-pretrain sky/pretrain.torchtitan.sky.yaml --gpus A100:1 \
+#     --env WANDB_API_KEY --env HF_TOKEN
+#   sky logs tfct-pretrain ; sky down tfct-pretrain
+#
+# ⚠️ 이미지는 torchtitan SFT 와 동일(nightly SHA 핀 + 박제 태그). Dockerfile 헤더 참고.
+
+name: tfct-pretrain-torchtitan
+
+resources:
+  accelerators: A100:1                                 # 초소형 → 단일 GPU. 스케일 시 --gpus 로 확대
+  use_spot: true
+  image_id: docker:ghcr.io/jaegookyou/training-framework-comparison-tutorial/torchtitan:latest
+
+workdir: .
+
+envs:
+  CONFIG: configs/pretrain/qwen3-tiny_wikitext__torchtitan.yaml
+  WANDB_API_KEY: ""
+  HF_TOKEN: ""                                         # 토크나이저(Qwen3) 다운로드 시
+
+setup: |
+  pip install -e .
+
+run: |
+  tfct-run --config $CONFIG
