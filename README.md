@@ -20,11 +20,12 @@ pip install git+https://github.com/jaegookyou/training-framework-comparison-tuto
 ## 구조
 
 ```
-configs/sft/        # _base.yaml(공통 축) + 프레임워크별 run (extends 로 override)
+configs/<method>/   # method별(pretrain·sft·dpo·grpo) _base.yaml(공통 축) + 프레임워크별 run (extends 로 override)
 docker/             # base.Dockerfile + 프레임워크별 이미지(의존성 충돌 → 1프레임워크 1이미지)
-sky/                # SkyPilot task: 프레임워크당 1장(sft.<fw>.sky.yaml). 프로비저닝 일임
+sky/                # SkyPilot task: <method>.<fw>.sky.yaml 한 장씩. 프로비저닝 일임
 src/.../adapters/   # 데이터 어댑터 2층: (소스→방법 스키마) → (방법 스키마→프레임워크 포맷)
                     #  + chat_template.py: base 모델용 캐논 학습 template({% generation %} = assistant_only_loss 마스크)
+                    #  + rewards.py: GRPO 채점기(태스크 1:1, 통제 변수라 프레임워크 공유)
 src/.../trainers/   # 프레임워크별 학습 entrypoint (무거운 deps 는 지연 임포트)
 src/.../run.py      # 컨테이너 안 dispatcher: config → trainer
 ```
@@ -47,12 +48,19 @@ sky down  tfct                         # 끝나면 파기
 Vast.ai 백엔드는 계정 페이지의 API 키를 `~/.config/vastai/vast_api_key` 에 저장하면 붙는다.
 `--cloud vast` 로 클라우드를 고정할 수 있다.
 
-현재 구현: **TRL**(SFT, full|lora) · **Unsloth**(SFT, full|lora·단일 GPU) · **verl**(SFT,
-full|lora·hydra+torchrun) · **Megatron-LM**(SFT, full·convert→finetune→export) ·
-**Megatron-Bridge**(SFT, full|lora·convert→finetune, HF↔mcore 브리지 + 네이티브 PEFT) ·
-**torchtitan**(SFT, full·nightly SHA 핀·ChatDataset, 이미지 박제로 재현) 경로.
-모델/데이터는 reasoning SFT 트랙(Qwen3-8B-Base + TraceInversion). 프레임워크 추가 = docker
-이미지 + `sky/sft.<fw>.sky.yaml` + adapters.formats + trainers + run.TRAINERS 에 항목 하나씩.
+현재 구현:
+- **SFT**: TRL(full|lora) · Unsloth(full|lora·단일 GPU) · verl(full|lora·hydra+torchrun) ·
+  Megatron-LM(full·convert→finetune→export) · Megatron-Bridge(full|lora·HF↔mcore 브리지+네이티브
+  PEFT) · torchtitan(full·nightly SHA 핀·ChatDataset, 이미지 박제로 재현). reasoning 트랙
+  (Qwen3-8B-Base + TraceInversion).
+- **DPO**(offline preference): TRL(full|lora) · Unsloth(full|lora·단일 GPU). trl-lib/ultrafeedback_binarized.
+- **GRPO**(online RL): TRL(full|lora) · Unsloth(full|lora·단일 GPU·vllm 내장 fast_inference).
+  openai/gsm8k + reward(정답 일치+형식). RL 트랙 기준점 = TRL, GRPO 가로비교는 verl·megatron-lm 으로
+  확장 예정. TRL GRPO 는 현실적 8B 속도에 vllm rollout 필요(이미지 추가 TODO) — Unsloth 는 내장.
+
+프레임워크/방법 추가 = docker 이미지 + `sky/<method>.<fw>.sky.yaml` + adapters(sources/formats
+/rewards) + trainers + run.TRAINERS 에 항목 하나씩. DPO·GRPO 는 패러다임 차이(offline 선호 vs
+online 생성+reward)라 별 method 로 둔다.
 
 ### 수직 파이프라인 (PT→SFT→RL, 단일 모델)
 통제비교(가로축)와 별개로, **단일 모델이 사전학습→SFT→RL 전 과정을 통과하는 종단 파이프라인**도
@@ -60,7 +68,8 @@ full|lora·hydra+torchrun) · **Megatron-LM**(SFT, full·convert→finetune→ex
 크기 knob(`model.size`)·데이터·`scale.gpus` 만 바꾸면 코드 수정 없이 스케일된다.
 - **사전학습**(구현): `torchtitan` from-scratch (초소형 Qwen3 `tiny` + wikitext-2). `method: pretrain`
   축, `configs/pretrain/`, `model_sizes.py`(size preset). `tfct-run --config configs/pretrain/...`.
-- 다음(로드맵): 파이프라인 러너(`tfct-pipeline`)로 PT→SFT(기존 TRL 재사용) 자동 연결 → RL(verl GRPO) 신설.
+- **SFT·RL**(구현): 기존 TRL SFT/DPO/GRPO 경로 재사용(`model.name` 을 앞 단계 `out/hf` 로 지정).
+- 다음(로드맵): 파이프라인 러너(`tfct-pipeline`)로 PT→SFT→RL 단계 config 를 자동 연결(ckpt 전달).
 
 ## 개발
 

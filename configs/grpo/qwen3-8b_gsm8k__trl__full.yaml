@@ -1,0 +1,11 @@
+extends: _base.yaml
+
+framework: trl
+tuning: full
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/trl:latest
+
+# 9B full GRPO 는 정책 갱신 + rollout 생성을 함께 → 멀티GPU 샤딩(+vllm rollout 권장).
+# 실제 프로비저닝(GPU 종류·스팟·이미지)은 sky/grpo.trl.sky.yaml 에서 처리.
+scale:
+  nodes: 1
+  gpus: 8

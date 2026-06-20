@@ -1,22 +1,18 @@
-"""Unsloth SFT 학습 경로 (full|lora·단일 GPU).
+"""Unsloth GRPO 학습 경로 (full|lora·단일 GPU).
 
-Unsloth 는 단일 GPU 효율에 특화 → 통제비교에서 1 GPU 슬롯을 담당한다. LoRA 가 본령이지만
-full FT 도 지원한다(`full_finetuning=True`, QLoRA 대비 ~4x VRAM — 7~8B full 은 48GB+ 단일
-GPU 에 올라간다). 멀티GPU(FSDP/DDP)는 다른 경로(trl/verl/megatron)에 맡기고 여기선 단일 GPU 만.
+Unsloth GRPO 의 본령 = **fast_inference(vllm 내장)** 로 단일 GPU 에서 rollout 을 빠르게 뽑는 것.
+정책 모델과 vllm 엔진이 같은 카드에서 가중치를 공유(gpu_memory_utilization 로 분할)하므로 TRL
+GRPO 처럼 별도 vllm 셋업이 없다. lora 면 max_lora_rank 로 어댑터 rank 를 vllm 에 알린다.
 
-unsloth 는 transformers/trl 보다 먼저 임포트돼야 자기 최적화 패치가 걸린다 →
-함수 안에서, 다른 무거운 deps 보다 위에서 임포트한다. deps 는 docker/unsloth.Dockerfile
-에만 있고(torch<2.11·trl<=0.24 라 trl 이미지와 핀 충돌 → 별도 이미지), 패키지 임포트만으로
-끌려오지 않게 지연 임포트한다.
+unsloth 는 transformers/trl 보다 먼저 임포트. deps 는 docker/unsloth.Dockerfile(trl<=0.24 + vllm)
+에만 → 지연 임포트. trl 0.24 API 라 trl_grpo.py(trl 1.x)와 인자가 다르다.
 """
 
 from __future__ import annotations
 
-from ..adapters import get_format, get_source, resolve_chat_template
+from ..adapters import get_format, get_reward_funcs, get_source, resolve_chat_template
 from ..config import RunConfig
 
-# Unsloth get_peft_model 은 명시 모듈 리스트를 원한다("all-linear" 미지원).
-# config 가 "all-linear" 면 표준 트랜스포머 proj 집합으로 번역한다.
 _ALL_LINEAR_MODULES = [
     "q_proj", "k_proj", "v_proj", "o_proj",
     "gate_proj", "up_proj", "down_proj",
@@ -34,7 +30,7 @@ def train(cfg: RunConfig) -> None:
 
     from unsloth import FastLanguageModel  # noqa: I001  # transformers/trl 보다 먼저
     from datasets import load_dataset
-    from trl import SFTConfig, SFTTrainer
+    from trl import GRPOConfig, GRPOTrainer
 
     model_cfg = cfg.section("model")
     ds_cfg = cfg.section("dataset")
@@ -43,8 +39,9 @@ def train(cfg: RunConfig) -> None:
     debug = cfg.section("debug")
     lora = cfg.section("lora")
 
-    to_messages = get_source(ds_cfg["source"])
+    to_prompt = get_source(ds_cfg["source"])
     to_format = get_format(cfg.method, cfg.framework)
+    reward_funcs = get_reward_funcs(cfg.section("reward")["name"])
 
     raw = load_dataset(ds_cfg["hf_path"], ds_cfg.get("hf_name"), split=ds_cfg["split"])
     subsample = ds_cfg.get("subsample")
@@ -52,24 +49,26 @@ def train(cfg: RunConfig) -> None:
         raw = raw.shuffle(seed=ds_cfg.get("seed", 42)).select(range(min(subsample, len(raw))))
 
     dataset = raw.map(
-        lambda row: to_format(to_messages(row)),
+        lambda row: to_format(to_prompt(row)),
         remove_columns=raw.column_names,
     )
 
     full = cfg.tuning == "full"
+    use_vllm = hp.get("use_vllm", True)  # unsloth 본령 = vllm rollout (기본 켬)
 
-    # bf16 (QLoRA 아님 → load_in_4bit=False). LoRA: 8B/16k 가 A100 40GB 에 올라가고 4bit 오차
-    # 없이 reasoning-distill 충실도를 지킨다(TRL LoRA 와 정합). full: full_finetuning=True 로
-    # 전체 파라미터 학습(QLoRA 대비 ~4x VRAM → 단일 GPU 라도 큰 VRAM 필요, sky 참고).
+    # lora 면 vllm 이 어댑터 rank 를 알아야 한다 → max_lora_rank. full 은 어댑터 없음.
+    load_kwargs = {} if full else {"max_lora_rank": lora.get("r", 16)}
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name=model_cfg["name"],
         max_seq_length=model_cfg.get("max_seq_len", 2048),
-        dtype=None,            # Ampere+ 에서 bf16 자동
+        dtype=None,
         load_in_4bit=False,
         full_finetuning=full,
+        fast_inference=use_vllm,                       # vllm 엔진 내장
+        gpu_memory_utilization=hp.get("gpu_memory_utilization", 0.6),  # 정책/vllm 가 카드 공유
+        **load_kwargs,
     )
     if not full:
-        # LoRA 만 어댑터를 붙인다. full 은 모델 그대로(get_peft_model 미호출).
         model = FastLanguageModel.get_peft_model(
             model,
             r=lora.get("r", 16),
@@ -80,15 +79,13 @@ def train(cfg: RunConfig) -> None:
             random_state=ds_cfg.get("seed", 42),
         )
 
-    # base 모델엔 {% generation %} 마커가 없다 → trl 경로와 동일한 캐논 학습 template 으로
-    # 덮어쓴다(두 프레임워크 동일 포맷 = 통제비교). assistant_only_loss 가 이 마커를 쓴다.
+    # base 모델 → 캐논 ChatML template (add_generation_prompt 로 rollout 프롬프트 큐 정합).
     chat_template = resolve_chat_template(model_cfg.get("chat_template"))
     if chat_template:
         tokenizer.chat_template = chat_template
 
-    # NOTE: unsloth 는 trl<=0.24 핀(docker/unsloth.Dockerfile) → trl 1.x(trl_sft.py)와
-    # API 가 다르다. 여기선 trl 0.x 의 SFTConfig 인자(max_seq_length 등)를 쓴다.
-    args = SFTConfig(
+    # NOTE: trl 0.24 API. 정확한 인자 호환은 docker/unsloth.Dockerfile 의 핀 기준.
+    args = GRPOConfig(
         output_dir=out.get("local_dir", "out"),
         per_device_train_batch_size=hp["per_device_batch_size"],
         gradient_accumulation_steps=hp.get("gradient_accumulation", 1),
@@ -97,9 +94,12 @@ def train(cfg: RunConfig) -> None:
         warmup_ratio=hp.get("warmup_ratio", 0.0),
         lr_scheduler_type=hp.get("lr_scheduler", "linear"),
         bf16=hp.get("bf16", False),
-        max_seq_length=model_cfg.get("max_seq_len", 2048),
-        # full 은 get_peft_model 의 unsloth gradient ckpt 를 못 받으므로 여기서 켠다(메모리 절약).
-        gradient_checkpointing=full,
+        beta=hp.get("beta", 0.04),
+        num_generations=hp.get("num_generations", 8),
+        max_prompt_length=hp.get("max_prompt_length", 512),
+        max_completion_length=hp.get("max_completion_length", 1024),
+        temperature=hp.get("temperature", 1.0),
+        use_vllm=use_vllm,
         max_steps=debug.get("max_steps", -1),
         report_to="wandb",
         run_name=cfg.run_name(),
@@ -107,11 +107,12 @@ def train(cfg: RunConfig) -> None:
         hub_model_id=out.get("hf_repo"),
     )
 
-    trainer = SFTTrainer(
+    trainer = GRPOTrainer(
         model=model,
         args=args,
         train_dataset=dataset,
         processing_class=tokenizer,
+        reward_funcs=reward_funcs,
     )
     trainer.train()
     trainer.save_model(args.output_dir)

@@ -1,0 +1,13 @@
+extends: _base.yaml
+
+framework: trl
+tuning: lora
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/trl:latest
+
+# LoRA GRPO 는 어댑터만 학습 → full 보다 큰 lr. 1 GPU 스케일(rollout 도 같은 카드).
+hp:
+  learning_rate: 1.0e-5
+
+scale:
+  nodes: 1
+  gpus: 1

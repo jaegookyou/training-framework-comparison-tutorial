@@ -1,0 +1,13 @@
+extends: _base.yaml
+
+framework: trl
+tuning: lora
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/trl:latest
+
+# LoRA DPO 는 어댑터만 학습 → full 보다 큰 lr. ref = 어댑터 끈 base 라 메모리도 1장에 든다.
+hp:
+  learning_rate: 5.0e-6
+
+scale:
+  nodes: 1
+  gpus: 1

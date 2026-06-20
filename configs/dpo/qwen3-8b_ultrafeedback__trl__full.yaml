@@ -1,0 +1,11 @@
+extends: _base.yaml
+
+framework: trl
+tuning: full
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/trl:latest
+
+# 9B full DPO 는 ref 모델까지 메모리에 올라 단일 GPU 불가 → FSDP/ZeRO 멀티GPU 샤딩.
+# 실제 프로비저닝(GPU 종류·스팟·이미지)은 sky/dpo.trl.sky.yaml 에서 처리.
+scale:
+  nodes: 1
+  gpus: 8

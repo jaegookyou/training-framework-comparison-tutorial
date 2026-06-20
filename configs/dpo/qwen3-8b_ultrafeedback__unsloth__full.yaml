@@ -1,0 +1,11 @@
+extends: _base.yaml
+
+framework: unsloth
+tuning: full                  # Unsloth 단일 GPU full FT (full_finetuning=True). DPO full 은 ref 별도 복제.
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/unsloth:latest
+
+# full 은 _base 의 DPO full lr(5e-7) 을 그대로 쓴다(lora 만 override).
+# 단일 GPU 지만 full FT + ref 모델이라 큰 VRAM 필요(A100 80GB+, sky 참고).
+scale:
+  nodes: 1
+  gpus: 1

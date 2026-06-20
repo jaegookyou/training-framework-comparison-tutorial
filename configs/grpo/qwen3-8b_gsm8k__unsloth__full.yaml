@@ -1,0 +1,15 @@
+extends: _base.yaml
+
+framework: unsloth
+tuning: full                  # Unsloth 단일 GPU full GRPO (full_finetuning=True + vllm rollout).
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/unsloth:latest
+
+# full 은 _base 의 GRPO full lr(1e-6) 을 그대로 쓴다(lora 만 override).
+# 단일 GPU full GRPO + vllm 은 덜 표준 — 정책 full 가중치 + vllm 엔진이 한 카드(큰 VRAM 필요).
+hp:
+  # full 은 vllm 가중치 동기 비용이 커 rollout 메모리 여유를 줄인다(빌드 시 튜닝).
+  gpu_memory_utilization: 0.5
+
+scale:
+  nodes: 1
+  gpus: 1

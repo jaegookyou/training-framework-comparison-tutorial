@@ -27,7 +27,7 @@ def _prepare_parquet(cfg: RunConfig, out_dir: Path) -> str:
 
     ds_cfg = cfg.section("dataset")
     to_messages = get_source(ds_cfg["source"])
-    to_format = get_format(cfg.framework)
+    to_format = get_format(cfg.method, cfg.framework)
 
     raw = load_dataset(ds_cfg["hf_path"], ds_cfg.get("hf_name"), split=ds_cfg["split"])
     subsample = ds_cfg.get("subsample")

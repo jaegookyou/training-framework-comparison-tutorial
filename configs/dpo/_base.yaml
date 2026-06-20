@@ -1,0 +1,49 @@
+# DPO 트랙 공통 축 — "프레임워크만 변수, 나머지는 고정".
+# 각 프레임워크별 run 파일이 이걸 extends 로 상속하고 framework/image/tuning/scale 만 바꾼다.
+method: dpo
+
+# 튜닝 방식 축: full | lora. 기본 full, lora run 이 override.
+tuning: full
+
+model:
+  name: Qwen/Qwen3-8B-Base     # SFT 트랙과 동일 base (통제비교: 모델 고정). 수직 파이프라인이면 SFT 산출 ckpt 로 교체.
+  max_seq_len: 2048            # 선호쌍 일반 chat → 16k reasoning 불필요. DPO max_length.
+  chat_template: reasoning_chatml  # base → 캐논 ChatML (SFT 와 동일 template 으로 통제). DPO 는 generation 마커 미사용.
+
+dataset:
+  source: ultrafeedback         # adapters.sources 의 키 (선호쌍 정규화)
+  hf_path: trl-lib/ultrafeedback_binarized   # Zephyr+TRL 공식 DPO 예제 (62k)
+  hf_name: null
+  split: train
+  subsample: null
+  seed: 42
+
+# 고정 HP = 비교의 눈금. DPO 표준(Zephyr 레시피)에 맞춘다.
+hp:
+  learning_rate: 5.0e-7         # DPO 는 SFT 보다 훨씬 작은 lr; lora run 이 override
+  per_device_batch_size: 2
+  gradient_accumulation: 8
+  epochs: 1
+  warmup_ratio: 0.1
+  lr_scheduler: cosine
+  bf16: true
+  beta: 0.1                     # DPO KL 정규화 강도(표준 0.1)
+  max_prompt_length: 1024
+
+# tuning=lora 일 때만 소비. full 이면 무시.
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.0
+  target_modules: all-linear
+
+output:
+  local_dir: /workspace/out
+  hf_repo: null                 # "user/repo" 로 채우면 체크포인트를 HF Hub 로 push
+
+wandb:
+  project: tfct-dpo             # DPO run 들을 한 화면에 겹쳐 보기 위한 공통 프로젝트
+
+# 로컬/CI 스모크용. max_steps>0 이면 몇 step 만 돌고 끝.
+debug:
+  max_steps: -1

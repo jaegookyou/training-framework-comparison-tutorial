@@ -1,13 +1,11 @@
-"""Unsloth SFT 학습 경로 (full|lora·단일 GPU).
+"""Unsloth DPO 학습 경로 (full|lora·단일 GPU).
 
-Unsloth 는 단일 GPU 효율에 특화 → 통제비교에서 1 GPU 슬롯을 담당한다. LoRA 가 본령이지만
-full FT 도 지원한다(`full_finetuning=True`, QLoRA 대비 ~4x VRAM — 7~8B full 은 48GB+ 단일
-GPU 에 올라간다). 멀티GPU(FSDP/DDP)는 다른 경로(trl/verl/megatron)에 맡기고 여기선 단일 GPU 만.
+DPO 는 offline preference (generation 없음) → SFT 와 거의 같은 메모리/실행 모양이라 unsloth_sft
+패턴을 그대로 따른다. 차이는 데이터 정규형(선호쌍)·DPOTrainer 뿐. lora 면 ref=어댑터 끈 base
+(추가 메모리 0), full 이면 ref 별도 복제(2x VRAM → 단일 GPU 라도 큰 VRAM, sky 참고).
 
-unsloth 는 transformers/trl 보다 먼저 임포트돼야 자기 최적화 패치가 걸린다 →
-함수 안에서, 다른 무거운 deps 보다 위에서 임포트한다. deps 는 docker/unsloth.Dockerfile
-에만 있고(torch<2.11·trl<=0.24 라 trl 이미지와 핀 충돌 → 별도 이미지), 패키지 임포트만으로
-끌려오지 않게 지연 임포트한다.
+unsloth 는 transformers/trl 보다 먼저 임포트돼야 패치가 걸린다. deps 는 docker/unsloth.Dockerfile
+(trl<=0.24 핀)에만 → 지연 임포트. trl 0.24 API 라 trl_dpo.py(trl 1.x)와 인자가 다르다.
 """
 
 from __future__ import annotations
@@ -15,8 +13,7 @@ from __future__ import annotations
 from ..adapters import get_format, get_source, resolve_chat_template
 from ..config import RunConfig
 
-# Unsloth get_peft_model 은 명시 모듈 리스트를 원한다("all-linear" 미지원).
-# config 가 "all-linear" 면 표준 트랜스포머 proj 집합으로 번역한다.
+# unsloth get_peft_model 은 "all-linear" 미지원 → 표준 proj 집합으로 번역(unsloth_sft 와 동일).
 _ALL_LINEAR_MODULES = [
     "q_proj", "k_proj", "v_proj", "o_proj",
     "gate_proj", "up_proj", "down_proj",
@@ -32,9 +29,12 @@ def train(cfg: RunConfig) -> None:
     if cfg.tuning not in ("full", "lora"):
         raise SystemExit(f"unsloth: tuning 은 full|lora 만 지원(받음: {cfg.tuning!r}).")
 
-    from unsloth import FastLanguageModel  # noqa: I001  # transformers/trl 보다 먼저
+    # FastLanguageModel 먼저(패치). PatchDPOTrainer 는 unsloth DPO 의 문서화된 진입 패턴.
+    from unsloth import FastLanguageModel, PatchDPOTrainer  # noqa: I001
+
+    PatchDPOTrainer()
     from datasets import load_dataset
-    from trl import SFTConfig, SFTTrainer
+    from trl import DPOConfig, DPOTrainer
 
     model_cfg = cfg.section("model")
     ds_cfg = cfg.section("dataset")
@@ -43,7 +43,7 @@ def train(cfg: RunConfig) -> None:
     debug = cfg.section("debug")
     lora = cfg.section("lora")
 
-    to_messages = get_source(ds_cfg["source"])
+    to_pref = get_source(ds_cfg["source"])
     to_format = get_format(cfg.method, cfg.framework)
 
     raw = load_dataset(ds_cfg["hf_path"], ds_cfg.get("hf_name"), split=ds_cfg["split"])
@@ -52,15 +52,12 @@ def train(cfg: RunConfig) -> None:
         raw = raw.shuffle(seed=ds_cfg.get("seed", 42)).select(range(min(subsample, len(raw))))
 
     dataset = raw.map(
-        lambda row: to_format(to_messages(row)),
+        lambda row: to_format(to_pref(row)),
         remove_columns=raw.column_names,
     )
 
     full = cfg.tuning == "full"
 
-    # bf16 (QLoRA 아님 → load_in_4bit=False). LoRA: 8B/16k 가 A100 40GB 에 올라가고 4bit 오차
-    # 없이 reasoning-distill 충실도를 지킨다(TRL LoRA 와 정합). full: full_finetuning=True 로
-    # 전체 파라미터 학습(QLoRA 대비 ~4x VRAM → 단일 GPU 라도 큰 VRAM 필요, sky 참고).
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name=model_cfg["name"],
         max_seq_length=model_cfg.get("max_seq_len", 2048),
@@ -69,7 +66,6 @@ def train(cfg: RunConfig) -> None:
         full_finetuning=full,
     )
     if not full:
-        # LoRA 만 어댑터를 붙인다. full 은 모델 그대로(get_peft_model 미호출).
         model = FastLanguageModel.get_peft_model(
             model,
             r=lora.get("r", 16),
@@ -80,15 +76,13 @@ def train(cfg: RunConfig) -> None:
             random_state=ds_cfg.get("seed", 42),
         )
 
-    # base 모델엔 {% generation %} 마커가 없다 → trl 경로와 동일한 캐논 학습 template 으로
-    # 덮어쓴다(두 프레임워크 동일 포맷 = 통제비교). assistant_only_loss 가 이 마커를 쓴다.
+    # base 모델 → 캐논 ChatML template (trl 경로와 동일 포맷 = 통제비교).
     chat_template = resolve_chat_template(model_cfg.get("chat_template"))
     if chat_template:
         tokenizer.chat_template = chat_template
 
-    # NOTE: unsloth 는 trl<=0.24 핀(docker/unsloth.Dockerfile) → trl 1.x(trl_sft.py)와
-    # API 가 다르다. 여기선 trl 0.x 의 SFTConfig 인자(max_seq_length 등)를 쓴다.
-    args = SFTConfig(
+    # NOTE: trl 0.24 API. 정확한 인자 호환은 docker/unsloth.Dockerfile 의 핀 기준.
+    args = DPOConfig(
         output_dir=out.get("local_dir", "out"),
         per_device_train_batch_size=hp["per_device_batch_size"],
         gradient_accumulation_steps=hp.get("gradient_accumulation", 1),
@@ -97,8 +91,10 @@ def train(cfg: RunConfig) -> None:
         warmup_ratio=hp.get("warmup_ratio", 0.0),
         lr_scheduler_type=hp.get("lr_scheduler", "linear"),
         bf16=hp.get("bf16", False),
-        max_seq_length=model_cfg.get("max_seq_len", 2048),
-        # full 은 get_peft_model 의 unsloth gradient ckpt 를 못 받으므로 여기서 켠다(메모리 절약).
+        beta=hp.get("beta", 0.1),
+        max_length=model_cfg.get("max_seq_len", 2048),
+        max_prompt_length=hp.get("max_prompt_length", 1024),
+        # full 은 unsloth gradient ckpt(get_peft_model)를 못 받으므로 여기서 켠다(메모리 절약).
         gradient_checkpointing=full,
         max_steps=debug.get("max_steps", -1),
         report_to="wandb",
@@ -107,7 +103,7 @@ def train(cfg: RunConfig) -> None:
         hub_model_id=out.get("hf_repo"),
     )
 
-    trainer = SFTTrainer(
+    trainer = DPOTrainer(
         model=model,
         args=args,
         train_dataset=dataset,

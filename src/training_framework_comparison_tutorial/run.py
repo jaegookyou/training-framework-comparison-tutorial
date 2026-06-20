@@ -26,6 +26,16 @@ TRAINERS: dict[str, dict[str, str]] = {
         "megatron-bridge": f"{_PKG}.megatron_bridge_sft",
         "torchtitan": f"{_PKG}.torchtitan_sft",
     },
+    # 사후학습 RL 트랙. DPO(offline preference)와 GRPO(online RL)는 패러다임이 달라
+    # 별 method 로 둔다(통제비교 = 프레임워크 고정, 방법만 비교). 기준점 = TRL.
+    "dpo": {
+        "trl": f"{_PKG}.trl_dpo",
+        "unsloth": f"{_PKG}.unsloth_dpo",
+    },
+    "grpo": {
+        "trl": f"{_PKG}.trl_grpo",
+        "unsloth": f"{_PKG}.unsloth_grpo",
+    },
 }
 
 

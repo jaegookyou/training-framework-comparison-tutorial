@@ -1,0 +1,14 @@
+extends: _base.yaml
+
+framework: unsloth
+tuning: lora                  # Unsloth GRPO 본령 = vllm fast_inference + LoRA.
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/unsloth:latest
+
+# LoRA GRPO 는 어댑터만 학습 → full 보다 큰 lr (trl lora 와 동일 눈금).
+hp:
+  learning_rate: 1.0e-5
+
+# Unsloth 는 단일 GPU 전용 — 정책+vllm 엔진이 같은 카드 공유(gpu_memory_utilization).
+scale:
+  nodes: 1
+  gpus: 1
