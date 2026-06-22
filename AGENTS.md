@@ -8,7 +8,7 @@
 
 1. **항상** `/mnt/c/Users/User/workspace/llm-wiki/wiki/projects/training-framework-comparison-tutorial.md`를 읽는다.
    `## 현재 상태 / 다음`이 이 repo의 핸드오프(현재 state + 미래 plan)다.
-2. **필요하면** `/mnt/c/Users/User/workspace/llm-wiki/raw/devlog/training-framework-comparison-tutorial-*.md`를
-   최신순 **최대 3개**까지 읽어 결정 이유·디테일을 보강한다. 위키 페이지로 충분하면 생략.
+2. **항상** `/mnt/c/Users/User/workspace/llm-wiki/raw/devlog/training-framework-comparison-tutorial-*.md`를
+   최신순 **최대 3개**(직전 세션들)를 읽어 결정 이유·디테일을 보강한다.
 
 작업 후엔 `/devlog`로 세션을 기록 → 위키 "다음"이 갱신돼 다음 세션이 이어받는다.
