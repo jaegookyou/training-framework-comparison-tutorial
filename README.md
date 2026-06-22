@@ -55,12 +55,14 @@ Vast.ai 백엔드는 계정 페이지의 API 키를 `~/.config/vastai/vast_api_k
   (Qwen3-8B-Base + TraceInversion).
 - **DPO**(offline preference): TRL(full|lora) · Unsloth(full|lora·단일 GPU). trl-lib/ultrafeedback_binarized.
 - **GRPO**(online RL): TRL(full|lora) · Unsloth(full|lora·단일 GPU·vllm 내장 fast_inference) ·
-  verl(full|lora·ray main_ppo·vllm rollout) · slime(full·ray train.py·SGLang 롤아웃+Megatron 학습).
-  openai/gsm8k + reward(정답 일치+형식). RL 트랙 기준점 = TRL, GRPO 가로비교를 verl·slime 으로 확장
-  (둘 다 GRPO 본진 — verl=vllm+FSDP/Megatron, slime=SGLang+Megatron). reward 는 태스크 1:1 채점
-  코어를 공유하되 규약별로 노출(TRL=list 반환 / verl=compute_score / slime=async slime_rm). TRL GRPO
-  는 vllm rollout 필요(이미지 추가 TODO) — Unsloth·verl·slime 은 내장. slime 은 full 전용(LoRA 는
-  Miles 확장). 다음 = megatron-lm GRPO(verl strategy=megatron 백엔드).
+  verl(full|lora·ray main_ppo·vllm rollout) · slime(full·ray train.py·SGLang 롤아웃+Megatron 학습) ·
+  Megatron-LM(full·examples/rl train_rl.py 네이티브 GRPO·환경 에이전트). openai/gsm8k + reward
+  (정답 일치+형식). RL 트랙 기준점 = TRL, GRPO 가로비교를 verl·slime·megatron-lm 으로 확장(셋 다
+  GRPO 본진 — verl=vllm+FSDP/Megatron, slime=SGLang+Megatron, megatron-lm=네이티브 train_rl).
+  reward 는 태스크 1:1 채점 코어를 공유하되 규약별로 노출(TRL=list 반환 / verl=compute_score /
+  slime=async slime_rm / megatron-lm=환경 에이전트 get_reward). TRL GRPO 는 vllm rollout 필요
+  (이미지 추가 TODO) — Unsloth·verl·slime 은 내장. slime·megatron-lm 은 full 전용(examples/rl 에
+  LoRA 없음). megatron-lm 은 SFT(post_training/modelopt)와 GRPO(examples/rl)가 한 이미지·두 진입점.
 
 프레임워크/방법 추가 = docker 이미지 + `sky/<method>.<fw>.sky.yaml` + adapters(sources/formats
 /rewards) + trainers + run.TRAINERS 에 항목 하나씩. DPO·GRPO 는 패러다임 차이(offline 선호 vs

@@ -67,7 +67,9 @@ def to_slime_grpo(example: RLPromptExample) -> dict[str, Any]:
 
 # NOTE: megatron-lm SFT 는 여기에 없다 — finetune.py 가 HF 데이터셋을 직접 인제스트
 # (--finetune-hf-dataset)하고 SFTDataset 이 자체 messages→conversation 변환을 하므로
-# 우리 row-level format 을 거치지 않는다.
+# 우리 row-level format 을 거치지 않는다. megatron-lm GRPO 도 마찬가지 — 환경 에이전트
+# (megatron_rl.gsm8k_agent.TfctGSM8KAgent)가 gsm8k 를 직접 로드/프롬프트/채점한다(reward·프롬프트는
+# 공유 코어로 통제). verl/slime 처럼 dataset 파일을 떨구지 않으므로 여기 row format 이 없다.
 FORMATS: dict[str, dict[str, Callable[[Any], dict[str, Any]]]] = {
     "sft": {
         "trl": to_trl,

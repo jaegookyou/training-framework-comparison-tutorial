@@ -1,0 +1,38 @@
+# tfct GRPO 런 (megatron-lm) — SkyPilot task.
+#
+# 순수 Megatron-LM 네이티브 GRPO (examples/rl/train_rl.py). verl(ray+vllm)·slime(SGLang+Megatron)
+# 에 이은 GRPO 가로비교 3번째 축 — 같은 'Megatron-LM 경험' 이미지(SFT 와 공유)로 RL 까지.
+# 런치는 우리 entrypoint(tfct-run)가 RunConfig 를 env+torchrun 으로 번역해 띄운다 → 이 run 블록은
+# 다른 sky 와 동일하게 `tfct-run --config $CONFIG` 한 줄.
+#
+# megatron-lm GRPO 는 full 전용(examples/rl 에 LoRA 없음). 8B full RL = TP 샤딩 → 멀티GPU.
+#
+# 사용:
+#   export WANDB_API_KEY=...  HF_TOKEN=...
+#   sky launch -c tfct-grpo-mlm sky/grpo.megatron-lm.sky.yaml --gpus A100:8 \
+#     --env WANDB_API_KEY --env HF_TOKEN
+#   sky logs tfct-grpo-mlm            # 로그 스트리밍
+#   sky down tfct-grpo-mlm            # 끝나면 파기 (idle 과금 방지)
+#
+# ⚠️ HF→mcore 변환(qwen3)은 GPU 검증 블로커 — config 의 megatron.mcore_checkpoint 로 미리 변환한
+# ckpt 를 넘기는 게 권장(README/트레이너 NOTE 참조). (멀티노드는 단일 노드 멀티GPU 까지가 이 yaml 범위.)
+
+name: tfct-grpo-mlm
+
+resources:
+  accelerators: A100:8                                 # 8B full RL = 멀티GPU(단일 GPU 불가). 노드에 맞춰 조정
+  use_spot: true                                       # 스팟; 끊기면 SkyPilot 이 자동 복구
+  image_id: docker:ghcr.io/jaegookyou/training-framework-comparison-tutorial/megatron-lm:latest  # SFT 와 동일 megatron-lm 이미지(RL deps 포함)
+
+workdir: .                                             # 이 repo 를 통째로 박스로 업로드 (코드는 런타임에)
+
+envs:
+  CONFIG: configs/grpo/qwen3-8b_gsm8k__megatron-lm__full.yaml
+  WANDB_API_KEY: ""                                    # `--env WANDB_API_KEY` 로 주입
+  HF_TOKEN: ""                                         # `--env HF_TOKEN` 로 주입 (HF Hub push 시)
+
+setup: |
+  pip install -e .                                     # 코드만 (무거운 deps 는 image 에 이미 있음)
+
+run: |
+  tfct-run --config $CONFIG

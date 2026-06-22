@@ -52,5 +52,13 @@ RUN echo '' >> /opt/Megatron-LM/examples/post_training/modelopt/finetune.py \
 RUN sed -i 's|TOKENIZER_MODEL=${HF_MODEL_CKPT}|TOKENIZER_MODEL=${TOKENIZER_MODEL:-${HF_MODEL_CKPT}}|' \
         /opt/Megatron-LM/examples/post_training/modelopt/conf/Qwen/Qwen3-8B.sh
 
+# RL(examples/rl, 네이티브 GRPO) 추가 deps. Megatron-LM 은 한 프레임워크 = 한 이미지지만 두
+# 사후학습 진입점(SFT=post_training/modelopt, GRPO=examples/rl)을 함께 담는다. examples/rl README
+# 가 요구하는 uvloop·evaluate + math_agent.py 의 import-time assert 가 요구하는 math-verify
+# (우리 TfctGSM8KAgent 는 get_reward 를 오버라이드해 실제 math_verify 채점은 안 쓰지만 import 됨).
+# flask-restful·datasets·diskcache 는 위에서 이미 설치됨. 핀 = PyPI 확인값(추정 아님; evaluate 는
+# datasets>=2.0 만 요구 → 위 5.0.0 과 호환).
+RUN pip install "uvloop==0.22.1" "evaluate==0.4.6" "math-verify==0.9.0"
+
 # repo 연결: 이 LABEL 이 패키지를 GitHub repo 의 Packages 에 붙이고 visibility 를 상속시킨다.
 LABEL org.opencontainers.image.source=https://github.com/jaegookyou/training-framework-comparison-tutorial

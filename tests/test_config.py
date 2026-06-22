@@ -25,6 +25,7 @@ GRPO_UNSLOTH_LORA = CONFIGS / "grpo" / "qwen3-8b_gsm8k__unsloth__lora.yaml"
 GRPO_VERL_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__verl__full.yaml"
 GRPO_VERL_LORA = CONFIGS / "grpo" / "qwen3-8b_gsm8k__verl__lora.yaml"
 GRPO_SLIME_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__slime__full.yaml"
+GRPO_MEGATRON_LM_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__megatron-lm__full.yaml"
 
 
 def test_extends_inherits_base():
@@ -276,6 +277,24 @@ def test_grpo_slime_full_only_config():
     assert cfg.run_name() == "grpo-Qwen3-8B-Base-gsm8k-slime-full"
 
 
+def test_grpo_megatron_lm_full_only_config():
+    cfg = RunConfig.from_file(GRPO_MEGATRON_LM_FULL)
+    assert cfg.framework == "megatron-lm"
+    assert cfg.method == "grpo"
+    assert cfg.tuning == "full"  # examples/rl 에 LoRA 없음 → full 전용(lora config 없음)
+    assert cfg.image.endswith("/megatron-lm:latest")
+    # _base 공통 축 상속 (모델/데이터/reward = 다른 GRPO 와 동일, 통제비교)
+    assert cfg.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert cfg.section("dataset")["source"] == "gsm8k"
+    assert cfg.section("reward")["name"] == "gsm8k"
+    assert cfg.section("hp")["num_generations"] == 8
+    # Megatron 고유 knob (examples/rl train_rl)
+    assert cfg.section("megatron")["model_script"] == "qwen3_8b"
+    assert cfg.section("megatron")["tensor_model_parallel_size"] == 8
+    assert cfg.section("scale")["gpus"] == 8
+    assert cfg.run_name() == "grpo-Qwen3-8B-Base-gsm8k-megatron-lm-full"
+
+
 def test_dispatch_namespaced_by_method():
     from training_framework_comparison_tutorial.run import TRAINERS
 
@@ -289,6 +308,7 @@ def test_dispatch_namespaced_by_method():
     assert TRAINERS["grpo"]["trl"].endswith("trl_grpo")
     assert TRAINERS["dpo"]["unsloth"].endswith("unsloth_dpo")
     assert TRAINERS["grpo"]["unsloth"].endswith("unsloth_grpo")
-    # GRPO 가로비교: verl(ray main_ppo) · slime(ray train.py, SGLang+Megatron)
+    # GRPO 가로비교: verl(ray main_ppo) · slime(ray train.py) · megatron-lm(네이티브 train_rl)
     assert TRAINERS["grpo"]["verl"].endswith("verl_grpo")
     assert TRAINERS["grpo"]["slime"].endswith("slime_grpo")
+    assert TRAINERS["grpo"]["megatron-lm"].endswith("megatron_lm_grpo")

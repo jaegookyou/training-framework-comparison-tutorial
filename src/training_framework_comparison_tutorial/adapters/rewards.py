@@ -12,9 +12,12 @@
   reward_model.ground_truth). data_source 로 태스크별 scorer 를 라우팅한다.
 - **slime --custom-rm-path**: `async def slime_rm(args, sample) -> float`. slime Sample 객체에서
   sample.response(생성)·sample.label(정답)·sample.metadata(data_source 라우팅 키)를 읽는다.
+- **megatron-lm 환경 에이전트**: megatron_rl.gsm8k_agent.TfctGSM8KAgent.get_reward 가 gsm8k_score
+  를 직접 호출한다(verl/slime 처럼 _SCALAR_SCORERS 라우팅이 아니라 gsm8k 1:1 — 에이전트 자체가
+  태스크별이라). 같은 채점 코어(gsm8k_score) 공유 = 통제 변수.
 
-verl·slime 은 같은 스칼라 scorer 레지스트리(_SCALAR_SCORERS)를 공유한다 — 노출 시그니처만 다르고
-채점 로직은 동일(통제 변수).
+verl·slime 은 같은 스칼라 scorer 레지스트리(_SCALAR_SCORERS)를 공유하고, megatron-lm 에이전트는
+gsm8k_score 를 직접 쓴다 — 노출 시그니처만 다르고 채점 로직은 동일(통제 변수).
 """
 
 from __future__ import annotations

@@ -1,0 +1,21 @@
+extends: _base.yaml
+
+framework: megatron-lm
+tuning: full                  # examples/rl 에 LoRA 경로 없음(full RL 전용) → lora config 없음
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/megatron-lm:latest
+
+# Megatron 고유 knob (다른 프레임워크엔 없는 축). arch args 는 Megatron-LM repo 의
+# examples/rl/model_configs/<model_script>.sh 가 제공(NVIDIA 유지보수) — 우리는 가리키기만.
+megatron:
+  model_script: qwen3_8b                # examples/rl/model_configs/qwen3_8b.sh (Qwen3-8B arch, tokenizer Qwen/Qwen3-8B, vocab 151936)
+  tensor_model_parallel_size: 8         # 8B full RL = TP 샤딩(노드 내). TP×PP×DP = gpus
+  pipeline_model_parallel_size: 1
+  grpo_prompts_per_step: 64             # GRPO 라운드당 프롬프트 수(× num_generations = rollout 수)
+  global_batch_size: 256                # 정책 갱신 batch
+  micro_batch_size: 1                   # per-GPU micro batch(RL 학습 step)
+  # mcore_checkpoint: /path/to/qwen3-8b-mcore   # 미리 변환한 mcore ckpt(권장). 미지정 시 convert.py 호출(⚠️ qwen3 미지원 — GPU 검증)
+  # convert_model_size: qwen2.5          # convert.py --model-size (loader_llama_mistral 는 qwen2.5 까지) — GPU 에서 확정
+
+scale:
+  nodes: 1
+  gpus: 8
