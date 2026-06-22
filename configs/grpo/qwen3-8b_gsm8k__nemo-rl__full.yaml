@@ -1,0 +1,15 @@
+extends: _base.yaml
+
+framework: nemo-rl
+tuning: full
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/nemo-rl:latest
+
+# NeMo-RL 고유 knob (다른 프레임워크는 안 씀 → _base 아니라 여기에만).
+# NeMo example config 을 기준으로 우리 통제 변수(model/data/배치/lora/출력)만 Hydra override.
+nemo:
+  base_config: grpo_math_8B.yaml   # NeMo examples/configs/ 의 GRPO 8B 템플릿
+  backend: dtensor                 # FSDP2(8B 단노드). reward=커스텀 env(tfct_gsm8k, gsm8k_score 공유)
+
+scale:
+  nodes: 1
+  gpus: 8                          # 8B full GRPO = 정책+vllm rollout → 멀티GPU

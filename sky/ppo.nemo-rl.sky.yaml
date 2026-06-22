@@ -1,0 +1,31 @@
+# tfct PPO 런 (NeMo-RL) — SkyPilot task.
+#
+# NeMo-RL PPO(critic/value + GAE, megatron 백엔드). 런치는 tfct-run 이 nemo_rl_env.launch(커스텀
+# reward 환경 등록) → examples/run_ppo.py 를 내부에서 띄운다. reward = tfct_gsm8k(gsm8k_score 공유 =
+# verl·slime PPO 와 통제 변수). full 전용(NeMo PPO LoRA 없음) → A100×8.
+#
+# 사용:
+#   export WANDB_API_KEY=...  HF_TOKEN=...
+#   sky launch -c tfct-ppo-nemo sky/ppo.nemo-rl.sky.yaml --gpus A100:8 \
+#     --env WANDB_API_KEY --env HF_TOKEN
+#   sky down tfct-ppo-nemo
+
+name: tfct-ppo-nemo
+
+resources:
+  accelerators: A100:8
+  use_spot: true
+  image_id: docker:ghcr.io/jaegookyou/training-framework-comparison-tutorial/nemo-rl:latest
+
+workdir: .
+
+envs:
+  CONFIG: configs/ppo/qwen3-8b_gsm8k__nemo-rl__full.yaml
+  WANDB_API_KEY: ""
+  HF_TOKEN: ""
+
+setup: |
+  pip install -e .          # NeMo 는 uv 환경 — 필요 시 `uv pip install -e .`(GPU 빌드 때 확정)
+
+run: |
+  tfct-run --config $CONFIG

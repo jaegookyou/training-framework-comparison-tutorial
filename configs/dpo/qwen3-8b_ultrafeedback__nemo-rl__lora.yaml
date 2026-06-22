@@ -1,0 +1,17 @@
+extends: _base.yaml
+
+framework: nemo-rl
+tuning: lora                  # NeMo DTensor v2 의 lora_cfg(lora.md: DPO 지원)
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/nemo-rl:latest
+
+# LoRA DPO 는 어댑터만 학습 → full 보다 큰 lr (trl/unsloth DPO lora 와 동일 눈금 5e-6).
+hp:
+  learning_rate: 5.0e-6
+
+nemo:
+  base_config: dpo.yaml
+  backend: dtensor
+
+scale:
+  nodes: 1
+  gpus: 1

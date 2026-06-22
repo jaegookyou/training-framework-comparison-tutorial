@@ -51,29 +51,32 @@ Vast.ai 백엔드는 계정 페이지의 API 키를 `~/.config/vastai/vast_api_k
 현재 구현:
 - **SFT**: TRL(full|lora) · Unsloth(full|lora·단일 GPU) · verl(full|lora·hydra+torchrun) ·
   Megatron-LM(full·convert→finetune→export) · Megatron-Bridge(full|lora·HF↔mcore 브리지+네이티브
-  PEFT) · torchtitan(full·nightly SHA 핀·ChatDataset, 이미지 박제로 재현). reasoning 트랙
-  (Qwen3-8B-Base + TraceInversion).
-- **DPO**(offline preference): TRL(full|lora) · Unsloth(full|lora·단일 GPU). trl-lib/ultrafeedback_binarized.
+  PEFT) · torchtitan(full·nightly SHA 핀·ChatDataset, 이미지 박제로 재현) · NeMo-RL(full|lora·DTensor).
+  reasoning 트랙 (Qwen3-8B-Base + TraceInversion).
+- **DPO**(offline preference): TRL(full|lora) · Unsloth(full|lora·단일 GPU) · NeMo-RL(full|lora·헤비/
+  DTensor). trl-lib/ultrafeedback_binarized.
 - **Online DPO**(online preference, on-policy): TRL(full|lora). 같은 DPO loss 지만 선호쌍을 학습
   중 생성→reward model 채점→쌍 구성. prompt-only(trl-lib/ultrafeedback-prompt) + 커뮤니티 RM
   (Skywork-Reward-V2). offline↔online DPO 비교 = 같은 ultrafeedback 도메인, "쌍을 미리 굽냐/즉석에
   만드냐"만 차이(OAIF 셋업). Unsloth 는 online DPO 네이티브 경로 부재 → TRL 단독.
 - **GRPO**(online RL): TRL(full|lora) · Unsloth(full|lora·단일 GPU·vllm 내장 fast_inference) ·
   verl(full|lora·ray main_ppo·vllm rollout) · slime(full·ray train.py·SGLang 롤아웃+Megatron 학습) ·
-  Megatron-LM(full·examples/rl train_rl.py 네이티브 GRPO·환경 에이전트). openai/gsm8k + reward
-  (정답 일치+형식). RL 트랙 기준점 = TRL, GRPO 가로비교를 verl·slime·megatron-lm 으로 확장(셋 다
-  GRPO 본진 — verl=vllm+FSDP/Megatron, slime=SGLang+Megatron, megatron-lm=네이티브 train_rl).
-  reward 는 태스크 1:1 채점 코어를 공유하되 규약별로 노출(TRL=list 반환 / verl=compute_score /
-  slime=async slime_rm / megatron-lm=환경 에이전트 get_reward). TRL GRPO 는 vllm rollout 필요
-  (이미지 추가 TODO) — Unsloth·verl·slime 은 내장. slime·megatron-lm 은 full 전용(examples/rl 에
-  LoRA 없음). megatron-lm 은 SFT(post_training/modelopt)와 GRPO(examples/rl)가 한 이미지·두 진입점.
+  Megatron-LM(full·examples/rl train_rl.py 네이티브 GRPO·환경 에이전트) · NeMo-RL(full|lora·DTensor·
+  커스텀 환경). openai/gsm8k + reward (정답 일치+형식). RL 트랙 기준점 = TRL, GRPO 가로비교를
+  verl·slime·megatron-lm·nemo-rl 으로 확장(전부 GRPO 본진). reward 는 태스크 1:1 채점 코어를 공유하되
+  규약별로 노출(TRL=list 반환 / verl=compute_score / slime=async slime_rm / megatron-lm=환경 에이전트
+  get_reward / nemo-rl=커스텀 environment step). TRL GRPO 는 vllm rollout 필요(이미지 추가 TODO) —
+  Unsloth·verl·slime 은 내장. slime·megatron-lm 은 full 전용(examples/rl 에 LoRA 없음), nemo-rl 은
+  full|lora(DTensor v2 lora_cfg). megatron-lm 은 SFT(post_training/modelopt)와 GRPO(examples/rl)가
+  한 이미지·두 진입점.
 - **PPO**(online RL): verl(full|lora·ray main_ppo·vllm rollout) · slime(full·SGLang 롤아웃+Megatron
-  학습·role-tagged critic config). GRPO 와 같은 진입점·데이터·reward(openai/gsm8k + rule 채점 코어
-  공유 = 통제비교)지만 **critic(value model)으로 GAE advantage 를 추정**한다(verl=adv_estimator=gae /
-  slime=advantage-estimator=ppo, GRPO 의 그룹 정규화와 다름). KL 은 reward 페널티로(GRPO 는 loss 의
-  KL), 프롬프트당 1개 응답(그룹 불필요). verl 은 actor·critic 둘 다 lora 가능, slime 은 full 전용.
-  PPO 가로비교는 **verl·slime 로 확정**(GRPO 의 네이티브 헤비 쌍). PPO 는 critic 까지 굴리는 무거운
-  알고리즘이라 **대규모 RL 인프라(verl·slime)에만** 1급으로 있고, 경량/신생/general 프레임워크는
+  학습·role-tagged critic config) · NeMo-RL(full·megatron·커스텀 환경). GRPO 와 같은 진입점·데이터·
+  reward(openai/gsm8k + rule 채점 코어 공유 = 통제비교)지만 **critic(value model)으로 GAE advantage 를
+  추정**한다(verl=adv_estimator=gae / slime=advantage-estimator=ppo / nemo-rl=run_ppo, GRPO 의 그룹
+  정규화와 다름). KL 은 reward 페널티로(GRPO 는 loss 의 KL), 프롬프트당 1개 응답(그룹 불필요). verl 은
+  actor·critic 둘 다 lora 가능, slime·nemo-rl 은 full 전용(NeMo lora.md: LoRA 는 SFT/GRPO/DPO 만).
+  PPO 가로비교는 **verl·slime·nemo-rl**(전부 대규모 RL 인프라). PPO 는 critic 까지 굴리는 무거운
+  알고리즘이라 **대규모 RL 인프라에만** 1급으로 있고, 경량/신생/general 프레임워크는
   GRPO·DPO 로 수렴해 PPO 를 건너뛴다(넓은 가로비교는 SFT·GRPO·DPO 가 담당, PPO 는 인프라 서사 +
   같은 프레임워크 내 GRPO↔PPO 알고리즘 비교가 가치). 그래서 PPO 칸의 빈자리는 누락이 아니라 설계상
   배제다: **Unsloth·megatron-lm·torchtitan·megatron-bridge 는 네이티브 PPO 자체가 없고**, **TRL 은

@@ -1,0 +1,14 @@
+extends: _base.yaml
+
+framework: nemo-rl
+tuning: full
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/nemo-rl:latest
+
+# SFT 통제비교에 대규모 인프라 축 추가. 데이터=TraceInversion(다른 SFT 와 동일 = 통제비교).
+nemo:
+  base_config: sft.yaml         # NeMo SFT 템플릿. data_path 로 TraceInversion 인제스트
+  backend: dtensor
+
+scale:
+  nodes: 1
+  gpus: 8                       # 8B full SFT = 샤딩 → 멀티GPU

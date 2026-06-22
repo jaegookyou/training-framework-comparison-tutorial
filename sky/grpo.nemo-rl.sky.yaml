@@ -1,0 +1,34 @@
+# tfct GRPO 런 (NeMo-RL) — SkyPilot task.
+#
+# NeMo-RL = NVIDIA 종합 RL 툴킷. 런치는 우리 entrypoint(tfct-run)가 RunConfig 를 NeMo Hydra override
+# 로 번역해 nemo_rl_env.launch(커스텀 reward 환경 등록) → examples/run_grpo.py 를 내부에서 띄운다.
+# reward = 커스텀 환경(tfct_gsm8k, gsm8k_score 공유 = 통제 변수). full 은 A100×8 권장.
+#
+# 사용:
+#   export WANDB_API_KEY=...  HF_TOKEN=...
+#   # LoRA (A100×1):
+#   sky launch -c tfct-grpo-nemo sky/grpo.nemo-rl.sky.yaml --env WANDB_API_KEY --env HF_TOKEN
+#   # full (A100×8):
+#   sky launch -c tfct-grpo-nemo sky/grpo.nemo-rl.sky.yaml --gpus A100:8 \
+#     --env CONFIG=configs/grpo/qwen3-8b_gsm8k__nemo-rl__full.yaml --env WANDB_API_KEY --env HF_TOKEN
+#   sky down tfct-grpo-nemo
+
+name: tfct-grpo-nemo
+
+resources:
+  accelerators: A100:1
+  use_spot: true
+  image_id: docker:ghcr.io/jaegookyou/training-framework-comparison-tutorial/nemo-rl:latest
+
+workdir: .
+
+envs:
+  CONFIG: configs/grpo/qwen3-8b_gsm8k__nemo-rl__lora.yaml
+  WANDB_API_KEY: ""
+  HF_TOKEN: ""
+
+setup: |
+  pip install -e .          # NeMo 는 uv 환경 — 필요 시 `uv pip install -e .`(GPU 빌드 때 확정)
+
+run: |
+  tfct-run --config $CONFIG

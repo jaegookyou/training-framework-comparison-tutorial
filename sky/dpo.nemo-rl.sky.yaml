@@ -1,0 +1,34 @@
+# tfct DPO 런 (NeMo-RL) — SkyPilot task.
+#
+# NeMo-RL offline DPO(헤비/DTensor). 런치는 tfct-run 이 RunConfig 를 Hydra override 로 번역해
+# examples/run_dpo.py 를 내부에서 띄운다(offline 이라 reward 환경 없음 → 런처 없이 직접). 데이터=
+# ultrafeedback_binarized(다른 DPO 와 동일 도메인 = 통제비교).
+#
+# 사용:
+#   export WANDB_API_KEY=...  HF_TOKEN=...
+#   # LoRA (A100×1):
+#   sky launch -c tfct-dpo-nemo sky/dpo.nemo-rl.sky.yaml --env WANDB_API_KEY --env HF_TOKEN
+#   # full (A100×8):
+#   sky launch -c tfct-dpo-nemo sky/dpo.nemo-rl.sky.yaml --gpus A100:8 \
+#     --env CONFIG=configs/dpo/qwen3-8b_ultrafeedback__nemo-rl__full.yaml --env WANDB_API_KEY --env HF_TOKEN
+#   sky down tfct-dpo-nemo
+
+name: tfct-dpo-nemo
+
+resources:
+  accelerators: A100:1
+  use_spot: true
+  image_id: docker:ghcr.io/jaegookyou/training-framework-comparison-tutorial/nemo-rl:latest
+
+workdir: .
+
+envs:
+  CONFIG: configs/dpo/qwen3-8b_ultrafeedback__nemo-rl__lora.yaml
+  WANDB_API_KEY: ""
+  HF_TOKEN: ""
+
+setup: |
+  pip install -e .          # NeMo 는 uv 환경 — 필요 시 `uv pip install -e .`(GPU 빌드 때 확정)
+
+run: |
+  tfct-run --config $CONFIG

@@ -1,0 +1,17 @@
+extends: _base.yaml
+
+framework: nemo-rl
+tuning: lora                  # NeMo DTensor v2 의 lora_cfg(lora.md: SFT 지원)
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/nemo-rl:latest
+
+# LoRA SFT 는 어댑터만 학습 → full 보다 큰 lr (trl/unsloth/verl SFT lora 와 동일 눈금 2e-4).
+hp:
+  learning_rate: 2.0e-4
+
+nemo:
+  base_config: sft.yaml
+  backend: dtensor
+
+scale:
+  nodes: 1
+  gpus: 1

@@ -1,0 +1,15 @@
+extends: _base.yaml
+
+framework: nemo-rl
+tuning: full                  # NeMo PPO 는 full 전용(lora.md: LoRA 는 SFT/GRPO/DPO 만)
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/nemo-rl:latest
+
+# NeMo PPO example 은 megatron 백엔드(critic/value + GAE). 우리는 model 을 8B 로 override.
+# reward = 커스텀 env(tfct_gsm8k, gsm8k_score 공유 = verl·slime PPO 와 통제 변수).
+nemo:
+  base_config: ppo_math_1B_megatron.yaml   # NeMo PPO 템플릿(megatron). model 만 8B 로 덮음
+  backend: megatron
+
+scale:
+  nodes: 1
+  gpus: 8                      # 8B full PPO = 정책+critic+rollout → 멀티GPU

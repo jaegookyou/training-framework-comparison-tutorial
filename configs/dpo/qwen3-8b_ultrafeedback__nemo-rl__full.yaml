@@ -1,0 +1,14 @@
+extends: _base.yaml
+
+framework: nemo-rl
+tuning: full
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/nemo-rl:latest
+
+# offline DPO 가로비교에 대규모 인프라 축 추가(TRL·Unsloth 경량 대비). 데이터=ultrafeedback(동일 도메인).
+nemo:
+  base_config: dpo.yaml         # NeMo DPO 템플릿. data_path 로 ultrafeedback_binarized 인제스트
+  backend: dtensor
+
+scale:
+  nodes: 1
+  gpus: 8                       # 8B full DPO = 정책+ref 샤딩 → 멀티GPU
