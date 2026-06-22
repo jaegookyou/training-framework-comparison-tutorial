@@ -1,10 +1,15 @@
+import asyncio
+import types
+
 import pytest
 
 from training_framework_comparison_tutorial.adapters import (
+    compute_score,
     get_format,
     get_reward_funcs,
     get_source,
     normalize_messages,
+    slime_rm,
 )
 
 
@@ -114,6 +119,60 @@ def test_unsloth_reuses_trl_rl_formats():
     assert get_format("grpo", "unsloth") is get_format("grpo", "trl")
 
 
+def test_verl_grpo_uses_reward_model_ground_truth():
+    # verl 은 정답을 kwargs 가 아니라 parquet 의 reward_model.ground_truth 로 받는다(별도 포맷).
+    row = {"question": "2+2?", "answer": "...\n#### 4"}
+    example = get_source("gsm8k")(row)
+    formatted = get_format("grpo", "verl")(example)
+    assert formatted["prompt"] == example["prompt"]
+    assert formatted["reward_model"] == {"style": "rule", "ground_truth": "4"}
+    assert "answer" not in formatted  # TRL 포맷과 달리 answer 컬럼 없음
+
+
 def test_unknown_reward_raises():
     with pytest.raises(ValueError):
         get_reward_funcs("nope")
+
+
+# --- verl reward 규약 (compute_score) ---
+
+
+def test_verl_compute_score_matches_trl_sum():
+    # verl 스칼라 = TRL correctness+format 합과 동일 채점 코어(통제 변수).
+    assert compute_score("gsm8k", "reasoning... #### 4", "4") == pytest.approx(1.1)  # 정답+형식
+    assert compute_score("gsm8k", "answer is \\boxed{5}", "4") == pytest.approx(0.1)  # 오답+형식
+    assert compute_score("gsm8k", "just 4 somewhere", "4") == pytest.approx(1.0)  # 정답·형식없음
+
+
+def test_verl_compute_score_unknown_data_source_raises():
+    with pytest.raises(ValueError):
+        compute_score("nope", "x", "1")
+
+
+# --- slime ---
+
+
+def test_slime_grpo_uses_prompt_and_label():
+    # slime 은 --input-key prompt / --label-key label → prompt 체인 + label 정답.
+    row = {"question": "2+2?", "answer": "...\n#### 4"}
+    example = get_source("gsm8k")(row)
+    formatted = get_format("grpo", "slime")(example)
+    assert formatted == {"prompt": example["prompt"], "label": "4"}
+
+
+def test_slime_rm_matches_scoring_core():
+    # slime Sample(response/label/metadata) → verl/TRL 과 동일 채점 코어, async 규약.
+    def sample(response: str) -> types.SimpleNamespace:
+        return types.SimpleNamespace(
+            response=response, label="4", metadata={"data_source": "gsm8k"}
+        )
+
+    assert asyncio.run(slime_rm(None, sample("reasoning... #### 4"))) == pytest.approx(1.1)
+    assert asyncio.run(slime_rm(None, sample("answer is \\boxed{5}"))) == pytest.approx(0.1)
+    assert asyncio.run(slime_rm(None, sample("just 4 somewhere"))) == pytest.approx(1.0)
+
+
+def test_slime_rm_unknown_data_source_raises():
+    bad = types.SimpleNamespace(response="x", label="1", metadata={"data_source": "nope"})
+    with pytest.raises(ValueError):
+        asyncio.run(slime_rm(None, bad))

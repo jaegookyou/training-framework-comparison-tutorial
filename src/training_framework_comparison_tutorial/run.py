@@ -35,6 +35,8 @@ TRAINERS: dict[str, dict[str, str]] = {
     "grpo": {
         "trl": f"{_PKG}.trl_grpo",
         "unsloth": f"{_PKG}.unsloth_grpo",
+        "verl": f"{_PKG}.verl_grpo",
+        "slime": f"{_PKG}.slime_grpo",
     },
 }
 

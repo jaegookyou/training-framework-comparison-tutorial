@@ -1,0 +1,17 @@
+extends: _base.yaml
+
+framework: verl
+tuning: lora                  # verl 은 actor_rollout_ref.model.lora_rank>0 으로 LoRA
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/verl:latest
+
+# LoRA GRPO 는 어댑터만 학습 → full 보다 큰 lr (trl/unsloth GRPO lora 와 동일 눈금 1e-5).
+hp:
+  learning_rate: 1.0e-5
+
+verl:
+  rollout_tp: 1
+  gpu_memory_utilization: 0.6   # lora 면 1 카드에서 정책+vllm 공유 → 보수적
+
+scale:
+  nodes: 1
+  gpus: 1

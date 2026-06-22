@@ -22,6 +22,9 @@ DPO_UNSLOTH_FULL = CONFIGS / "dpo" / "qwen3-8b_ultrafeedback__unsloth__full.yaml
 DPO_UNSLOTH_LORA = CONFIGS / "dpo" / "qwen3-8b_ultrafeedback__unsloth__lora.yaml"
 GRPO_UNSLOTH_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__unsloth__full.yaml"
 GRPO_UNSLOTH_LORA = CONFIGS / "grpo" / "qwen3-8b_gsm8k__unsloth__lora.yaml"
+GRPO_VERL_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__verl__full.yaml"
+GRPO_VERL_LORA = CONFIGS / "grpo" / "qwen3-8b_gsm8k__verl__lora.yaml"
+GRPO_SLIME_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__slime__full.yaml"
 
 
 def test_extends_inherits_base():
@@ -231,6 +234,48 @@ def test_grpo_unsloth_full_and_lora_configs():
     assert float(lora.section("hp")["learning_rate"]) == 1.0e-5
 
 
+def test_grpo_verl_full_and_lora_configs():
+    full = RunConfig.from_file(GRPO_VERL_FULL)
+    assert full.framework == "verl"
+    assert full.method == "grpo"
+    assert full.tuning == "full"
+    assert full.image.endswith("/verl:latest")
+    # _base 공통 축 상속 (모델/데이터/reward = TRL·Unsloth GRPO 와 동일, 통제비교)
+    assert full.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert full.section("dataset")["source"] == "gsm8k"
+    assert full.section("reward")["name"] == "gsm8k"
+    assert full.section("hp")["num_generations"] == 8
+    # verl 고유 knob (vllm rollout)
+    assert full.section("verl")["rollout_tp"] == 1
+    assert full.section("scale")["gpus"] == 8
+    assert full.run_name() == "grpo-Qwen3-8B-Base-gsm8k-verl-full"
+
+    lora = RunConfig.from_file(GRPO_VERL_LORA)
+    assert lora.tuning == "lora"
+    assert lora.section("scale")["gpus"] == 1
+    # lora run 이 _base GRPO lr 을 override (trl/unsloth GRPO lora 와 동일 눈금 1e-5)
+    assert float(lora.section("hp")["learning_rate"]) == 1.0e-5
+    assert lora.run_name() == "grpo-Qwen3-8B-Base-gsm8k-verl-lora"
+
+
+def test_grpo_slime_full_only_config():
+    cfg = RunConfig.from_file(GRPO_SLIME_FULL)
+    assert cfg.framework == "slime"
+    assert cfg.method == "grpo"
+    assert cfg.tuning == "full"  # slime 은 full RL 전용(base slime LoRA 없음 → lora config 없음)
+    assert cfg.image.endswith("/slime:latest")
+    # _base 공통 축 상속 (모델/데이터/reward = 다른 GRPO 와 동일, 통제비교)
+    assert cfg.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert cfg.section("dataset")["source"] == "gsm8k"
+    assert cfg.section("reward")["name"] == "gsm8k"
+    assert cfg.section("hp")["num_generations"] == 8
+    # slime 고유 knob (SGLang+Megatron)
+    assert cfg.section("slime")["model_script"] == "qwen3-8B"
+    assert cfg.section("slime")["tensor_model_parallel_size"] == 2
+    assert cfg.section("scale")["gpus"] == 8
+    assert cfg.run_name() == "grpo-Qwen3-8B-Base-gsm8k-slime-full"
+
+
 def test_dispatch_namespaced_by_method():
     from training_framework_comparison_tutorial.run import TRAINERS
 
@@ -244,3 +289,6 @@ def test_dispatch_namespaced_by_method():
     assert TRAINERS["grpo"]["trl"].endswith("trl_grpo")
     assert TRAINERS["dpo"]["unsloth"].endswith("unsloth_dpo")
     assert TRAINERS["grpo"]["unsloth"].endswith("unsloth_grpo")
+    # GRPO 가로비교: verl(ray main_ppo) · slime(ray train.py, SGLang+Megatron)
+    assert TRAINERS["grpo"]["verl"].endswith("verl_grpo")
+    assert TRAINERS["grpo"]["slime"].endswith("slime_grpo")

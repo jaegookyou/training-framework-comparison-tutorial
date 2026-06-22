@@ -1,0 +1,36 @@
+# tfct GRPO 런 (slime) — SkyPilot task.
+#
+# slime = SGLang 롤아웃 + Megatron 학습 RL 프레임워크. 학습은 ray + train.py(bash arch args)지만,
+# 런치는 우리 entrypoint(tfct-run)가 RunConfig 를 slime args 로 번역해 ray job submit 을 내부에서
+# 띄운다 → 이 run 블록은 다른 sky 와 동일하게 `tfct-run --config $CONFIG` 한 줄.
+#
+# slime 은 full RL 전용(LoRA 없음) → lora config 없음. 8B full = Megatron 샤딩 + SGLang → 멀티GPU.
+#
+# 사용:
+#   export WANDB_API_KEY=...  HF_TOKEN=...
+#   sky launch -c tfct-grpo-slime sky/grpo.slime.sky.yaml --gpus A100:8 \
+#     --env WANDB_API_KEY --env HF_TOKEN
+#   sky logs tfct-grpo-slime            # 로그 스트리밍
+#   sky down tfct-grpo-slime            # 끝나면 파기 (idle 과금 방지)
+#
+# (멀티노드 3단계는 slime ray 멀티노드 배선 필요 — 단일 노드 멀티GPU 까지가 이 yaml 범위.)
+
+name: tfct-grpo-slime
+
+resources:
+  accelerators: A100:8                                 # 8B full RL = 멀티GPU(단일 GPU 불가). 노드에 맞춰 조정
+  use_spot: true                                       # 스팟; 끊기면 SkyPilot 이 자동 복구
+  image_id: docker:ghcr.io/jaegookyou/training-framework-comparison-tutorial/slime:latest  # slimerl/slime 기반 이미지
+
+workdir: .                                             # 이 repo 를 통째로 박스로 업로드 (코드는 런타임에)
+
+envs:
+  CONFIG: configs/grpo/qwen3-8b_gsm8k__slime__full.yaml
+  WANDB_API_KEY: ""                                    # `--env WANDB_API_KEY` 로 주입
+  HF_TOKEN: ""                                         # `--env HF_TOKEN` 로 주입 (HF Hub push 시)
+
+setup: |
+  pip install -e .                                     # 코드만 (무거운 deps 는 image 에 이미 있음)
+
+run: |
+  tfct-run --config $CONFIG

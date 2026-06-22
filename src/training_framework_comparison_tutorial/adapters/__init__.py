@@ -6,8 +6,16 @@
 from __future__ import annotations
 
 from .chat_template import CHAT_TEMPLATES, REASONING_CHATML, resolve_chat_template
-from .formats import FORMATS, get_format, to_trl, to_trl_dpo, to_trl_grpo
-from .rewards import REWARDS, get_reward_funcs
+from .formats import (
+    FORMATS,
+    get_format,
+    to_slime_grpo,
+    to_trl,
+    to_trl_dpo,
+    to_trl_grpo,
+    to_verl_grpo,
+)
+from .rewards import REWARDS, compute_score, get_reward_funcs, slime_rm
 from .schema import (
     Message,
     PreferenceExample,
@@ -35,6 +43,7 @@ __all__ = [
     "PreferenceExample",
     "RLPromptExample",
     "SFTExample",
+    "compute_score",
     "from_gsm8k",
     "from_traceinversion",
     "from_ultrafeedback",
@@ -45,7 +54,10 @@ __all__ = [
     "normalize_preference",
     "normalize_rl_prompt",
     "resolve_chat_template",
+    "slime_rm",
+    "to_slime_grpo",
     "to_trl",
     "to_trl_dpo",
     "to_trl_grpo",
+    "to_verl_grpo",
 ]

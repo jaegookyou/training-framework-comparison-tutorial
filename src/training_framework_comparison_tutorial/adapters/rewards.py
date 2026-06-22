@@ -1,13 +1,20 @@
 """GRPO reward 함수 — on-policy RL 의 채점기.
 
 통제비교에서 reward 는 **고정 변수**다(데이터·모델·HP 와 함께). 그래서 프레임워크가 아니라
-태스크(gsm8k)에 1:1 로 묶어 한 곳에 정의하고, TRL·verl·megatron-lm 이 같은 함수를 재사용한다.
+태스크(gsm8k)에 1:1 로 묶어 한 곳에 정의하고, TRL·verl 이 같은 **채점 코어**를 공유한다.
 
-TRL GRPOTrainer 규약: reward 함수는 `f(completions, **kwargs) -> list[float]`.
-- completions: 그룹 rollout. conversational 이면 각 원소가
-  [{role:assistant, content}] 메시지 리스트.
-- kwargs: 데이터셋의 여분 컬럼(여기선 `answer`)이 그대로 전달된다
-  (adapters.formats.to_trl_grpo 가 통과시킴).
+프레임워크마다 reward 호출 규약이 달라 노출 형태가 둘이다(채점 로직은 공유 = 통제 변수):
+- **TRL GRPOTrainer**: `f(completions, **kwargs) -> list[float]`.
+  - completions: 그룹 rollout. conversational 이면 각 원소가 [{role:assistant, content}] 리스트.
+  - kwargs: 데이터셋 여분 컬럼(여기선 `answer`)이 그대로 전달(adapters.formats.to_trl_grpo 통과).
+- **verl custom_reward_function**: `compute_score(data_source, solution_str, ground_truth,
+  extra_info=None) -> float`. 샘플 1개씩, solution_str=생성 텍스트, ground_truth=정답(parquet 의
+  reward_model.ground_truth). data_source 로 태스크별 scorer 를 라우팅한다.
+- **slime --custom-rm-path**: `async def slime_rm(args, sample) -> float`. slime Sample 객체에서
+  sample.response(생성)·sample.label(정답)·sample.metadata(data_source 라우팅 키)를 읽는다.
+
+verl·slime 은 같은 스칼라 scorer 레지스트리(_SCALAR_SCORERS)를 공유한다 — 노출 시그니처만 다르고
+채점 로직은 동일(통제 변수).
 """
 
 from __future__ import annotations
@@ -84,3 +91,51 @@ def get_reward_funcs(name: str) -> list[Callable[..., list[float]]]:
         return REWARDS[name]
     except KeyError:
         raise ValueError(f"unknown reward set: {name!r}") from None
+
+
+# --- 스칼라 scorer (verl·slime 공유) ------------------------------------------
+# verl/slime 은 reward 를 sample 당 스칼라로 받는다(TRL 의 list 반환과 시그니처 다름). 같은 태스크의
+# TRL reward 세트 합과 동일한 점수를 내도록 채점 코어를 공유한다(통제 변수).
+
+
+def gsm8k_score(solution_str: str, ground_truth: str) -> float:
+    """gsm8k reward 스칼라 = 정답 일치(1.0) + 형식(0.1). TRL 세트의 합과 동일."""
+    pred = _predicted_answer(solution_str)
+    correct = 1.0 if pred is not None and pred == _norm_number(ground_truth) else 0.0
+    has_format = bool(_BOXED.search(solution_str) or _HASHED.search(solution_str))
+    return correct + (0.1 if has_format else 0.0)
+
+
+# data_source(태스크 라우팅 키) → 스칼라 scorer. REWARDS(TRL) 와 같은 태스크 키를 공유한다.
+_SCALAR_SCORERS: dict[str, Callable[[str, str], float]] = {
+    "gsm8k": gsm8k_score,
+}
+
+
+def compute_score(
+    data_source: str, solution_str: str, ground_truth: str, extra_info: Any = None
+) -> float:
+    """verl custom_reward_function 진입점 — data_source 로 태스크 scorer 를 골라 채점한다.
+
+    trainers/verl_grpo.py 가 이 모듈 파일 경로 + 함수명("compute_score")을
+    custom_reward_function.path/name 으로 verl 에 넘긴다.
+    """
+    scorer = _SCALAR_SCORERS.get(data_source)
+    if scorer is None:
+        raise ValueError(f"no reward scorer for data_source: {data_source!r}")
+    return scorer(solution_str, ground_truth)
+
+
+async def slime_rm(args: Any, sample: Any) -> float:
+    """slime --custom-rm-path 진입점 — Sample 에서 응답·정답·data_source 를 읽어 채점한다.
+
+    trainers/slime_grpo.py 가 "...adapters.rewards.slime_rm" 모듈경로를 --custom-rm-path 로 넘긴다.
+    sample.metadata["data_source"](trainer 가 JSONL 에 주입)로 compute_score 와 같은 scorer 선택.
+    async 인 이유: slime reward 규약이 코루틴(원격 RM·sandbox 채점도 동일 인터페이스).
+    """
+    metadata = getattr(sample, "metadata", None) or {}
+    data_source = metadata.get("data_source")
+    scorer = _SCALAR_SCORERS.get(data_source)
+    if scorer is None:
+        raise ValueError(f"no reward scorer for data_source: {data_source!r}")
+    return scorer(sample.response, sample.label)

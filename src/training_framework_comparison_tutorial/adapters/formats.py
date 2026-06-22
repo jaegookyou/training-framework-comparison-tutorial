@@ -42,6 +42,29 @@ def to_trl_grpo(example: RLPromptExample) -> dict[str, Any]:
     return {"prompt": example["prompt"], "answer": example["answer"]}
 
 
+def to_verl_grpo(example: RLPromptExample) -> dict[str, Any]:
+    """verl RLHFDataset 의 포맷(prompt 체인 + rule-based reward_model).
+
+    TRL 과 달리 verl 은 정답을 reward 함수 kwargs 가 아니라 parquet 의 `reward_model.ground_truth`
+    로 받아 custom_reward_function(adapters.rewards.compute_score)에 넘긴다. reward 라우팅 키인
+    `data_source` 컬럼은 태스크(reward.name)마다 다르므로 여기서 박지 않고 trainer 가 주입한다.
+    """
+    return {
+        "prompt": example["prompt"],
+        "reward_model": {"style": "rule", "ground_truth": example["answer"]},
+    }
+
+
+def to_slime_grpo(example: RLPromptExample) -> dict[str, Any]:
+    """slime JSONL 의 포맷(prompt 체인 + label=정답).
+
+    slime 은 --input-key prompt / --label-key label 로 읽는다. prompt 의 chat template 적용과
+    data_source(metadata) 주입은 trainer 가 한다 — template 은 토크나이저가 필요하고(통제 변수로
+    REASONING_CHATML 을 미리 렌더), data_source 는 reward.name 마다 다르므로.
+    """
+    return {"prompt": example["prompt"], "label": example["answer"]}
+
+
 # NOTE: megatron-lm SFT 는 여기에 없다 — finetune.py 가 HF 데이터셋을 직접 인제스트
 # (--finetune-hf-dataset)하고 SFTDataset 이 자체 messages→conversation 변환을 하므로
 # 우리 row-level format 을 거치지 않는다.
@@ -58,6 +81,8 @@ FORMATS: dict[str, dict[str, Callable[[Any], dict[str, Any]]]] = {
     "grpo": {
         "trl": to_trl_grpo,
         "unsloth": to_trl_grpo,  # unsloth 도 trl GRPOTrainer 래핑 → 동일 prompt+answer 포맷
+        "verl": to_verl_grpo,    # verl 은 reward_model.ground_truth 로 정답 전달 → 별도 포맷
+        "slime": to_slime_grpo,  # slime 은 JSONL prompt + label 키 → 별도 포맷
     },
 }
 
