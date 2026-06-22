@@ -54,6 +54,10 @@ Vast.ai 백엔드는 계정 페이지의 API 키를 `~/.config/vastai/vast_api_k
   PEFT) · torchtitan(full·nightly SHA 핀·ChatDataset, 이미지 박제로 재현). reasoning 트랙
   (Qwen3-8B-Base + TraceInversion).
 - **DPO**(offline preference): TRL(full|lora) · Unsloth(full|lora·단일 GPU). trl-lib/ultrafeedback_binarized.
+- **Online DPO**(online preference, on-policy): TRL(full|lora). 같은 DPO loss 지만 선호쌍을 학습
+  중 생성→reward model 채점→쌍 구성. prompt-only(trl-lib/ultrafeedback-prompt) + 커뮤니티 RM
+  (Skywork-Reward-V2). offline↔online DPO 비교 = 같은 ultrafeedback 도메인, "쌍을 미리 굽냐/즉석에
+  만드냐"만 차이(OAIF 셋업). Unsloth 는 online DPO 네이티브 경로 부재 → TRL 단독.
 - **GRPO**(online RL): TRL(full|lora) · Unsloth(full|lora·단일 GPU·vllm 내장 fast_inference) ·
   verl(full|lora·ray main_ppo·vllm rollout) · slime(full·ray train.py·SGLang 롤아웃+Megatron 학습) ·
   Megatron-LM(full·examples/rl train_rl.py 네이티브 GRPO·환경 에이전트). openai/gsm8k + reward

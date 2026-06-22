@@ -26,6 +26,8 @@ GRPO_VERL_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__verl__full.yaml"
 GRPO_VERL_LORA = CONFIGS / "grpo" / "qwen3-8b_gsm8k__verl__lora.yaml"
 GRPO_SLIME_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__slime__full.yaml"
 GRPO_MEGATRON_LM_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__megatron-lm__full.yaml"
+ONLINE_DPO_TRL_FULL = CONFIGS / "online_dpo" / "qwen3-8b_ultrafeedback__trl__full.yaml"
+ONLINE_DPO_TRL_LORA = CONFIGS / "online_dpo" / "qwen3-8b_ultrafeedback__trl__lora.yaml"
 
 
 def test_extends_inherits_base():
@@ -295,6 +297,28 @@ def test_grpo_megatron_lm_full_only_config():
     assert cfg.run_name() == "grpo-Qwen3-8B-Base-gsm8k-megatron-lm-full"
 
 
+def test_online_dpo_trl_full_and_lora_configs():
+    full = RunConfig.from_file(ONLINE_DPO_TRL_FULL)
+    assert full.framework == "trl"
+    assert full.method == "online_dpo"
+    assert full.tuning == "full"
+    assert full.image.endswith("/trl:latest")
+    # online DPO = prompt-only ultrafeedback + reward model (offline DPO 와 같은 도메인, on-policy).
+    assert full.section("dataset")["source"] == "ultrafeedback_prompt"
+    assert full.section("dataset")["hf_path"] == "trl-lib/ultrafeedback-prompt"
+    assert "Skywork" in full.section("reward")["model"]
+    # offline DPO 와 같은 DPO 눈금(lr/beta) + 생성 관련 HP
+    assert full.section("hp")["beta"] == 0.1
+    assert full.section("hp")["max_completion_length"] == 512
+    # run_name 의 ds 슬러그 = dataset.source(=ultrafeedback_prompt). method 로 offline 과 구분.
+    assert full.run_name() == "online_dpo-Qwen3-8B-Base-ultrafeedback_prompt-trl-full"
+
+    lora = RunConfig.from_file(ONLINE_DPO_TRL_LORA)
+    assert lora.tuning == "lora"
+    assert float(lora.section("hp")["learning_rate"]) == 5.0e-6  # lora 는 full 보다 큰 lr
+    assert lora.run_name() == "online_dpo-Qwen3-8B-Base-ultrafeedback_prompt-trl-lora"
+
+
 def test_dispatch_namespaced_by_method():
     from training_framework_comparison_tutorial.run import TRAINERS
 
@@ -307,6 +331,9 @@ def test_dispatch_namespaced_by_method():
     assert TRAINERS["dpo"]["trl"].endswith("trl_dpo")
     assert TRAINERS["grpo"]["trl"].endswith("trl_grpo")
     assert TRAINERS["dpo"]["unsloth"].endswith("unsloth_dpo")
+    # online DPO = 별 method, TRL 단독(Unsloth 네이티브 경로 부재)
+    assert TRAINERS["online_dpo"]["trl"].endswith("trl_online_dpo")
+    assert "unsloth" not in TRAINERS["online_dpo"]
     assert TRAINERS["grpo"]["unsloth"].endswith("unsloth_grpo")
     # GRPO 가로비교: verl(ray main_ppo) · slime(ray train.py) · megatron-lm(네이티브 train_rl)
     assert TRAINERS["grpo"]["verl"].endswith("verl_grpo")

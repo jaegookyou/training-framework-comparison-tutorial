@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
-from .schema import PreferenceExample, RLPromptExample, SFTExample
+from .schema import PreferenceExample, PromptOnlyExample, RLPromptExample, SFTExample
 
 
 def to_trl(example: SFTExample) -> dict[str, Any]:
@@ -40,6 +40,16 @@ def to_trl_grpo(example: RLPromptExample) -> dict[str, Any]:
     **kwargs 로 그대로 흘려준다(adapters.rewards 가 answer 로 채점).
     """
     return {"prompt": example["prompt"], "answer": example["answer"]}
+
+
+def to_trl_online_dpo(example: PromptOnlyExample) -> dict[str, Any]:
+    """TRL OnlineDPOTrainer 의 포맷(prompt-only, conversational).
+
+    offline DPO(chosen/rejected)와 달리 prompt 만 준다 — 선호쌍은 trainer 가 학습 중 생성·채점해
+    만든다. conversational prompt 면 trainer 가 chat template 을 자동 적용하므로(우리 캐논
+    REASONING_CHATML 을 토크나이저에 구워둠 = 통제 변수), messages 를 그대로 prompt 컬럼에 둔다.
+    """
+    return {"prompt": example["prompt"]}
 
 
 def to_verl_grpo(example: RLPromptExample) -> dict[str, Any]:
@@ -79,6 +89,11 @@ FORMATS: dict[str, dict[str, Callable[[Any], dict[str, Any]]]] = {
     "dpo": {
         "trl": to_trl_dpo,
         "unsloth": to_trl_dpo,   # unsloth 도 trl DPOTrainer 래핑 → 동일 chosen/rejected 포맷
+    },
+    # online DPO: 같은 DPO loss 지만 on-policy(생성+RM 채점). prompt-only.
+    # Unsloth 는 online DPO 네이티브 경로 없음(PatchOnlineDPO 부재) → TRL 단독.
+    "online_dpo": {
+        "trl": to_trl_online_dpo,
     },
     "grpo": {
         "trl": to_trl_grpo,

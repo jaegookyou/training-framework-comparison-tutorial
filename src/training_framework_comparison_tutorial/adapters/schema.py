@@ -18,6 +18,8 @@ SFTExample = list[Message]
 PreferenceExample = dict[str, SFTExample]
 # GRPO 한 건 = 생성 입력(prompt) + reward 채점에 쓸 정답(answer). on-policy 라 응답은 학습 중 생성.
 RLPromptExample = dict[str, Any]
+# online DPO 한 건 = 생성 입력(prompt)만. on-policy 생성 후 reward model 로 채점(정답 컬럼 없음).
+PromptOnlyExample = dict[str, Any]
 
 _VALID_ROLES = {"system", "user", "assistant"}
 
@@ -50,3 +52,12 @@ def normalize_rl_prompt(
 ) -> RLPromptExample:
     """프롬프트 + 정답을 정규화한다 (GRPO 정규형)."""
     return {"prompt": normalize_messages(prompt), "answer": str(answer)}
+
+
+def normalize_prompt_only(prompt: list[dict[str, Any]]) -> PromptOnlyExample:
+    """프롬프트만 정규화한다 (online DPO 정규형).
+
+    online DPO 는 GRPO 처럼 on-policy 라 응답을 학습 중 생성하지만, GRPO 와 달리 정답(rule
+    reward)이 아니라 reward model 로 채점한다 → 정답 컬럼이 없다. 그래서 prompt 만.
+    """
+    return {"prompt": normalize_messages(prompt)}

@@ -32,6 +32,11 @@ TRAINERS: dict[str, dict[str, str]] = {
         "trl": f"{_PKG}.trl_dpo",
         "unsloth": f"{_PKG}.unsloth_dpo",
     },
+    # online DPO = 같은 DPO loss 의 on-policy 판(생성+RM 채점). offline DPO 와 별 method 로
+    # 둬 "같은 method 의 offline↔online" 비교를 명시한다. Unsloth 는 네이티브 경로 부재 → TRL 단독.
+    "online_dpo": {
+        "trl": f"{_PKG}.trl_online_dpo",
+    },
     "grpo": {
         "trl": f"{_PKG}.trl_grpo",
         "unsloth": f"{_PKG}.unsloth_grpo",

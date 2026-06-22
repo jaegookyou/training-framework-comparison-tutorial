@@ -13,16 +13,19 @@ from .formats import (
     to_trl,
     to_trl_dpo,
     to_trl_grpo,
+    to_trl_online_dpo,
     to_verl_grpo,
 )
 from .rewards import REWARDS, compute_score, get_reward_funcs, slime_rm
 from .schema import (
     Message,
     PreferenceExample,
+    PromptOnlyExample,
     RLPromptExample,
     SFTExample,
     normalize_messages,
     normalize_preference,
+    normalize_prompt_only,
     normalize_rl_prompt,
 )
 from .sources import (
@@ -30,6 +33,7 @@ from .sources import (
     from_gsm8k,
     from_traceinversion,
     from_ultrafeedback,
+    from_ultrafeedback_prompt,
     get_source,
 )
 
@@ -41,17 +45,20 @@ __all__ = [
     "SOURCES",
     "Message",
     "PreferenceExample",
+    "PromptOnlyExample",
     "RLPromptExample",
     "SFTExample",
     "compute_score",
     "from_gsm8k",
     "from_traceinversion",
     "from_ultrafeedback",
+    "from_ultrafeedback_prompt",
     "get_format",
     "get_reward_funcs",
     "get_source",
     "normalize_messages",
     "normalize_preference",
+    "normalize_prompt_only",
     "normalize_rl_prompt",
     "resolve_chat_template",
     "slime_rm",
@@ -59,5 +66,6 @@ __all__ = [
     "to_trl",
     "to_trl_dpo",
     "to_trl_grpo",
+    "to_trl_online_dpo",
     "to_verl_grpo",
 ]

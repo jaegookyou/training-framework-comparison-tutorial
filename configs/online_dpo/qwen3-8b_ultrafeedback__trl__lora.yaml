@@ -1,0 +1,14 @@
+extends: _base.yaml
+
+framework: trl
+tuning: lora
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/trl:latest
+
+# lora 면 정책은 어댑터만 학습 + ref=어댑터 끈 base(추가 메모리 0). 단 reward model(8B)은 여전히
+# 별도로 올라가 생성과 함께 메모리 큼 → A100 한 장은 빠듯, 보통 멀티GPU 권장.
+hp:
+  learning_rate: 5.0e-6         # lora 는 full 보다 큰 lr (online DPO 예제 레시피와 동일 눈금)
+
+scale:
+  nodes: 1
+  gpus: 1

@@ -1,0 +1,58 @@
+# Online DPO 트랙 공통 축 — "프레임워크만 변수, 나머지는 고정".
+# offline DPO(configs/dpo)와 같은 DPO loss·같은 ultrafeedback 도메인이지만 on-policy(학습 중
+# 생성 → reward model 채점 → 쌍 구성). offline↔online 비교 = "쌍을 미리 굽냐/즉석에 만드냐"만 차이.
+method: online_dpo
+
+# 튜닝 방식 축: full | lora. 기본 full, lora run 이 override.
+tuning: full
+
+model:
+  name: Qwen/Qwen3-8B-Base     # offline DPO/SFT 와 동일 base (통제비교: 모델 고정).
+  max_seq_len: 2048            # prompt+생성 총상한(OnlineDPOConfig.max_length). > max_completion_length.
+  chat_template: reasoning_chatml  # base → 캐논 ChatML (offline DPO 와 동일 template = 통제). conversational prompt 면 trainer 가 자동 적용.
+
+dataset:
+  source: ultrafeedback_prompt          # adapters.sources 의 키 (prompt-only)
+  hf_path: trl-lib/ultrafeedback-prompt # ultrafeedback_binarized 의 prompt-only 쌍둥이 (~38k)
+  hf_name: null
+  split: train
+  subsample: 8000              # online 은 풀(step 으로 학습량 제어)이지만 보수적 캡. seed 고정으로 fw 간 동일 부분집합.
+  seed: 42
+
+# reward = 도메인 채점기(reward model). gsm8k rule reward 와 달리 ultrafeedback 은 열린 채팅이라
+# rule 채점 불가 → 커뮤니티 검증 RM 으로 채점. (offline DPO 는 쌍이 데이터에 있어 RM 불필요.)
+reward:
+  model: Skywork/Skywork-Reward-V2-Llama-3.1-8B  # LlamaForSequenceClassification, 8B(정책과 스케일 맞춤), 검증된 공개 RM
+
+# 고정 HP = 비교의 눈금. offline DPO 와 같은 lr/beta(=DPO 표준), 생성 관련만 추가.
+hp:
+  learning_rate: 5.0e-7         # DPO 표준(offline 과 동일 눈금); lora run 이 override
+  per_device_batch_size: 2
+  gradient_accumulation: 8
+  epochs: 1
+  warmup_ratio: 0.1
+  lr_scheduler: cosine
+  bf16: true
+  beta: 0.1                     # DPO KL 정규화 강도(표준 0.1, offline 과 동일)
+  max_prompt_length: 1024
+  max_completion_length: 512    # rollout 생성 길이(OnlineDPOConfig.max_new_tokens)
+  temperature: 0.9             # rollout 샘플링 온도
+  missing_eos_penalty: 1.0     # 생성이 EOS 없이 max_new_tokens 도달 시 페널티
+
+# tuning=lora 일 때만 소비. full 이면 무시.
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.0
+  target_modules: all-linear
+
+output:
+  local_dir: /workspace/out
+  hf_repo: null
+
+wandb:
+  project: tfct-dpo            # offline DPO 와 같은 프로젝트 → offline↔online run 을 한 화면에 겹쳐 본다.
+
+# 로컬/CI 스모크용. max_steps>0 이면 몇 step 만 돌고 끝.
+debug:
+  max_steps: -1

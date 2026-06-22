@@ -12,10 +12,12 @@ from typing import Any
 
 from .schema import (
     PreferenceExample,
+    PromptOnlyExample,
     RLPromptExample,
     SFTExample,
     normalize_messages,
     normalize_preference,
+    normalize_prompt_only,
     normalize_rl_prompt,
 )
 
@@ -65,10 +67,21 @@ def from_gsm8k(row: dict[str, Any]) -> RLPromptExample:
     return normalize_rl_prompt(prompt, _extract_gsm8k_gold(row["answer"]))
 
 
+def from_ultrafeedback_prompt(row: dict[str, Any]) -> PromptOnlyExample:
+    """trl-lib/ultrafeedback-prompt: 프롬프트만 (online DPO).
+
+    ultrafeedback_binarized 의 prompt-only 쌍둥이(단일 `prompt` 컬럼, conversational ~38k).
+    offline DPO 와 같은 도메인이라 offline↔online 비교가 깨끗하다(OAIF 셋업). 응답은 학습 중
+    정책이 생성하고 reward model 이 채점하므로 정답/선호쌍은 데이터에 없다.
+    """
+    return normalize_prompt_only(row["prompt"])
+
+
 SOURCES: dict[str, Callable[[dict[str, Any]], Any]] = {
-    "traceinversion": from_traceinversion,  # SFT
-    "ultrafeedback": from_ultrafeedback,    # DPO
-    "gsm8k": from_gsm8k,                     # GRPO
+    "traceinversion": from_traceinversion,            # SFT
+    "ultrafeedback": from_ultrafeedback,              # DPO (offline, 선호쌍)
+    "ultrafeedback_prompt": from_ultrafeedback_prompt,  # online DPO (prompt-only)
+    "gsm8k": from_gsm8k,                              # GRPO
 }
 
 

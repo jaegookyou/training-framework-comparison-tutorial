@@ -176,3 +176,23 @@ def test_slime_rm_unknown_data_source_raises():
     bad = types.SimpleNamespace(response="x", label="1", metadata={"data_source": "nope"})
     with pytest.raises(ValueError):
         asyncio.run(slime_rm(None, bad))
+
+
+# --- online DPO ---
+
+
+def test_ultrafeedback_prompt_to_trl_online_dpo():
+    # online DPO = prompt-only. ultrafeedback-prompt 의 conversational `prompt` 만 통과한다
+    # (선호쌍 없음 — 학습 중 생성·RM 채점). 정답/answer 컬럼도 없다.
+    row = {"prompt": [{"role": "user", "content": "Write a haiku."}]}
+    example = get_source("ultrafeedback_prompt")(row)
+    formatted = get_format("online_dpo", "trl")(example)
+    assert formatted == {"prompt": row["prompt"]}
+    assert "answer" not in formatted and "chosen" not in formatted
+
+
+def test_online_dpo_is_trl_only():
+    # Unsloth 는 online DPO 네이티브 경로가 없어 등록하지 않는다(repo 원칙: 네이티브만).
+    assert get_format("online_dpo", "trl") is not None
+    with pytest.raises(ValueError):
+        get_format("online_dpo", "unsloth")
