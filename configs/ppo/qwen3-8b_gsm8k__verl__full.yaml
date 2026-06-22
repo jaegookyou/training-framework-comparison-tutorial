@@ -1,0 +1,15 @@
+extends: _base.yaml
+
+framework: verl
+tuning: full
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/verl:latest
+
+# 8B full PPO = 정책+critic+ref+vllm rollout 을 한 노드에서 → 멀티GPU 샤딩(critic 추가로 GRPO 보다 큼).
+# verl 고유 knob (다른 프레임워크는 안 씀 → _base 가 아니라 여기에만).
+verl:
+  rollout_tp: 1                 # vllm rollout 의 tensor-parallel (8B 면 1, 더 키우면 늘림)
+  gpu_memory_utilization: 0.6   # vllm KV 캐시가 점유할 비율(정책+critic 학습과 카드 공유)
+
+scale:
+  nodes: 1
+  gpus: 8

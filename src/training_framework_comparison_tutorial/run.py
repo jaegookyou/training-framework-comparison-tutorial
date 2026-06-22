@@ -44,6 +44,15 @@ TRAINERS: dict[str, dict[str, str]] = {
         "slime": f"{_PKG}.slime_grpo",
         "megatron-lm": f"{_PKG}.megatron_lm_grpo",
     },
+    # PPO = critic(value model)으로 GAE advantage 추정(GRPO 의 그룹 정규화와 다름). RL 네이티브 쌍
+    # (verl=ray main_ppo·adv_estimator=gae / slime=SGLang+Megatron·advantage-estimator=ppo·role
+    # config critic)으로 가로비교 확정. PPO 는 무거운(critic) 알고리즘이라 대규모 RL 인프라에만
+    # 1급으로 있다 — Unsloth·megatron-lm·torchtitan·bridge 는 네이티브 PPO 없음. TRL 은 PPO 가
+    # 있어도 neural RM 강제(rule reward 못 씀 = 선호 패러다임)라 gsm8k rule 축엔 부적합 → 제외.
+    "ppo": {
+        "verl": f"{_PKG}.verl_ppo",
+        "slime": f"{_PKG}.slime_ppo",
+    },
 }
 
 

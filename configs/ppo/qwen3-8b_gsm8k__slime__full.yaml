@@ -1,0 +1,24 @@
+extends: _base.yaml
+
+framework: slime
+tuning: full                  # slime 은 full RL 전용(base slime LoRA 없음 — Miles 확장 필요)
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/slime:latest
+
+# slime 고유 knob (다른 프레임워크는 안 씀 → _base 아니라 여기에만).
+# SGLang 롤아웃 + Megatron 학습. arch args 는 slime repo 의 scripts/models/<model_script>.sh 가 제공.
+# GRPO 와 같은 knob + PPO 전용(critic) 몇 개 추가.
+slime:
+  model_script: qwen3-8B              # slime scripts/models/qwen3-8B.sh (Qwen3-8B arch args)
+  num_rollout: 100                    # 학습 루프 수(slime 은 epochs 가 아니라 rollout 루프로 셈)
+  rollout_batch_size: 32             # 라운드당 프롬프트 수 (PPO 는 n=1 → global_bs = 이것)
+  num_critic_only_steps: 1           # 초기 critic 워밍업(정책 갱신 전 value 정렬)
+  eps_clip: 0.2                      # PPO 정책 clip 범위
+  value_clip: 0.2                    # value(critic) loss clip
+  tensor_model_parallel_size: 2      # Megatron TP (8B → 2)
+  rollout_num_gpus_per_engine: 2     # SGLang 엔진당 GPU (보통 TP 와 동일)
+  max_tokens_per_gpu: 9216           # dynamic batch 토큰 예산
+  sglang_mem_fraction: 0.7           # SGLang KV 캐시 정적 점유 비율
+
+scale:
+  nodes: 1
+  gpus: 8                            # 8B full PPO = Megatron 샤딩 + SGLang + critic → 멀티GPU

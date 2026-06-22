@@ -67,6 +67,18 @@ Vast.ai 백엔드는 계정 페이지의 API 키를 `~/.config/vastai/vast_api_k
   slime=async slime_rm / megatron-lm=환경 에이전트 get_reward). TRL GRPO 는 vllm rollout 필요
   (이미지 추가 TODO) — Unsloth·verl·slime 은 내장. slime·megatron-lm 은 full 전용(examples/rl 에
   LoRA 없음). megatron-lm 은 SFT(post_training/modelopt)와 GRPO(examples/rl)가 한 이미지·두 진입점.
+- **PPO**(online RL): verl(full|lora·ray main_ppo·vllm rollout) · slime(full·SGLang 롤아웃+Megatron
+  학습·role-tagged critic config). GRPO 와 같은 진입점·데이터·reward(openai/gsm8k + rule 채점 코어
+  공유 = 통제비교)지만 **critic(value model)으로 GAE advantage 를 추정**한다(verl=adv_estimator=gae /
+  slime=advantage-estimator=ppo, GRPO 의 그룹 정규화와 다름). KL 은 reward 페널티로(GRPO 는 loss 의
+  KL), 프롬프트당 1개 응답(그룹 불필요). verl 은 actor·critic 둘 다 lora 가능, slime 은 full 전용.
+  PPO 가로비교는 **verl·slime 로 확정**(GRPO 의 네이티브 헤비 쌍). PPO 는 critic 까지 굴리는 무거운
+  알고리즘이라 **대규모 RL 인프라(verl·slime)에만** 1급으로 있고, 경량/신생/general 프레임워크는
+  GRPO·DPO 로 수렴해 PPO 를 건너뛴다(넓은 가로비교는 SFT·GRPO·DPO 가 담당, PPO 는 인프라 서사 +
+  같은 프레임워크 내 GRPO↔PPO 알고리즘 비교가 가치). 그래서 PPO 칸의 빈자리는 누락이 아니라 설계상
+  배제다: **Unsloth·megatron-lm·torchtitan·megatron-bridge 는 네이티브 PPO 자체가 없고**, **TRL 은
+  PPO 가 있으나 neural reward model 을 강제**(rule reward 못 받음 = 선호 패러다임 → gsm8k rule 축에
+  부적합)라 제외.
 
 프레임워크/방법 추가 = docker 이미지 + `sky/<method>.<fw>.sky.yaml` + adapters(sources/formats
 /rewards) + trainers + run.TRAINERS 에 항목 하나씩. DPO·GRPO 는 패러다임 차이(offline 선호 vs

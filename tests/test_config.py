@@ -28,6 +28,9 @@ GRPO_SLIME_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__slime__full.yaml"
 GRPO_MEGATRON_LM_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__megatron-lm__full.yaml"
 ONLINE_DPO_TRL_FULL = CONFIGS / "online_dpo" / "qwen3-8b_ultrafeedback__trl__full.yaml"
 ONLINE_DPO_TRL_LORA = CONFIGS / "online_dpo" / "qwen3-8b_ultrafeedback__trl__lora.yaml"
+PPO_VERL_FULL = CONFIGS / "ppo" / "qwen3-8b_gsm8k__verl__full.yaml"
+PPO_VERL_LORA = CONFIGS / "ppo" / "qwen3-8b_gsm8k__verl__lora.yaml"
+PPO_SLIME_FULL = CONFIGS / "ppo" / "qwen3-8b_gsm8k__slime__full.yaml"
 
 
 def test_extends_inherits_base():
@@ -319,6 +322,67 @@ def test_online_dpo_trl_full_and_lora_configs():
     assert lora.run_name() == "online_dpo-Qwen3-8B-Base-ultrafeedback_prompt-trl-lora"
 
 
+def test_ppo_verl_full_and_lora_configs():
+    full = RunConfig.from_file(PPO_VERL_FULL)
+    assert full.framework == "verl"
+    assert full.method == "ppo"
+    assert full.tuning == "full"
+    assert full.image.endswith("/verl:latest")
+    # _base 공통 축 상속 (모델/데이터/reward = GRPO 와 동일, 통제비교: advantage 추정만 다름)
+    assert full.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert full.section("dataset")["source"] == "gsm8k"
+    assert full.section("reward")["name"] == "gsm8k"
+    # PPO 고유 knob: critic lr + GAE(gamma/lam). 그룹(num_generations) 없음 — critic 으로 GAE.
+    assert float(full.section("hp")["critic_learning_rate"]) == 1.0e-5
+    assert full.section("hp")["gamma"] == 1.0
+    assert full.section("hp")["lam"] == 1.0
+    assert "num_generations" not in full.section("hp")
+    # verl 고유 knob (vllm rollout)
+    assert full.section("verl")["rollout_tp"] == 1
+    assert full.section("scale")["gpus"] == 8
+    assert full.run_name() == "ppo-Qwen3-8B-Base-gsm8k-verl-full"
+
+    lora = RunConfig.from_file(PPO_VERL_LORA)
+    assert lora.tuning == "lora"
+    assert lora.section("scale")["gpus"] == 1
+    # lora run 이 _base PPO actor lr 을 override (GRPO verl lora 와 동일 눈금 1e-5)
+    assert float(lora.section("hp")["learning_rate"]) == 1.0e-5
+    assert lora.run_name() == "ppo-Qwen3-8B-Base-gsm8k-verl-lora"
+
+
+def test_ppo_slime_full_only_config():
+    cfg = RunConfig.from_file(PPO_SLIME_FULL)
+    assert cfg.framework == "slime"
+    assert cfg.method == "ppo"
+    assert cfg.tuning == "full"  # slime 은 full RL 전용(base slime LoRA 없음 → lora config 없음)
+    assert cfg.image.endswith("/slime:latest")
+    # _base 공통 축 상속 (모델/데이터/reward = verl PPO·GRPO 와 동일, 통제비교)
+    assert cfg.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert cfg.section("dataset")["source"] == "gsm8k"
+    assert cfg.section("reward")["name"] == "gsm8k"
+    # PPO 고유 knob: critic lr + GAE. 그룹(num_generations) 없음 — critic 으로 GAE.
+    assert float(cfg.section("hp")["critic_learning_rate"]) == 1.0e-5
+    assert "num_generations" not in cfg.section("hp")
+    # slime 고유 knob (SGLang+Megatron + PPO critic)
+    assert cfg.section("slime")["model_script"] == "qwen3-8B"
+    assert cfg.section("slime")["num_critic_only_steps"] == 1
+    assert cfg.section("slime")["tensor_model_parallel_size"] == 2
+    assert cfg.section("scale")["gpus"] == 8
+    assert cfg.run_name() == "ppo-Qwen3-8B-Base-gsm8k-slime-full"
+
+
+def test_ppo_format_reuses_grpo_formats():
+    from training_framework_comparison_tutorial.adapters import (
+        get_format,
+        to_slime_grpo,
+        to_verl_grpo,
+    )
+
+    # PPO 는 GRPO 와 같은 포맷(데이터·reward 동일, advantage 추정만 다름)
+    assert get_format("ppo", "verl") is to_verl_grpo
+    assert get_format("ppo", "slime") is to_slime_grpo
+
+
 def test_dispatch_namespaced_by_method():
     from training_framework_comparison_tutorial.run import TRAINERS
 
@@ -339,3 +403,8 @@ def test_dispatch_namespaced_by_method():
     assert TRAINERS["grpo"]["verl"].endswith("verl_grpo")
     assert TRAINERS["grpo"]["slime"].endswith("slime_grpo")
     assert TRAINERS["grpo"]["megatron-lm"].endswith("megatron_lm_grpo")
+    # PPO = critic(GAE) 추가. verl·slime 가로(megatron-lm 은 GRPO 전용, TRL PPO 는 neural RM 강제)
+    assert TRAINERS["ppo"]["verl"].endswith("verl_ppo")
+    assert TRAINERS["ppo"]["slime"].endswith("slime_ppo")
+    assert "megatron-lm" not in TRAINERS["ppo"]
+    assert "trl" not in TRAINERS["ppo"]

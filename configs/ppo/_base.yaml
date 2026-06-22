@@ -1,0 +1,60 @@
+# PPO 트랙 공통 축 — "프레임워크만 변수, 나머지는 고정".
+# GRPO 와 같은 모델·데이터·reward(통제비교: PPO vs GRPO = advantage 추정만 다름). 각 프레임워크별
+# run 파일이 이걸 extends 로 상속하고 framework/image/tuning/scale 만 바꾼다.
+method: ppo
+
+# 튜닝 방식 축: full | lora. 기본 full, lora run 이 override.
+tuning: full
+
+model:
+  name: Qwen/Qwen3-8B-Base     # SFT/DPO/GRPO 와 동일 base (통제비교: 모델 고정). 파이프라인이면 앞 단계 ckpt.
+  max_seq_len: 1536            # gsm8k 짧은 프롬프트 + reasoning 응답. prompt+completion 상한 가늠용.
+  chat_template: reasoning_chatml  # base → 캐논 ChatML. add_generation_prompt 로 rollout 프롬프트 큐 정합.
+
+dataset:
+  source: gsm8k                 # adapters.sources 의 키 (프롬프트 + 정답 추출). GRPO 와 동일.
+  hf_path: openai/gsm8k
+  hf_name: main
+  split: train
+  subsample: null
+  seed: 42
+
+# reward = 통제 변수(프레임워크 공유, GRPO 와 같은 채점 코어). adapters.rewards 의 키.
+reward:
+  name: gsm8k                   # 정답 일치(1.0) + 형식(0.1). rule-based(검증 가능 태스크 → 신경망 RM 불필요).
+
+# 고정 HP = 비교의 눈금. PPO 표준(actor 작은 lr·critic 큰 lr·GAE·KL-in-reward)에 맞춘다.
+hp:
+  learning_rate: 1.0e-6         # actor(정책) lr; lora run 이 override
+  critic_learning_rate: 1.0e-5  # critic(value) lr — actor 보다 크게(verl 기본 눈금)
+  per_device_batch_size: 8      # rollout 배치(actor·critic 공유 micro)
+  gradient_accumulation: 4
+  epochs: 1
+  warmup_ratio: 0.1
+  lr_scheduler: cosine
+  bf16: true
+  beta: 0.04                    # KL 계수 — PPO 는 reward 에 페널티로 더한다(GRPO 는 loss 의 KL)
+  gamma: 1.0                    # GAE 할인(RLHF 토큰레벨은 1.0 관례)
+  lam: 1.0                      # GAE lambda(1.0 관례)
+  max_prompt_length: 512
+  max_completion_length: 1024
+  temperature: 1.0
+  # PPO 는 그룹 불필요(critic 으로 GAE) → rollout n=1. num_generations 없음(GRPO 와 차이).
+
+# tuning=lora 일 때만 소비. full 이면 무시. actor·critic 둘 다 어댑터만 학습.
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.0
+  target_modules: all-linear
+
+output:
+  local_dir: /workspace/out
+  hf_repo: null                 # "user/repo" 로 채우면 체크포인트를 HF Hub 로 push
+
+wandb:
+  project: tfct-ppo             # PPO run 들을 한 화면에 겹쳐 보기 위한 공통 프로젝트
+
+# 로컬/CI 스모크용. max_steps>0 이면 몇 step 만 돌고 끝.
+debug:
+  max_steps: -1

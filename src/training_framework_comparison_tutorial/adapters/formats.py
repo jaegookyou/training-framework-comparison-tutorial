@@ -101,6 +101,12 @@ FORMATS: dict[str, dict[str, Callable[[Any], dict[str, Any]]]] = {
         "verl": to_verl_grpo,    # verl 은 reward_model.ground_truth 로 정답 전달 → 별도 포맷
         "slime": to_slime_grpo,  # slime 은 JSONL prompt + label 키 → 별도 포맷
     },
+    # PPO 는 GRPO 와 같은 포맷(verl=RLHFDataset / slime=JSONL prompt+label) — 데이터·reward 가 동일
+    # 하고 advantage 추정만 다르기 때문(통제비교). 포맷 함수 재사용.
+    "ppo": {
+        "verl": to_verl_grpo,
+        "slime": to_slime_grpo,
+    },
 }
 
 

@@ -1,0 +1,41 @@
+# tfct PPO 런 (verl) — SkyPilot task.
+#
+# verl 의 본진(PPO 1급 시민). GRPO 와 같은 ray 기반 main_ppo 진입점이지만 critic(value model)이
+# 추가돼 GAE advantage 를 추정한다(adv_estimator=gae). 런치는 우리 entrypoint(tfct-run)가 RunConfig
+# 를 verl override 로 번역해 `python -m verl.trainer.main_ppo` 를 내부에서 띄운다 → 이 run 블록은
+# 다른 sky 와 동일하게 `tfct-run --config $CONFIG` 한 줄.
+#
+# rollout 은 vllm(verl 기본, 이미지에 vllm 포함) → GRPO 와 동일 인프라(reward·데이터도 동일, 통제비교).
+#
+# 사용:
+#   export WANDB_API_KEY=...  HF_TOKEN=...
+#   # LoRA (기본, A100×1):
+#   sky launch -c tfct-ppo-verl sky/ppo.verl.sky.yaml --env WANDB_API_KEY --env HF_TOKEN
+#   # full PPO (8B 정책+critic+vllm rollout → 노드 내 멀티GPU):
+#   sky launch -c tfct-ppo-verl sky/ppo.verl.sky.yaml --gpus A100:8 \
+#     --env CONFIG=configs/ppo/qwen3-8b_gsm8k__verl__full.yaml \
+#     --env WANDB_API_KEY --env HF_TOKEN
+#   sky logs tfct-ppo-verl            # 로그 스트리밍
+#   sky down tfct-ppo-verl            # 끝나면 파기 (idle 과금 방지)
+#
+# (멀티노드 3단계는 verl ray 멀티노드 배선 필요 — 단일 노드 멀티GPU 까지가 이 yaml 범위.)
+
+name: tfct-ppo-verl
+
+resources:
+  accelerators: A100:1                                 # LoRA 8B 기본(A100 40GB 한 장). full 은 --gpus 로 override
+  use_spot: true                                       # 스팟; 끊기면 SkyPilot 이 자동 복구
+  image_id: docker:ghcr.io/jaegookyou/training-framework-comparison-tutorial/verl:latest  # GRPO 와 동일 verl 이미지(vllm 포함)
+
+workdir: .                                             # 이 repo 를 통째로 박스로 업로드 (코드는 런타임에)
+
+envs:
+  CONFIG: configs/ppo/qwen3-8b_gsm8k__verl__lora.yaml
+  WANDB_API_KEY: ""                                    # `--env WANDB_API_KEY` 로 주입
+  HF_TOKEN: ""                                         # `--env HF_TOKEN` 로 주입 (HF Hub push 시)
+
+setup: |
+  pip install -e .                                     # 코드만 (무거운 deps 는 image 에 이미 있음)
+
+run: |
+  tfct-run --config $CONFIG
