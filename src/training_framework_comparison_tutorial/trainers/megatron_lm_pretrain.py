@@ -1,29 +1,33 @@
-"""순수 Megatron-LM 사전학습 경로 (from-scratch·full) — 수직 파이프라인 1단계 + 가로비교.
+"""순수 Megatron-LM 사전학습 경로 (full) — 수직 파이프라인 1단계 + 가로비교.
 
-torchtitan 사전학습과 같은 칸(초소형 Qwen3 from-scratch on wikitext)이지만 프레임워크가 순수
-Megatron-LM(`pretrain_gpt.py`)이다 — 기업이 콕 집어 요구하는 'Megatron-LM 경험'. SFT(post_training/
-modelopt)·GRPO(examples/rl)에 이은 megatron-lm 세 번째 진입점(같은 이미지, 다른 entry).
+두 모드(`model.init_from` 으로 분기):
+  - **from-scratch**(init_from 없음, tiny): 초소형 Qwen3 를 랜덤 초기화에서 학습. torchtitan
+    from-scratch 와 같은 칸(동일 arch·데이터, 프레임워크만 변수 = 가로비교). 기업이 콕 집어 요구하는
+    'Megatron-LM 경험'. SFT(post_training/modelopt)·GRPO(examples/rl)에 이은 세 번째 진입점.
+  - **continued-pretrain**(init_from=Qwen3-8B-Base, 8b): 8B 가중치를 시드로 이어학습. 사전·사후를
+    같은 8B 로 통일(torchtitan continued 의 Megatron 짝). 학습 루프는 **순수 pretrain_gpt.py**,
+    HF↔mcore 변환만 Bridge(AutoBridge import/export) 글루로 쓴다 — 순수 Megatron-LM 의
+    tools/checkpoint/convert.py 는 qwen3 HF 로더가 없어(qwen2.5까지) 8B 시드를 못 만들기 때문.
+    그래서 continued config 는 megatron-bridge 이미지(AutoBridge + Megatron-LM repo clone)를 쓴다.
 
-torchtitan 과 동일 arch·데이터로 from-scratch 학습해 가로비교가 성립한다(통제: 모델·코퍼스 고정,
-프레임워크만 변수). arch 는 model_sizes.megatron_arch_args(tfct_tiny 와 동일 치수 — dim512/6층/
-heads8/kv4/ffn1536/vocab151936/RMSNorm/SwiGLU/rope/qk-layernorm/tied). 플래그명·값은 upstream
-core_v0.17.1 의 examples/rl/model_configs/qwen3_8b.sh(arch)·examples/gpt3/train_gpt3_175b_
-distributed.sh(training/data/logging)를 미러 = 같은 태그라 버전 정합(추정 아님).
+arch 플래그·값 = upstream core_v0.17.1 의 examples/rl/model_configs/qwen3_8b.sh(arch)·examples/gpt3/
+train_gpt3_175b_distributed.sh(training/data/logging) 미러(같은 태그라 버전 정합, 추정 아님).
+arch = model_sizes.megatron_arch_args(tiny=tfct_tiny tied / 8b=Qwen3-8B untied).
 
-이 모듈의 train() 은 3단계 subprocess:
-  1. wikitext → {"text"} JSONL 을 떨군다(빈 줄 제외).
-  2. Megatron 은 인덱스(.bin/.idx) 데이터를 요구 → tools/preprocess_data.py 로 토크나이즈·인덱싱
-     (--tokenizer-type HuggingFaceTokenizer = Qwen3, vocab 151936). 산출 prefix `_text_document`.
-  3. `torchrun pretrain_gpt.py <arch> <training> <data> <logging>` 로 from-scratch 학습(DCP 저장).
+train() subprocess 단계:
+  1. (continued만) torchrun _megatron_bridge_entry --stage convert : init_from HF → mcore 시드.
+  2. wikitext → JSONL → tools/preprocess_data.py 인덱싱(.bin/.idx).
+  3. torchrun pretrain_gpt.py <arch> <training> <data> : from-scratch(랜덤) 또는 continued
+     (--pretrained-checkpoint <시드> --finetune = 가중치만 로드, 옵티마이저 fresh).
+  4. (continued만) torchrun _megatron_bridge_entry --stage export : 학습 mcore → out/hf(파이프라인).
 
-무거운 deps(megatron-core/TE)는 이미지(docker/megatron-lm.Dockerfile, SFT/GRPO 와 동일)에만 있고
-torchrun/preprocess 서브프로세스가 임포트한다. 호스트 모듈은 datasets/transformers 만 지연 임포트.
+무거운 deps(megatron-core/TE/bridge)는 이미지에만 있고 torchrun/preprocess 서브프로세스가 임포트.
+이 호스트 모듈은 datasets/transformers/yaml 만 지연 임포트.
 
-⚠️ GPU 검증 대기: Megatron 은 CPU 스모크 불가(TE/CUDA) → 학습 루프·preprocess_data 인자 정합·
-arch 플래그(특히 core_v0.17.1 이 TransformerConfig 에서 자동생성하는 --qk-layernorm/--disable-bias-
-linear 의 boolean 관례)·wandb 플래그명·tied embedding 정합은 GPU end-to-end 에서 최종 확인.
-파이프라인 다음 단계(SFT) 입력용 mcore→HF export 는 Megatron-Bridge 가 담당(별도 경로) — 이
-트레이너 범위 밖(convert.py qwen3 로더 블로커와 같은 사정).
+⚠️ GPU 검증 대기: Megatron 은 CPU 스모크 불가(TE/CUDA) → 학습 루프·preprocess 인자·arch boolean 관례·
+wandb 플래그명은 GPU 에서 확인. continued 추가 항목: **pretrain_gpt.py 가 AutoBridge.import_ckpt
+산출 mcore 를 `--pretrained-checkpoint`+`--finetune` 로 로드하는 정합**(둘 다 torch_dist 0.17.1 라
+원칙 호환, arch 메타 정합 확인) · 8b untie/arch · AutoBridge export_ckpt → HF · TP4 병렬.
 """
 
 from __future__ import annotations
@@ -35,6 +39,8 @@ from pathlib import Path
 
 from ..config import RunConfig
 from ..model_sizes import megatron_arch_args
+
+_BRIDGE_ENTRY = "training_framework_comparison_tutorial.trainers._megatron_bridge_entry"
 
 
 def _stage_tokenizer(cfg: RunConfig, work: Path) -> str:
@@ -96,20 +102,39 @@ def train(cfg: RunConfig) -> None:
     wandb_cfg = cfg.section("wandb")
 
     repo = os.environ.get("MEGATRON_LM_DIR", "/opt/Megatron-LM")
+    init_from = model_cfg.get("init_from")  # 있으면 continued-pretrain(8B 시드 이어학습)
 
     out_dir = Path(out.get("local_dir", "out"))
     work = out_dir / "megatron_pretrain_workspace"
-    dcp_dir = work / "checkpoint"   # DCP 체크포인트(torch_dist)
+    dcp_dir = work / "checkpoint"   # DCP 체크포인트(torch_dist) — 학습 저장/재개
     work.mkdir(parents=True, exist_ok=True)
-
-    tokenizer_dir = _stage_tokenizer(cfg, work)
-    data_path = _prepare_indexed_data(cfg, work, tokenizer_dir, repo)
 
     gpus = scale.get("gpus", 1)
     nodes = scale.get("nodes", 1)
     tp = mg.get("tensor_model_parallel_size", 1)
     pp = mg.get("pipeline_model_parallel_size", 1)
     dp = max(1, gpus // (tp * pp))
+
+    # --- continued-pretrain: HF init_from → mcore 시드 (Bridge 변환 글루) ---
+    pretrained_ckpt: str | None = None
+    if init_from:
+        import yaml
+
+        # entry(torchrun)가 다시 읽을 병합 config 를 떨군다(bridge SFT 호스트 패턴).
+        run_yaml = work / "run.yaml"
+        run_yaml.write_text(yaml.safe_dump(cfg.data, allow_unicode=True, sort_keys=False))
+        pretrained_ckpt = str(work / "mcore_init")
+        subprocess.run(
+            [
+                "torchrun", "--standalone", "--nnodes=1", "--nproc_per_node=1",
+                "-m", _BRIDGE_ENTRY, "--stage", "convert",
+                "--config", str(run_yaml), "--megatron-path", pretrained_ckpt,
+            ],
+            check=True,
+        )
+
+    tokenizer_dir = _stage_tokenizer(cfg, work)
+    data_path = _prepare_indexed_data(cfg, work, tokenizer_dir, repo)
 
     micro = hp["per_device_batch_size"]
     global_bs = micro * dp  # 사전학습엔 grad_accum knob 없음 → global = micro × dp
@@ -124,7 +149,7 @@ def train(cfg: RunConfig) -> None:
     min_lr = float(hp.get("min_learning_rate", lr / 10))
 
     args = [
-        # ARCH (model_sizes = tfct_tiny 정합, qwen3_8b.sh 미러). tied → --untie 안 붙임.
+        # ARCH (model_sizes: tiny=tfct_tiny tied / 8b=Qwen3-8B untied, qwen3_8b.sh 미러).
         *megatron_arch_args(model_cfg["size"], seq_len),
         # 병렬 / 백엔드
         "--tensor-model-parallel-size", str(tp),
@@ -165,6 +190,11 @@ def train(cfg: RunConfig) -> None:
         "--wandb-exp-name", cfg.run_name(),
     ]
 
+    # continued-pretrain: mcore 시드의 가중치만 로드 + 옵티마이저/iteration fresh(--finetune).
+    # (--load 가 가리키는 dcp_dir 에 재개 ckpt 가 없을 때만 시드를 쓴다 — megatron 표준 동작.)
+    if pretrained_ckpt:
+        args += ["--pretrained-checkpoint", pretrained_ckpt, "--finetune"]
+
     cmd = [
         "torchrun",
         f"--nproc_per_node={gpus}",
@@ -174,3 +204,16 @@ def train(cfg: RunConfig) -> None:
     ]
     env = {**os.environ, "CUDA_DEVICE_MAX_CONNECTIONS": "1"}
     subprocess.run(cmd, check=True, cwd=repo, env=env)
+
+    # --- continued-pretrain: 학습 결과 mcore → HF export (파이프라인 다음 단계 model.name) ---
+    if init_from:
+        hf_dir = out_dir / "hf"
+        subprocess.run(
+            [
+                "torchrun", "--standalone", "--nnodes=1", "--nproc_per_node=1",
+                "-m", _BRIDGE_ENTRY, "--stage", "export",
+                "--config", str(work / "run.yaml"),
+                "--megatron-path", str(dcp_dir), "--hf-path", str(hf_dir),
+            ],
+            check=True,
+        )

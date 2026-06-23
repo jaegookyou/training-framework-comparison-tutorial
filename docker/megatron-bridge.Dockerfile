@@ -56,6 +56,15 @@ RUN pip install --no-build-isolation "megatron-bridge==0.4.2"
 # 은 백엔드 무관, cu12 바이너리가 위에서 이미 설치됨).
 RUN pip uninstall -y transformer-engine-cu13 || true
 
+# Megatron-LM repo (scripts 전용) — continued-pretrain 의 학습 루프는 순수 pretrain_gpt.py 가 돈다.
+# pretrain_gpt.py·tools/preprocess_data.py 는 패키지 모듈이 아니라 repo 루트 스크립트라 pip 로 안
+# 깔린다 → clone 만 한다. **pip install 하지 않음**: megatron.core/megatron.training 은 위 megatron-bridge
+# 가 끌어온 PyPI megatron-core 0.17.1 에 이미 있고(같은 태그), 재설치하면 namespace 스큐가 생긴다.
+# (megatron-bridge SFT 는 이 clone 을 안 써 무영향 — additive.)
+ARG MLM_REF=core_v0.17.1
+RUN git clone --depth 1 --branch ${MLM_REF} https://github.com/NVIDIA/Megatron-LM.git /opt/Megatron-LM
+ENV MEGATRON_LM_DIR=/opt/Megatron-LM
+
 WORKDIR /workspace/repo
 COPY . .
 RUN pip install .

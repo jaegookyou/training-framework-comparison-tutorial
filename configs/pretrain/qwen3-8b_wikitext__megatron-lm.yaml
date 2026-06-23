@@ -1,0 +1,36 @@
+extends: _base.yaml
+
+framework: megatron-lm
+# ⚠️ 이미지 = megatron-bridge (megatron-lm 아님). continued-pretrain 은 HF→mcore 시드/export 에
+# AutoBridge 가 필요한데 순수 megatron-lm 이미지엔 megatron.bridge 가 없다(convert.py 는 qwen3 미지원).
+# bridge 이미지는 AutoBridge + (clone 된) Megatron-LM repo 의 pretrain_gpt.py 를 둘 다 가진다 →
+# 학습은 순수 pretrain_gpt.py, 변환만 Bridge 글루. from-scratch tiny config 는 megatron-lm 이미지 유지.
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/megatron-bridge:latest
+
+# Continued-pretrain 의 순수 Megatron-LM 짝(torchtitan continued 와 같은 칸). Qwen3-8B-Base 가중치를
+# 시드로 이어학습(8B from-scratch 는 데이터 부족으로 무의미). 산출 out/hf 가 SFT/RL 의 model.name 이
+# 되는 수직 파이프라인. 학습 루프 = 순수 pretrain_gpt.py(--pretrained-checkpoint + --finetune).
+model:
+  size: 8b                          # model_sizes.MEGATRON_ARCH["8b"] = Qwen3-8B arch(untied, max-pos 40960)
+  init_from: Qwen/Qwen3-8B-Base     # 시드 가중치(AutoBridge.import_ckpt → mcore, --pretrained-checkpoint 로 로드)
+  tokenizer: Qwen/Qwen3-8B-Base     # 동일 토크나이저(vocab 151936 — 통제·파이프라인 정합)
+  max_seq_len: 2048
+
+# continued-pretrain 은 from-scratch 보다 훨씬 작은 lr(이미 학습된 가중치를 망치지 않게).
+hp:
+  learning_rate: 2.0e-5             # _base 의 3e-4(from-scratch)를 override
+  per_device_batch_size: 1          # 8B → 토큰 길이 부담
+  steps: 500
+  warmup_ratio: 0.02
+  bf16: true
+
+# megatron 고유 knob. 8B continued → TP4(qwen3-8b 권장). 8GPU → DP=2.
+megatron:
+  tensor_model_parallel_size: 4
+  pipeline_model_parallel_size: 1
+  preprocess_workers: 8
+
+# 8B continued-pretrain = 단일 GPU 불가 → 멀티GPU(TP4×DP2).
+scale:
+  nodes: 1
+  gpus: 8

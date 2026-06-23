@@ -49,11 +49,14 @@ Vast.ai 백엔드는 계정 페이지의 API 키를 `~/.config/vastai/vast_api_k
 `--cloud vast` 로 클라우드를 고정할 수 있다.
 
 현재 구현:
-- **사전학습**: torchtitan · Megatron-LM(순수 `pretrain_gpt.py`·preprocess_data.py 인덱싱). `method:
-  pretrain`. 두 모드 — ① **from-scratch tiny**(dim512/6층, vocab151936 on wikitext-2): 동일 arch·
-  데이터·프레임워크만 변수(가로비교). ② **continued-pretrain 8B**(torchtitan, `init_from:
-  Qwen3-8B-Base` 시드 이어학습): 사전·사후를 **같은 8B 로 통일** — 한 모델이 PT→SFT→RL 전 과정 통과
-  (8B from-scratch 는 데이터 부족으로 무의미 → 이어학습). 산출 `out/hf` 가 사후학습 `model.name`.
+- **사전학습**: torchtitan · Megatron-LM(순수 `pretrain_gpt.py`·preprocess_data.py 인덱싱).
+  `method: pretrain`. 두 모드 — ① **from-scratch tiny**(dim512/6층, vocab151936 on wikitext-2): 동일
+  arch·데이터·프레임워크만 변수(가로비교; torchtitan·Megatron-LM). ② **continued-pretrain 8B**
+  (`init_from: Qwen3-8B-Base` 시드 이어학습): 사전·사후를 **같은 8B 로 통일** — 한 모델이 PT→SFT→RL
+  전 과정 통과(8B from-scratch 는 데이터 부족으로 무의미 → 이어학습). **torchtitan**
+  (`initial_load_in_hf`) · **Megatron-LM**(학습=순수 `pretrain_gpt.py --finetune`, HF↔mcore 변환만
+  Bridge `AutoBridge` 글루 — 순수 convert.py 가 qwen3 미지원이라; bridge 이미지 사용) 두 경로. 산출
+  `out/hf` 가 사후학습 `model.name`.
 - **SFT**: TRL(full|lora) · Unsloth(full|lora·단일 GPU) · verl(full|lora·hydra+torchrun) ·
   Megatron-LM(full·convert→finetune→export) · Megatron-Bridge(full|lora·HF↔mcore 브리지+네이티브
   PEFT) · torchtitan(full|lora·nightly SHA 핀·ChatDataset·네이티브 LoRAConverter, 이미지 박제로
@@ -98,10 +101,11 @@ online 생성+reward)라 별 method 로 둔다.
 통제비교(가로축)와 별개로, **단일 모델이 사전학습→SFT→RL 전 과정을 통과하는 종단 파이프라인**도
 설계돼 있다. 단계 간 인터페이스 = **HF 체크포인트**(각 단계 산출 `out/hf` → 다음 단계 `model.name`).
 크기 knob(`model.size`)·데이터·`scale.gpus` 만 바꾸면 코드 수정 없이 스케일된다.
-- **사전학습**(구현): `torchtitan` · `Megatron-LM` from-scratch (초소형 Qwen3 `tiny` + wikitext-2).
-  `method: pretrain` 축, `configs/pretrain/`, `model_sizes.py`(size preset → torchtitan flavor /
-  megatron arch 플래그). `tfct-run --config configs/pretrain/...`. 파이프라인 단계 입력은 torchtitan
-  의 HF export(megatron mcore→HF 는 Bridge 가 담당 — 별도 경로).
+- **사전학습**(구현): `torchtitan` · `Megatron-LM` from-scratch (초소형 Qwen3 `tiny` + wikitext-2) +
+  continued-pretrain 8B(`torchtitan` · `Megatron-LM`). `method: pretrain` 축, `configs/pretrain/`,
+  `model_sizes.py`(size preset → torchtitan flavor / megatron arch 플래그). `tfct-run --config
+  configs/pretrain/...`. 파이프라인 단계 입력은 각 트레이너의 HF export `out/hf`(Megatron-LM continued
+  는 AutoBridge.export_ckpt 로 mcore→HF).
 - **SFT·RL**(구현): 기존 SFT/DPO/GRPO 경로 재사용(`model.name` 을 앞 단계 산출 HF 로 지정).
 - **파이프라인 러너 `tfct-pipeline`**(구현): 선언적 spec(`pipelines/*.yaml`)이 단계 config 를 나열하면
   러너가 순서대로 돌리며 단계 사이 `model.name ← 직전 단계 산출 HF` 를 자동 연결(단계별 분리 출력

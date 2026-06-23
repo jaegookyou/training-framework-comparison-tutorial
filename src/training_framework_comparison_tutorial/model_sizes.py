@@ -26,13 +26,14 @@ SIZES: dict[str, dict[str, str]] = {
     "8b": {"torchtitan": "8B", "torchtitan_config": "pretrain_qwen3_8b_wikitext"},
 }
 
-# size preset -> Megatron-LM Qwen3 arch 치수. torchtitan tfct_tiny 와 동일 arch 를 Megatron 표현으로
-# (사전학습 가로비교 = 두 프레임워크가 같은 모델·데이터를 from-scratch 학습). 비-치수 Qwen3 플래그
-# (RMSNorm·SwiGLU·rope·qk-layernorm·disable-bias 등)는 megatron_arch_args 가 공통으로 붙인다.
-# tied embeddings: tfct_tiny(enable_weight_tying=True) → --untie 안 붙임(소형 Qwen3 는 tie).
-# 플래그명·값 = upstream core_v0.17.1 examples/rl/model_configs/qwen3_8b.sh 미러(추정 아님).
-MEGATRON_ARCH: dict[str, dict[str, int]] = {
-    # tiny: dim512 / 6층 / heads8 / kv4(GQA) / head_dim64 / ffn1536 / vocab151936 (tfct_tiny 동일).
+# size preset -> Megatron-LM Qwen3 arch 치수. 비-치수 Qwen3 플래그(RMSNorm·SwiGLU·rope·qk-layernorm·
+# disable-bias 등)는 megatron_arch_args 가 공통으로 붙인다. 플래그명·값 = upstream core_v0.17.1
+# examples/rl/model_configs/qwen3_8b.sh 미러(추정 아님).
+#   tie: tiny(tfct_tiny)=tied(--untie 생략) / 8b(Qwen3-8B)=untied(--untie 붙임).
+#   max_position_embeddings: 없으면 seq_len(tiny=arch 직접 정의). 8b=native 40960
+#     (continued-pretrain 은 import 한 8B ckpt arch 와 정합해야).
+MEGATRON_ARCH: dict[str, dict[str, int | bool]] = {
+    # tiny: dim512/6층/heads8/kv4(GQA)/head_dim64/ffn1536/vocab151936 (tfct_tiny 동일). tied.
     "tiny": {
         "num_layers": 6,
         "hidden_size": 512,
@@ -40,6 +41,19 @@ MEGATRON_ARCH: dict[str, dict[str, int]] = {
         "num_attention_heads": 8,
         "num_query_groups": 4,
         "kv_channels": 64,
+        "tie": True,
+    },
+    # 8b: Qwen3-8B (36층/4096/ffn12288/heads32/kv8(GQA)/head_dim128/max-pos40960). untied.
+    # continued-pretrain 전용 — AutoBridge.import_ckpt 가 만든 mcore 시드의 arch 와 일치해야 한다.
+    "8b": {
+        "num_layers": 36,
+        "hidden_size": 4096,
+        "ffn_hidden_size": 12288,
+        "num_attention_heads": 32,
+        "num_query_groups": 8,
+        "kv_channels": 128,
+        "max_position_embeddings": 40960,
+        "tie": False,
     },
 }
 
@@ -47,9 +61,9 @@ MEGATRON_ARCH: dict[str, dict[str, int]] = {
 def megatron_arch_args(size: str, seq_len: int) -> list[str]:
     """size preset → Megatron-LM pretrain_gpt.py arch 플래그 리스트.
 
-    치수는 MEGATRON_ARCH(tfct_tiny 정합), 나머지 Qwen3 플래그는 qwen3_8b.sh 미러(같은 태그라 버전
-    정합). vocab 151936 고정(Qwen3 토크나이저 — 파이프라인/통제 정합). 사전학습은 raw text 라
-    chat template 불필요. tied embeddings 라 --untie-embeddings-and-output-weights 는 붙이지 않는다.
+    치수는 MEGATRON_ARCH(tiny=tfct_tiny / 8b=Qwen3-8B), 나머지 Qwen3 플래그는 qwen3_8b.sh 미러(같은
+    태그라 버전 정합). vocab 151936 고정(Qwen3 토크나이저 — 파이프라인/통제 정합). 사전학습은 raw
+    text 라 chat template 불필요. tied(tiny)면 --untie 생략, untied(8b)면 --untie 붙인다.
     """
     try:
         a = MEGATRON_ARCH[size]
@@ -57,7 +71,8 @@ def megatron_arch_args(size: str, seq_len: int) -> list[str]:
         raise ValueError(
             f"megatron arch preset 없음: {size!r} (있는 것: {list(MEGATRON_ARCH)})"
         ) from None
-    return [
+    max_pos = a.get("max_position_embeddings", seq_len)
+    args = [
         "--num-layers", str(a["num_layers"]),
         "--hidden-size", str(a["hidden_size"]),
         "--ffn-hidden-size", str(a["ffn_hidden_size"]),
@@ -66,7 +81,7 @@ def megatron_arch_args(size: str, seq_len: int) -> list[str]:
         "--num-query-groups", str(a["num_query_groups"]),
         "--kv-channels", str(a["kv_channels"]),
         "--seq-length", str(seq_len),
-        "--max-position-embeddings", str(seq_len),
+        "--max-position-embeddings", str(max_pos),
         "--normalization", "RMSNorm",
         "--norm-epsilon", "1e-6",
         "--qk-layernorm",
@@ -83,6 +98,9 @@ def megatron_arch_args(size: str, seq_len: int) -> list[str]:
         "--vocab-size", "151936",
         "--make-vocab-size-divisible-by", "128",
     ]
+    if not a.get("tie", False):
+        args.append("--untie-embeddings-and-output-weights")
+    return args
 
 
 def torchtitan_flavor(size: str) -> str:

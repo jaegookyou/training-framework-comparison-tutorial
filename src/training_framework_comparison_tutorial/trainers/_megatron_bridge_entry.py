@@ -1,9 +1,13 @@
 """torchrun 안에서만 도는 Megatron-Bridge 진입점. `torchrun -m <이 모듈>` 로 실행된다.
 
-호스트 프로세스(megatron_bridge_sft.py)는 megatron 을 import 하지 않는다 — 무거운 deps 는
-이 모듈이 torchrun rank 별로 import 한다. 두 stage:
-  --stage convert  : AutoBridge.import_ckpt 로 HF Qwen3-8B-Base → Megatron-core 체크포인트.
+호스트 프로세스(megatron_bridge_sft.py / megatron_lm_pretrain.py 의 continued 분기)는 megatron 을
+import 하지 않는다 — 무거운 deps 는 이 모듈이 torchrun rank 별로 import 한다. stage 들:
+  --stage convert  : AutoBridge.import_ckpt 로 HF(Qwen3-8B[-Base]) → Megatron-core 체크포인트.
   --stage finetune : qwen3 SFT/PEFT 레시피를 우리 RunConfig 로 override 한 뒤 finetune().
+  --stage export   : 학습 결과 Megatron-core 체크포인트 → HF(파이프라인 다음 단계 입력).
+
+convert/export 는 SFT(megatron-bridge)와 continued-pretrain(megatron-lm, 순수 pretrain_gpt.py
+학습)이 **HF↔mcore 변환 글루**로 공유 — Bridge 본업이 변환이고 순수 convert.py 는 qwen3 미지원이라.
 
 megatron import 는 전부 함수 안(지연)이라 megatron 없는 dev/CI 에서도 모듈 import 는 된다.
 """
@@ -16,15 +20,36 @@ from ..adapters import get_source
 from ..config import RunConfig
 
 
+def _hf_source(cfg: RunConfig) -> str:
+    """변환/export 의 HF 기준 모델. continued-pretrain 은 model.init_from, SFT 는 model.name."""
+    model_cfg = cfg.section("model")
+    return model_cfg.get("init_from") or model_cfg["name"]
+
+
 def _convert(cfg: RunConfig, megatron_path: str) -> None:
-    """HF base 가중치 → Megatron-core 체크포인트(finetune 의 pretrained_checkpoint)."""
+    """HF base 가중치 → Megatron-core 체크포인트(finetune pretrained_checkpoint / pretrain 시드)."""
     import torch
     from megatron.bridge import AutoBridge
 
     AutoBridge.import_ckpt(
-        hf_model_id=cfg.section("model")["name"],
+        hf_model_id=_hf_source(cfg),
         megatron_path=megatron_path,
         torch_dtype=torch.bfloat16 if cfg.section("hp").get("bf16", True) else torch.float32,
+    )
+
+
+def _export(cfg: RunConfig, megatron_path: str, hf_path: str) -> None:
+    """학습 결과 Megatron-core 체크포인트 → HF 포맷(out/hf = 파이프라인 다음 단계 model.name).
+
+    pipeline._stage_output_model 은 method=="pretrain" 산출을 <dir>/hf 로 기대한다 → 여기서
+    그 경로로 떨군다. source_path 는 HF config/tokenizer 의 출처(=시드 base).
+    """
+    from megatron.bridge import AutoBridge
+
+    AutoBridge.export_ckpt(
+        megatron_path=megatron_path,
+        hf_path=hf_path,
+        source_path=_hf_source(cfg),
     )
 
 
@@ -115,16 +140,20 @@ def _build_finetune_config(cfg: RunConfig, megatron_path: str, tokenizer_dir: st
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="megatron-bridge-entry")
-    parser.add_argument("--stage", choices=["convert", "finetune"], required=True)
+    parser.add_argument("--stage", choices=["convert", "finetune", "export"], required=True)
     parser.add_argument("--config", required=True, help="병합된 RunConfig YAML")
     parser.add_argument("--megatron-path", required=True, help="mcore 체크포인트 경로")
     parser.add_argument("--tokenizer-dir", default=None, help="캐논 template 을 구운 토크나이저")
+    parser.add_argument("--hf-path", default=None, help="export 산출 HF 경로(out/hf)")
     args = parser.parse_args(argv)
 
     cfg = RunConfig.from_file(args.config)
 
     if args.stage == "convert":
         _convert(cfg, args.megatron_path)
+        return
+    if args.stage == "export":
+        _export(cfg, args.megatron_path, args.hf_path)
         return
 
     from megatron.bridge.training.finetune import finetune

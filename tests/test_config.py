@@ -18,6 +18,7 @@ SLIME_SFT_FULL = CONFIGS / "sft" / "qwen3-8b_traceinversion__slime__full.yaml"
 PRETRAIN = CONFIGS / "pretrain" / "qwen3-tiny_wikitext__torchtitan.yaml"
 PRETRAIN_MEGATRON_LM = CONFIGS / "pretrain" / "qwen3-tiny_wikitext__megatron-lm.yaml"
 PRETRAIN_8B_TORCHTITAN = CONFIGS / "pretrain" / "qwen3-8b_wikitext__torchtitan.yaml"
+PRETRAIN_8B_MEGATRON_LM = CONFIGS / "pretrain" / "qwen3-8b_wikitext__megatron-lm.yaml"
 DPO_FULL = CONFIGS / "dpo" / "qwen3-8b_ultrafeedback__trl__full.yaml"
 DPO_LORA = CONFIGS / "dpo" / "qwen3-8b_ultrafeedback__trl__lora.yaml"
 GRPO_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__trl__full.yaml"
@@ -238,6 +239,47 @@ def test_pretrain_config_megatron_lm():
     assert cfg.section("megatron")["tensor_model_parallel_size"] == 1
     assert cfg.section("megatron")["preprocess_workers"] == 8
     assert cfg.run_name() == "pretrain-tiny-wikitext-megatron-lm"
+
+
+def test_pretrain_8b_continued_config_megatron_lm():
+    # continued-pretrain 의 순수 Megatron-LM 짝. 학습=pretrain_gpt.py, 변환만 Bridge 글루
+    # (convert.py qwen3 블로커 우회) → 이미지는 megatron-bridge.
+    cfg = RunConfig.from_file(PRETRAIN_8B_MEGATRON_LM)
+    assert cfg.method == "pretrain"
+    assert cfg.framework == "megatron-lm"  # 학습 루프 = 순수 Megatron-LM
+    # ⚠️ 이미지는 megatron-bridge (AutoBridge + clone 된 pretrain_gpt.py 둘 다 필요)
+    assert cfg.image.endswith("/megatron-bridge:latest")
+    assert cfg.section("model")["size"] == "8b"
+    # 시드 = Qwen3-8B-Base (--pretrained-checkpoint 로 로드 = 사후학습 base 와 통일)
+    assert cfg.section("model")["init_from"] == "Qwen/Qwen3-8B-Base"
+    assert cfg.section("model")["tokenizer"] == "Qwen/Qwen3-8B-Base"
+    # continued 는 작은 lr + megatron TP knob
+    assert float(cfg.section("hp")["learning_rate"]) == 2.0e-5
+    assert cfg.section("megatron")["tensor_model_parallel_size"] == 4
+    assert cfg.section("scale")["gpus"] == 8
+    # 사전학습 = full-param (tuning 축 없음 → 기본 full)
+    assert cfg.tuning == "full"
+    assert cfg.run_name() == "pretrain-8b-wikitext-megatron-lm"
+    # from-scratch tiny(megatron-lm)는 init_from 없음 — 대조
+    assert "init_from" not in RunConfig.from_file(PRETRAIN_MEGATRON_LM).section("model")
+
+
+def test_megatron_arch_args_8b_untied():
+    from training_framework_comparison_tutorial.model_sizes import megatron_arch_args
+
+    # 8b = Qwen3-8B (untied, max-pos 40960) — tiny(tied)와 대조
+    args = megatron_arch_args("8b", seq_len=2048)
+    pairs = {args[i]: args[i + 1] for i in range(0, len(args) - 1)}
+    assert pairs["--num-layers"] == "36"
+    assert pairs["--hidden-size"] == "4096"
+    assert pairs["--ffn-hidden-size"] == "12288"
+    assert pairs["--num-attention-heads"] == "32"
+    assert pairs["--num-query-groups"] == "8"
+    assert pairs["--kv-channels"] == "128"
+    assert pairs["--max-position-embeddings"] == "40960"  # native(seq_len 아님)
+    # 8b 는 untied → --untie 붙음 / tiny 는 tied → 안 붙음
+    assert "--untie-embeddings-and-output-weights" in args
+    assert "--untie-embeddings-and-output-weights" not in megatron_arch_args("tiny", seq_len=2048)
 
 
 def test_megatron_arch_args_match_tfct_tiny():

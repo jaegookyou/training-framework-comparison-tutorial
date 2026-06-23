@@ -17,7 +17,10 @@ _PKG = "training_framework_comparison_tutorial.trainers"
 TRAINERS: dict[str, dict[str, str]] = {
     "pretrain": {
         "torchtitan": f"{_PKG}.torchtitan_pretrain",
-        "megatron-lm": f"{_PKG}.megatron_lm_pretrain",  # 순수 Megatron-LM pretrain_gpt (가로비교)
+        # 순수 Megatron-LM pretrain_gpt.py. from-scratch(tiny) | continued-pretrain(8b, init_from):
+        # continued 는 AutoBridge.import_ckpt 로 8B-Base→mcore 시드(convert.py qwen3 블로커 우회) 후
+        # --pretrained-checkpoint+--finetune 로 이어학습, export 도 AutoBridge(bridge 이미지).
+        "megatron-lm": f"{_PKG}.megatron_lm_pretrain",
     },
     "sft": {
         "trl": f"{_PKG}.trl_sft",
