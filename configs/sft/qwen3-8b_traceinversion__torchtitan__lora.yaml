@@ -1,0 +1,22 @@
+extends: _base.yaml
+
+framework: torchtitan
+tuning: lora                  # torchtitan 네이티브 LoRAConverter (baked sft_..._lora config)
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/torchtitan:latest
+
+# LoRA SFT 는 어댑터만 학습 → full 보다 큰 lr (trl/unsloth/verl SFT lora 와 동일 눈금 2e-4).
+hp:
+  learning_rate: 2.0e-4
+
+# LoRA 하이퍼 — trainer 가 env(TFCT_LORA_RANK/ALPHA)로 baked config 에 넘긴다.
+lora:
+  r: 16
+  alpha: 32
+
+# torchtitan 고유 knob. arch(qwen3 8B)·dataloader 는 baked LoRA config 가 제공(model_spec 재생성).
+torchtitan:
+  train_samples: 15000        # full 과 동일 눈금. trainer 가 steps=train_samples/(batch×dp) 환산
+
+scale:
+  nodes: 1
+  gpus: 1                      # LoRA 8B = 어댑터만 → 단일 GPU

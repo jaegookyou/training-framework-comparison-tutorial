@@ -112,6 +112,26 @@ def sft_qwen3_8b_traceinversion() -> Trainer.Config:
     return cfg
 
 
+# tfct: 위 SFT 의 LoRA 변형 — 네이티브 LoRAConverter 로 model_spec 재생성(Linear→LoRALinear, base
+# frozen). converter 는 model_registry 빌드 시점에 적용되므로(ModelSpec 에 저장 안 됨) 같은 flavor
+# ("8B", attn_backend "varlen" = sft_qwen3_8b_math 와 동일)로 model_spec 을 다시 만든다. rank/alpha 는
+# host trainer 가 env(TFCT_LORA_*)로 넘긴다(config 함수는 인자 못 받음). target_modules=None = 전 Linear.
+def sft_qwen3_8b_traceinversion_lora() -> Trainer.Config:
+    import os
+
+    from torchtitan.components.lora import LoRAConverter
+
+    cfg = sft_qwen3_8b_traceinversion()
+    rank = int(os.environ.get("TFCT_LORA_RANK", "16"))
+    alpha = float(os.environ.get("TFCT_LORA_ALPHA", "32"))
+    cfg.model_spec = model_registry(
+        "8B",
+        attn_backend="varlen",
+        converters=[LoRAConverter.Config(rank=rank, alpha=alpha)],
+    )
+    return cfg
+
+
 # tfct: 사전학습 — 초소형 Qwen3 (tfct_tiny) on wikitext. qwen3_0_6b 본떠 flavor+dataloader 교체.
 def pretrain_qwen3_tiny_wikitext() -> Trainer.Config:
     cfg = qwen3_0_6b()

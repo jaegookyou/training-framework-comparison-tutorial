@@ -1,9 +1,11 @@
-"""torchtitan SFT 학습 경로 (full 전용·nightly SHA 핀).
+"""torchtitan SFT 학습 경로 (full|lora·nightly SHA 핀).
 
 torchtitan 의 SFT(ChatDataset)는 정식 릴리스(0.2.2)엔 없고 main 에만 있어 nightly 전용이다 →
 이미지가 torch nightly(cu124) + torchtitan@<SHA> 를 박고, 그 빌드된 이미지를 불변 태그로 박제해
 재현성을 확보한다(휠이 증발해도 이미지 환경은 영구 재현 = 컨테이너의 본질). docker/torchtitan.
-Dockerfile 참고. LoRA 는 torchtitan 에 없으므로 full 전용(매트릭스 결정).
+Dockerfile 참고. LoRA = 네이티브 LoRAConverter(components/lora.py)로 지원 — baked LoRA config 함수
+(sft_qwen3_8b_traceinversion_lora)가 같은 flavor 의 model_spec 을 converter 와 함께 재생성한다
+(Linear→LoRALinear, base frozen). rank/alpha 는 host 가 env TFCT_LORA_* 로 넘긴다.
 
 런치 = `torchrun -m torchtitan.train --module qwen3 --config <함수> [override]`. config 함수는
 이미지 baked patch 가 config_registry.py 에 등록한 `sft_qwen3_8b_traceinversion`(= 기존
@@ -53,17 +55,12 @@ def _prepare_hf_assets(cfg: RunConfig, work: Path) -> str:
 
 
 def train(cfg: RunConfig) -> None:
-    if cfg.tuning != "full":
-        raise SystemExit(
-            f"torchtitan 은 full SFT 전용이다(LoRA 없음). tuning={cfg.tuning!r} 미지원 "
-            "— LoRA 는 trl/unsloth/verl/megatron-bridge 경로를 써라."
-        )
-
     hp = cfg.section("hp")
     out = cfg.section("output")
     scale = cfg.section("scale")
     tt = cfg.section("torchtitan")
     model_cfg = cfg.section("model")
+    lora = cfg.section("lora")
     debug = cfg.section("debug")
 
     out_dir = Path(out.get("local_dir", "out"))
@@ -97,6 +94,16 @@ def train(cfg: RunConfig) -> None:
         f"--job.dump_folder={out_dir / 'ckpt'}",
     ]
 
+    # tuning 분기: lora 면 baked LoRA config(LoRAConverter 로 model_spec 재생성) + rank/alpha env.
+    # torchtitan --config 함수는 인자 못 받음 → env 가 정석. full 은 기본 config.
+    env = {**os.environ}
+    if cfg.tuning == "lora":
+        config_name = "sft_qwen3_8b_traceinversion_lora"
+        env["TFCT_LORA_RANK"] = str(lora.get("r", 16))
+        env["TFCT_LORA_ALPHA"] = str(lora.get("alpha", 32))
+    else:
+        config_name = "sft_qwen3_8b_traceinversion"
+
     # 단노드 다중 GPU = torchrun(FSDP 자동). 멀티노드(3단계)는 rdzv 멀티노드로 추후 배선.
     cmd = [
         "torchrun",
@@ -108,7 +115,7 @@ def train(cfg: RunConfig) -> None:
         "--module",
         "qwen3",
         "--config",
-        "sft_qwen3_8b_traceinversion",
+        config_name,
         *overrides,
     ]
-    subprocess.run(cmd, check=True, env={**os.environ})
+    subprocess.run(cmd, check=True, env=env)

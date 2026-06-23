@@ -13,6 +13,7 @@ MEGATRON_LM = CONFIGS / "sft" / "qwen3-8b_traceinversion__megatron-lm__full.yaml
 MEGATRON_BRIDGE_FULL = CONFIGS / "sft" / "qwen3-8b_traceinversion__megatron-bridge__full.yaml"
 MEGATRON_BRIDGE_LORA = CONFIGS / "sft" / "qwen3-8b_traceinversion__megatron-bridge__lora.yaml"
 TORCHTITAN = CONFIGS / "sft" / "qwen3-8b_traceinversion__torchtitan__full.yaml"
+TORCHTITAN_LORA = CONFIGS / "sft" / "qwen3-8b_traceinversion__torchtitan__lora.yaml"
 PRETRAIN = CONFIGS / "pretrain" / "qwen3-tiny_wikitext__torchtitan.yaml"
 DPO_FULL = CONFIGS / "dpo" / "qwen3-8b_ultrafeedback__trl__full.yaml"
 DPO_LORA = CONFIGS / "dpo" / "qwen3-8b_ultrafeedback__trl__lora.yaml"
@@ -138,10 +139,10 @@ def test_megatron_bridge_full_and_lora_configs():
     assert float(lora.section("hp")["learning_rate"]) == 2.0e-4
 
 
-def test_torchtitan_config_is_full_only():
+def test_torchtitan_full_and_lora_configs():
     cfg = RunConfig.from_file(TORCHTITAN)
     assert cfg.framework == "torchtitan"
-    assert cfg.tuning == "full"  # torchtitan SFT 는 full 전용(네이티브 LoRA 없음)
+    assert cfg.tuning == "full"
     assert cfg.image.endswith("/torchtitan:latest")
     # _base 공통 축 상속 (모델/데이터/템플릿 = 통제비교)
     assert cfg.section("model")["name"] == "Qwen/Qwen3-8B-Base"
@@ -149,6 +150,15 @@ def test_torchtitan_config_is_full_only():
     # torchtitan 고유 knob (step 환산용 train_samples)
     assert cfg.section("torchtitan")["train_samples"] == 15000
     assert cfg.run_name() == "sft-Qwen3-8B-Base-traceinversion-torchtitan-full"
+
+    # LoRA = 네이티브 LoRAConverter (baked sft_..._lora config, model_spec 재생성)
+    lora = RunConfig.from_file(TORCHTITAN_LORA)
+    assert lora.tuning == "lora"
+    assert lora.section("scale")["gpus"] == 1  # 어댑터만 → 단일 GPU
+    # lora run 이 _base SFT lr 을 override (trl/unsloth/verl SFT lora 와 동일 눈금 2e-4)
+    assert float(lora.section("hp")["learning_rate"]) == 2.0e-4
+    assert lora.section("lora")["r"] == 16  # trainer 가 env TFCT_LORA_RANK 로 baked config 에 전달
+    assert lora.run_name() == "sft-Qwen3-8B-Base-traceinversion-torchtitan-lora"
 
 
 def test_pretrain_config_torchtitan():

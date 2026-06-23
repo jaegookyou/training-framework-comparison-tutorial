@@ -1,7 +1,7 @@
 extends: _base.yaml
 
 framework: torchtitan
-tuning: full                  # torchtitan = full SFT 전용 (네이티브 LoRA 없음 → 매트릭스 빈칸)
+tuning: full                  # full 파라미터. LoRA 는 __lora.yaml (네이티브 LoRAConverter)
 image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/torchtitan:latest
 
 # torchtitan 고유 knob. 모델 arch(qwen3_8b)·dataloader 는 이미지 baked config(sft_qwen3_8b_traceinversion)

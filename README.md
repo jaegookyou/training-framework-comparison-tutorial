@@ -51,7 +51,8 @@ Vast.ai 백엔드는 계정 페이지의 API 키를 `~/.config/vastai/vast_api_k
 현재 구현:
 - **SFT**: TRL(full|lora) · Unsloth(full|lora·단일 GPU) · verl(full|lora·hydra+torchrun) ·
   Megatron-LM(full·convert→finetune→export) · Megatron-Bridge(full|lora·HF↔mcore 브리지+네이티브
-  PEFT) · torchtitan(full·nightly SHA 핀·ChatDataset, 이미지 박제로 재현) · NeMo-RL(full|lora·DTensor).
+  PEFT) · torchtitan(full|lora·nightly SHA 핀·ChatDataset·네이티브 LoRAConverter, 이미지 박제로
+  재현) · NeMo-RL(full|lora·DTensor).
   reasoning 트랙 (Qwen3-8B-Base + TraceInversion).
 - **DPO**(offline preference): TRL(full|lora) · Unsloth(full|lora·단일 GPU) · NeMo-RL(full|lora·헤비/
   DTensor). trl-lib/ultrafeedback_binarized.
