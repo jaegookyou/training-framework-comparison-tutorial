@@ -62,12 +62,12 @@ TRAINERS: dict[str, dict[str, str]] = {
 }
 
 
-def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(prog="tfct-run")
-    parser.add_argument("--config", required=True, help="run config YAML 경로")
-    args = parser.parse_args(argv)
+def dispatch(cfg: RunConfig) -> None:
+    """RunConfig → (method, framework) 에 맞는 trainer 모듈로 dispatch 해 train() 호출.
 
-    cfg = RunConfig.from_file(args.config)
+    단독 실행(main)과 파이프라인 러너(pipeline)가 공유하는 단일 진입 — 단계 하나를 돌리는 의미는
+    한 곳에만 둔다(파이프라인은 이걸 단계마다 부른다).
+    """
     by_method = TRAINERS.get(cfg.method)
     if by_method is None:
         raise SystemExit(f"no trainers registered for method: {cfg.method!r}")
@@ -76,9 +76,15 @@ def main(argv: list[str] | None = None) -> None:
         raise SystemExit(
             f"no trainer registered for {cfg.method}/{cfg.framework!r}"
         )
+    importlib.import_module(module_name).train(cfg)
 
-    trainer = importlib.import_module(module_name)
-    trainer.train(cfg)
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(prog="tfct-run")
+    parser.add_argument("--config", required=True, help="run config YAML 경로")
+    args = parser.parse_args(argv)
+
+    dispatch(RunConfig.from_file(args.config))
 
 
 if __name__ == "__main__":

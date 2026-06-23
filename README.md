@@ -102,8 +102,12 @@ online 생성+reward)라 별 method 로 둔다.
   `method: pretrain` 축, `configs/pretrain/`, `model_sizes.py`(size preset → torchtitan flavor /
   megatron arch 플래그). `tfct-run --config configs/pretrain/...`. 파이프라인 단계 입력은 torchtitan
   의 HF export(megatron mcore→HF 는 Bridge 가 담당 — 별도 경로).
-- **SFT·RL**(구현): 기존 TRL SFT/DPO/GRPO 경로 재사용(`model.name` 을 앞 단계 `out/hf` 로 지정).
-- 다음(로드맵): 파이프라인 러너(`tfct-pipeline`)로 PT→SFT→RL 단계 config 를 자동 연결(ckpt 전달).
+- **SFT·RL**(구현): 기존 SFT/DPO/GRPO 경로 재사용(`model.name` 을 앞 단계 산출 HF 로 지정).
+- **파이프라인 러너 `tfct-pipeline`**(구현): 선언적 spec(`pipelines/*.yaml`)이 단계 config 를 나열하면
+  러너가 순서대로 돌리며 단계 사이 `model.name ← 직전 단계 산출 HF` 를 자동 연결(단계별 분리 출력
+  디렉토리). 기존 standalone 단계 위 **얇은 재사용 레이어** — trainer·config 무수정, 단독 실행도 그대로.
+  `tfct-pipeline --pipeline pipelines/qwen3-8b.yaml`. 산출 HF 경로 규약은 프레임워크별(pretrain·
+  megatron-lm=`out/hf` / trl·unsloth full=`out`)로 명시(소비 단계는 full 핸드오프).
 
 ## 개발
 

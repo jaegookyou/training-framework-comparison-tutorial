@@ -24,6 +24,7 @@ trl = ["torch", "transformers", "trl", "datasets", "accelerate"]
 
 [project.scripts]
 tfct-run = "training_framework_comparison_tutorial.run:main"
+tfct-pipeline = "training_framework_comparison_tutorial.pipeline:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/training_framework_comparison_tutorial"]

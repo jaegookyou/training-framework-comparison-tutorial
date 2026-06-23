@@ -1,0 +1,17 @@
+# 수직 파이프라인 — 한 Qwen3-8B 가 PT(continual) → SFT → GRPO 전 과정을 통과.
+#
+# 가로 통제비교와 별개 산출물(세로). 각 단계 config 는 standalone(tfct-run 으로도 단독 실행 가능)
+# 이고, 러너(tfct-pipeline)가 순서대로 돌리며 단계 사이 model.name 을 직전 산출 HF 로 이어준다.
+# 단계는 전부 full(소비되는 단계는 full HF 핸드오프 — lora 어댑터는 불가).
+#
+# 사용:  tfct-pipeline --pipeline pipelines/qwen3-8b.yaml   (repo 루트에서, 단계 config 경로가 루트 기준)
+#
+# 단계 프레임워크는 자유(인터페이스 = HF ckpt): 여기선 PT=torchtitan, SFT·RL=trl(가장 가벼운 full).
+
+name: qwen3-8b-vertical
+workspace: /workspace/out/pipeline-qwen3-8b
+
+stages:
+  - configs/pretrain/qwen3-8b_wikitext__torchtitan.yaml      # continual-pretrain (Qwen3-8B-Base 시드) → out/hf
+  - configs/sft/qwen3-8b_traceinversion__trl__full.yaml      # 앞 단계 out/hf 를 model.name 으로 이어받아 SFT
+  - configs/grpo/qwen3-8b_gsm8k__trl__full.yaml              # SFT 산출을 이어받아 GRPO
