@@ -14,7 +14,10 @@ MEGATRON_BRIDGE_FULL = CONFIGS / "sft" / "qwen3-8b_traceinversion__megatron-brid
 MEGATRON_BRIDGE_LORA = CONFIGS / "sft" / "qwen3-8b_traceinversion__megatron-bridge__lora.yaml"
 TORCHTITAN = CONFIGS / "sft" / "qwen3-8b_traceinversion__torchtitan__full.yaml"
 TORCHTITAN_LORA = CONFIGS / "sft" / "qwen3-8b_traceinversion__torchtitan__lora.yaml"
+SLIME_SFT_FULL = CONFIGS / "sft" / "qwen3-8b_traceinversion__slime__full.yaml"
 PRETRAIN = CONFIGS / "pretrain" / "qwen3-tiny_wikitext__torchtitan.yaml"
+PRETRAIN_MEGATRON_LM = CONFIGS / "pretrain" / "qwen3-tiny_wikitext__megatron-lm.yaml"
+PRETRAIN_8B_TORCHTITAN = CONFIGS / "pretrain" / "qwen3-8b_wikitext__torchtitan.yaml"
 DPO_FULL = CONFIGS / "dpo" / "qwen3-8b_ultrafeedback__trl__full.yaml"
 DPO_LORA = CONFIGS / "dpo" / "qwen3-8b_ultrafeedback__trl__lora.yaml"
 GRPO_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__trl__full.yaml"
@@ -104,6 +107,25 @@ def test_verl_full_and_lora_configs():
     assert float(lora.section("hp")["learning_rate"]) == 2.0e-4
 
 
+def test_sft_slime_full_only_config():
+    # slime SFT = rollout 추상 재활용(sft_rollout). full 전용(base slime LoRA 없음 → lora 없음).
+    cfg = RunConfig.from_file(SLIME_SFT_FULL)
+    assert cfg.framework == "slime"
+    assert cfg.method == "sft"
+    assert cfg.tuning == "full"
+    assert cfg.image.endswith("/slime:latest")
+    # _base 공통 축 상속 (모델/데이터 = 다른 SFT 와 동일, 통제비교)
+    assert cfg.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert cfg.section("dataset")["source"] == "traceinversion"
+    assert cfg.section("model")["chat_template"] == "reasoning_chatml"  # loss mask 통제 변수
+    # slime 고유 knob (Megatron + sft_rollout)
+    assert cfg.section("slime")["model_script"] == "qwen3-8B"
+    assert cfg.section("slime")["loss_mask_type"] == "qwen3"
+    assert cfg.section("slime")["tensor_model_parallel_size"] == 2
+    assert cfg.section("scale")["gpus"] == 8
+    assert cfg.run_name() == "sft-Qwen3-8B-Base-traceinversion-slime-full"
+
+
 def test_megatron_lm_config_is_full_only_with_megatron_section():
     cfg = RunConfig.from_file(MEGATRON_LM)
     assert cfg.framework == "megatron-lm"
@@ -181,6 +203,64 @@ def test_model_size_presets_map_to_torchtitan():
 
     assert torchtitan_flavor("tiny") == "tfct_tiny"
     assert torchtitan_config_fn("tiny") == "pretrain_qwen3_tiny_wikitext"
+    # 8b continued-pretrain: native 8B flavor + baked pretrain_qwen3_8b_wikitext
+    assert torchtitan_flavor("8b") == "8B"
+    assert torchtitan_config_fn("8b") == "pretrain_qwen3_8b_wikitext"
+
+
+def test_pretrain_8b_continued_config():
+    # continued-pretrain: 사전·사후를 같은 8B 로 통일. init_from 시드 = 사후학습 base 와 동일.
+    cfg = RunConfig.from_file(PRETRAIN_8B_TORCHTITAN)
+    assert cfg.method == "pretrain"
+    assert cfg.framework == "torchtitan"
+    assert cfg.section("model")["size"] == "8b"
+    # 시드 = Qwen3-8B-Base (initial_load_in_hf 가 이걸 이어학습 → 사후학습 base 와 통일)
+    assert cfg.section("model")["init_from"] == "Qwen/Qwen3-8B-Base"
+    assert cfg.section("model")["tokenizer"] == "Qwen/Qwen3-8B-Base"
+    # continued 는 from-scratch(3e-4)보다 작은 lr + 멀티GPU
+    assert float(cfg.section("hp")["learning_rate"]) == 2.0e-5
+    assert cfg.section("scale")["gpus"] == 4
+    assert cfg.run_name() == "pretrain-8b-wikitext-torchtitan"
+    # from-scratch tiny 는 init_from 없음(랜덤 초기화) — 대조
+    assert "init_from" not in RunConfig.from_file(PRETRAIN).section("model")
+
+
+def test_pretrain_config_megatron_lm():
+    # 순수 Megatron-LM 사전학습(가로비교: torchtitan 과 동일 arch·데이터). 같은 _base 상속.
+    cfg = RunConfig.from_file(PRETRAIN_MEGATRON_LM)
+    assert cfg.method == "pretrain"
+    assert cfg.framework == "megatron-lm"
+    assert cfg.image.endswith("/megatron-lm:latest")
+    assert cfg.section("model")["size"] == "tiny"  # torchtitan 과 동일 arch preset
+    assert cfg.section("model")["tokenizer"] == "Qwen/Qwen3-8B-Base"
+    assert cfg.section("dataset")["source"] == "wikitext"
+    # megatron 고유 knob
+    assert cfg.section("megatron")["tensor_model_parallel_size"] == 1
+    assert cfg.section("megatron")["preprocess_workers"] == 8
+    assert cfg.run_name() == "pretrain-tiny-wikitext-megatron-lm"
+
+
+def test_megatron_arch_args_match_tfct_tiny():
+    from training_framework_comparison_tutorial.model_sizes import megatron_arch_args
+
+    args = megatron_arch_args("tiny", seq_len=2048)
+    # tfct_tiny 치수 정합 (dim512/6층/heads8/kv4/head_dim64/ffn1536/vocab151936)
+    pairs = {args[i]: args[i + 1] for i in range(0, len(args) - 1)}
+    assert pairs["--num-layers"] == "6"
+    assert pairs["--hidden-size"] == "512"
+    assert pairs["--ffn-hidden-size"] == "1536"
+    assert pairs["--num-attention-heads"] == "8"
+    assert pairs["--num-query-groups"] == "4"
+    assert pairs["--kv-channels"] == "64"
+    assert pairs["--seq-length"] == "2048"
+    assert pairs["--vocab-size"] == "151936"
+    assert pairs["--rotary-base"] == "1000000"
+    # Qwen3 플래그(값 없는 스위치) 존재 + tied embeddings(--untie 안 붙임)
+    assert "--swiglu" in args
+    assert "--qk-layernorm" in args
+    assert "--disable-bias-linear" in args
+    assert "--group-query-attention" in args
+    assert "--untie-embeddings-and-output-weights" not in args
 
 
 def test_dpo_full_and_lora_configs():
@@ -400,6 +480,13 @@ def test_ppo_format_reuses_grpo_formats():
     assert get_format("ppo", "slime") is to_slime_grpo
 
 
+def test_sft_slime_reuses_trl_messages_format():
+    from training_framework_comparison_tutorial.adapters import get_format, to_trl
+
+    # slime SFT 는 JSONL 의 messages 컬럼(--input-key messages) → trl/verl 과 동일 {messages} 모양.
+    assert get_format("sft", "slime") is to_trl
+
+
 def test_nemo_rl_all_methods_configs():
     # NeMo-RL = 종합 헤비 툴킷: SFT·DPO·GRPO(full|lora) + PPO(full). 전부 _base 상속(통제비교).
     sft_full = RunConfig.from_file(NEMO_SFT_FULL)
@@ -440,7 +527,11 @@ def test_dispatch_namespaced_by_method():
     assert "torchtitan" in TRAINERS["pretrain"]
     assert "torchtitan" in TRAINERS["sft"]
     assert TRAINERS["pretrain"]["torchtitan"].endswith("torchtitan_pretrain")
+    # 사전학습 가로비교: torchtitan 짝 = 순수 Megatron-LM(pretrain_gpt)
+    assert TRAINERS["pretrain"]["megatron-lm"].endswith("megatron_lm_pretrain")
     assert TRAINERS["sft"]["trl"].endswith("trl_sft")
+    # slime 은 RL 프레임워크지만 SFT 도 네이티브(rollout 추상 재활용 sft_rollout)
+    assert TRAINERS["sft"]["slime"].endswith("slime_sft")
     # RL 트랙: DPO·GRPO 는 별 method (TRL 기준점 + Unsloth 단일 GPU)
     assert TRAINERS["dpo"]["trl"].endswith("trl_dpo")
     assert TRAINERS["grpo"]["trl"].endswith("trl_grpo")

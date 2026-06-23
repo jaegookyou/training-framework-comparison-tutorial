@@ -1,0 +1,20 @@
+extends: _base.yaml
+
+framework: slime
+tuning: full                  # slime 은 full 전용(base slime LoRA 없음 — Miles 확장 필요)
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/slime:latest
+
+# slime 고유 knob (다른 프레임워크는 안 씀 → _base 아니라 여기에만).
+# slime SFT = rollout 추상 재활용(slime.rollout.sft_rollout) — 학습 백엔드는 Megatron 그대로,
+# 데이터 생산만 생성→고정데이터. arch args 는 slime repo 의 scripts/models/<model_script>.sh 가 제공.
+slime:
+  model_script: qwen3-8B              # slime scripts/models/qwen3-8B.sh (Qwen3-8B arch args)
+  loss_mask_type: qwen3              # MultiTurnLossMaskGenerator 알고리즘(응답 span 탐지). template 은 토크나이저(캐논)에서.
+  rollout_batch_size: 128            # SFT 는 그룹 없음 → global_batch_size = 이것과 동일
+  tensor_model_parallel_size: 2      # Megatron TP (8B → 2)
+  max_tokens_per_gpu: 9216           # dynamic batch 토큰 예산
+  save_interval: 1000
+
+scale:
+  nodes: 1
+  gpus: 8                            # 8B full SFT = Megatron 샤딩 → 멀티GPU

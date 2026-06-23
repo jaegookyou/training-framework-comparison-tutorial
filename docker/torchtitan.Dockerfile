@@ -145,6 +145,26 @@ def pretrain_qwen3_0_6b_wikitext() -> Trainer.Config:
     cfg = qwen3_0_6b()
     cfg.dataloader = HuggingFaceTextDataLoader.Config(dataset="wikitext")
     return cfg
+
+
+# tfct: continued-pretrain — Qwen3-8B-Base 가중치를 시드로 wikitext 이어학습(from-scratch 아님).
+# 사전·사후를 같은 8B 로 통일하는 수직 파이프라인용(8B from-scratch 는 250만 토큰엔 무의미 → 이어학습).
+# 시드 메커니즘 = initial_load_in_hf=True + initial_load_path 미지정 → hf_assets_path(=호스트가 받은
+# Qwen3-8B-Base 스냅샷)에서 HF 가중치 로드(initial_load_model_only=True 기본이라 옵티마이저는 fresh =
+# resume 아닌 이어학습). sft_qwen3_8b_math 와 동일 패턴. 0.6b pretrain skeleton(text loader)에 8B
+# flavor·8B assets·HF 시드 checkpoint 만 갈아끼운다.
+def pretrain_qwen3_8b_wikitext() -> Trainer.Config:
+    cfg = qwen3_0_6b()
+    cfg.model_spec = model_registry("8B")
+    cfg.hf_assets_path = "./assets/hf/Qwen3-8B-Base"   # 호스트가 --hf_assets_path 로 실경로 override
+    cfg.dataloader = HuggingFaceTextDataLoader.Config(dataset="wikitext")
+    cfg.checkpoint = CheckpointManager.Config(
+        enable=True,
+        initial_load_in_hf=True,            # hf_assets_path 의 HF 가중치를 시드로(continued-pretrain)
+        last_save_model_only=False,
+        export_dtype="float16",
+    )
+    return cfg
 ''')
 print("baked: wikitext dataset / tfct_tiny flavor / sft+pretrain config 함수")
 PY

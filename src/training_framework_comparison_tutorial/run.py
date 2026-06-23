@@ -17,6 +17,7 @@ _PKG = "training_framework_comparison_tutorial.trainers"
 TRAINERS: dict[str, dict[str, str]] = {
     "pretrain": {
         "torchtitan": f"{_PKG}.torchtitan_pretrain",
+        "megatron-lm": f"{_PKG}.megatron_lm_pretrain",  # 순수 Megatron-LM pretrain_gpt (가로비교)
     },
     "sft": {
         "trl": f"{_PKG}.trl_sft",
@@ -26,6 +27,7 @@ TRAINERS: dict[str, dict[str, str]] = {
         "megatron-bridge": f"{_PKG}.megatron_bridge_sft",
         "torchtitan": f"{_PKG}.torchtitan_sft",
         "nemo-rl": f"{_PKG}.nemo_rl_sft",
+        "slime": f"{_PKG}.slime_sft",  # rollout 추상 재활용(sft_rollout): RL 프레임워크 SFT
     },
     # 사후학습 RL 트랙. DPO(offline preference)와 GRPO(online RL)는 패러다임이 달라
     # 별 method 로 둔다(통제비교 = 프레임워크 고정, 방법만 비교). 기준점 = TRL.

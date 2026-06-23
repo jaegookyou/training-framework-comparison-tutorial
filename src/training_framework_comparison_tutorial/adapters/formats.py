@@ -85,6 +85,7 @@ FORMATS: dict[str, dict[str, Callable[[Any], dict[str, Any]]]] = {
         "trl": to_trl,
         "unsloth": to_trl,  # trl SFTTrainer 래핑 → conversational 포맷 동일
         "verl": to_trl,     # MultiTurnSFTDataset parquet 의 messages 컬럼과 동일 모양
+        "slime": to_trl,    # JSONL messages 컬럼(--input-key messages), sft_rollout 마스킹
     },
     "dpo": {
         "trl": to_trl_dpo,

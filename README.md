@@ -49,10 +49,16 @@ Vast.ai 백엔드는 계정 페이지의 API 키를 `~/.config/vastai/vast_api_k
 `--cloud vast` 로 클라우드를 고정할 수 있다.
 
 현재 구현:
+- **사전학습**: torchtitan · Megatron-LM(순수 `pretrain_gpt.py`·preprocess_data.py 인덱싱). `method:
+  pretrain`. 두 모드 — ① **from-scratch tiny**(dim512/6층, vocab151936 on wikitext-2): 동일 arch·
+  데이터·프레임워크만 변수(가로비교). ② **continued-pretrain 8B**(torchtitan, `init_from:
+  Qwen3-8B-Base` 시드 이어학습): 사전·사후를 **같은 8B 로 통일** — 한 모델이 PT→SFT→RL 전 과정 통과
+  (8B from-scratch 는 데이터 부족으로 무의미 → 이어학습). 산출 `out/hf` 가 사후학습 `model.name`.
 - **SFT**: TRL(full|lora) · Unsloth(full|lora·단일 GPU) · verl(full|lora·hydra+torchrun) ·
   Megatron-LM(full·convert→finetune→export) · Megatron-Bridge(full|lora·HF↔mcore 브리지+네이티브
   PEFT) · torchtitan(full|lora·nightly SHA 핀·ChatDataset·네이티브 LoRAConverter, 이미지 박제로
-  재현) · NeMo-RL(full|lora·DTensor).
+  재현) · NeMo-RL(full|lora·DTensor) · slime(full·rollout 추상 재활용 sft_rollout·loss mask=캐논
+  template). slime 은 RL 프레임워크지만 SFT 도 네이티브(full 전용 — base slime LoRA 없음).
   reasoning 트랙 (Qwen3-8B-Base + TraceInversion).
 - **DPO**(offline preference): TRL(full|lora) · Unsloth(full|lora·단일 GPU) · NeMo-RL(full|lora·헤비/
   DTensor). trl-lib/ultrafeedback_binarized.
@@ -92,8 +98,10 @@ online 생성+reward)라 별 method 로 둔다.
 통제비교(가로축)와 별개로, **단일 모델이 사전학습→SFT→RL 전 과정을 통과하는 종단 파이프라인**도
 설계돼 있다. 단계 간 인터페이스 = **HF 체크포인트**(각 단계 산출 `out/hf` → 다음 단계 `model.name`).
 크기 knob(`model.size`)·데이터·`scale.gpus` 만 바꾸면 코드 수정 없이 스케일된다.
-- **사전학습**(구현): `torchtitan` from-scratch (초소형 Qwen3 `tiny` + wikitext-2). `method: pretrain`
-  축, `configs/pretrain/`, `model_sizes.py`(size preset). `tfct-run --config configs/pretrain/...`.
+- **사전학습**(구현): `torchtitan` · `Megatron-LM` from-scratch (초소형 Qwen3 `tiny` + wikitext-2).
+  `method: pretrain` 축, `configs/pretrain/`, `model_sizes.py`(size preset → torchtitan flavor /
+  megatron arch 플래그). `tfct-run --config configs/pretrain/...`. 파이프라인 단계 입력은 torchtitan
+  의 HF export(megatron mcore→HF 는 Bridge 가 담당 — 별도 경로).
 - **SFT·RL**(구현): 기존 TRL SFT/DPO/GRPO 경로 재사용(`model.name` 을 앞 단계 `out/hf` 로 지정).
 - 다음(로드맵): 파이프라인 러너(`tfct-pipeline`)로 PT→SFT→RL 단계 config 를 자동 연결(ckpt 전달).
 
