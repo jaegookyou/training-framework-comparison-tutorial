@@ -19,14 +19,23 @@
 ARG BASE_IMAGE=ghcr.io/jaegookyou/training-framework-comparison-tutorial/base:latest
 FROM ${BASE_IMAGE}
 
-# torch + torchdata nightly (cu124). torchtitan main 이 PyTorch nightly 를 요구.
-RUN pip install --pre torch torchdata \
+# torch + torchdata nightly cu124 — 버전 핀(재현성: `--pre torch` 는 빌드마다 다른 nightly 를 받음).
+# torchtitan@SHA(9ccbb57, 2025-03) 가 요구하는 nightly 조합. 휠 증발 대비는 이미지 박제로 푼다.
+RUN pip install --pre torch==2.7.0.dev20250310+cu124 torchdata==0.12.0.dev20250220 \
         --index-url https://download.pytorch.org/whl/nightly/cu124
 
 # torchtitan @ 커밋 SHA 핀. repo clone + editable (scripts/ 디스크 유지). requirements(spmd_types 등) 동반.
+# ⚠️ editable 설치는 deps resolve 가 PyPI 인덱스만 봐서, 위에서 깐 nightly cu124 torch(PyPI 엔 없음)를
+#   "미설치"로 오판하고 spmd_types 의 `torch` 요구를 채우려 stable cu130 으로 덮어쓴다(CUDA 12.4 base
+#   위에 13.0 torch = GPU 런타임 불일치). editable 은 그대로 두고(전체 deps 정상 설치) 직후 torch 만
+#   nightly cu124 로 --force-reinstall 해 cu130 덮어쓰기를 되돌린다(constraint 는 resolver 가 다중
+#   인덱스+editable 조합에서 ResolutionImpossible 을 내 폐기). torchdata 는 editable 이 안 덮어 그대로.
 ARG TT_REF=9ccbb57b0e5df6d7fa56287181eed5d55891fcd0
 RUN git clone https://github.com/pytorch/torchtitan.git /opt/torchtitan \
-    && cd /opt/torchtitan && git checkout ${TT_REF} && pip install -e .
+    && cd /opt/torchtitan && git checkout ${TT_REF} \
+    && pip install -e . \
+    && pip install --pre torch==2.7.0.dev20250310+cu124 \
+        --index-url https://download.pytorch.org/whl/nightly/cu124 --force-reinstall
 ENV TORCHTITAN_DIR=/opt/torchtitan
 
 # baked patches — torchtitan 소스에 우리 통제비교/파이프라인 hook 을 박는다(editable 이라 직접 수정).
