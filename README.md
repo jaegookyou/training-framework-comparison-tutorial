@@ -1,15 +1,49 @@
 # training-framework-comparison-tutorial
 
-6개 프레임워크(**Megatron · torchtitan · TRL · Unsloth · verl · slime**)로 **사전학습 → 사후학습(SFT·선호최적화·RL)**을 **통제비교**하는 학습 lab. Vast.ai에서 빌린 GPU로 **single GPU → single-node multi-GPU → multi-node multi-GPU** 3단계 스케일을 밟고, 모든 run을 **W&B**로 로깅해 처리량·VRAM·수렴을 한 화면에 겹쳐 본다.
+**8개 프레임워크**(**TRL · Unsloth · verl · slime · Megatron-LM · Megatron-Bridge · torchtitan · NeMo-RL**)로 **사전학습 → 사후학습(SFT·선호최적화·RL)**을 **통제비교**하는 학습 lab. **SkyPilot**으로 제일 싼 GPU 오퍼를 띄워 **single GPU → single-node multi-GPU → multi-node multi-GPU** 3단계 스케일을 밟고, 모든 run 을 **W&B**로 로깅해 처리량·VRAM·수렴을 한 화면에 겹쳐 본다.
 
 ## 무엇을 비교하나
 
-- **사전학습**: torchtitan, Megatron (continued-pretrain 8B + 작은 코퍼스)
-- **사후학습**: 5개 프레임워크로 SFT / DPO / GRPO 등 유명 방법론 두루
-  - Megatron 사후학습 = verl + Megatron 백엔드
-  - torchtitan 사후학습 = torchforge (불안정 → 도전 챕터로 격리)
-- **통제**: 단계별 데이터·모델·HP·reward를 고정하고 **프레임워크만 변수**로 둠 (controlled comparison)
-- **스케일**: Unsloth는 1 GPU만, 나머지 4개는 전 스케일
+**고정 축(통제 변수)**: 모델 = `Qwen/Qwen3-8B-Base` 단일 · 데이터 = SFT(traceinversion) / DPO·online DPO(ultrafeedback) / GRPO·PPO(openai/gsm8k) · reward = 태스크 1:1 공유 `gsm8k_score`(rule) · chat template = 캐논 `REASONING_CHATML` 전 프레임워크 공유. **프레임워크만 변수**로 둔다(controlled comparison).
+
+### 프레임워크 × 방법 매트릭스
+
+범례: **✅** full\|lora · **F** full 만 · **·** 네이티브 경로 부재. (source of truth = `src/.../run.py` `TRAINERS` + `configs/`)
+
+| 프레임워크 | pretrain | SFT | DPO(off) | online DPO | GRPO | PPO |
+|---|:--:|:--:|:--:|:--:|:--:|:--:|
+| **TRL** | · | ✅ | ✅ | ✅ | ✅ | ·¹ |
+| **Unsloth** | · | ✅ | ✅ | · | ✅ | · |
+| **verl** | · | ✅ | · | · | ✅ | ✅ |
+| **slime** | · | F | · | · | F | F |
+| **Megatron-LM** | F² | F | · | · | F | · |
+| **Megatron-Bridge** | · | ✅ | · | · | ·³ | · |
+| **torchtitan** | F² | ✅ | · | · | F⁴ | · |
+| **NeMo-RL** | · | ✅ | ✅ | · | ✅ | F⁵ |
+
+빈칸/`F` 는 전부 upstream 실물로 검증한 **정직한 경로 부재**다(누락 아님). 네이티브 기준 maxed.
+
+¹ TRL PPO 는 설계상 제외 — `PPOTrainer` 가 neural reward model 강제라 rule gsm8k reward 부적합(선호 패러다임).
+² 사전학습 = **continued-pretrain 8B 전용**(`init_from: Qwen3-8B-Base` 시드, from-scratch 제거).
+³ Megatron-Bridge = HF↔mcore 변환 라이브러리 + SFT recipe. 네이티브 RL 트레이너 0개(RL 에선 NeMo-RL 의 변환 부품으로 쓰임).
+⁴ torchtitan GRPO = `experiments/rl`(Monarch+vLLM, experimental), SFT/pretrain(cu124)과 다른 **별도 cu130 이미지**.
+⁵ NeMo-RL PPO = full 만(`lora.md`: LoRA 는 SFT/GRPO/DPO 만 지원).
+
+### 프레임워크 키 (엔진 · 변환 · 스케일)
+
+매트릭스는 "방법 지원"만 말한다. 아래는 라벨 해석용 보조표 — 같은 Megatron 이 왜 두 행인지, 변환이 어디서 일어나는지.
+
+| 프레임워크 | 엔진 | HF↔네이티브 변환 | 스케일 |
+|---|---|---|---|
+| TRL · Unsloth | transformers | 암묵(HF 네이티브) | Unsloth=1 GPU / TRL=전 스케일 |
+| verl · NeMo-RL | FSDP/DTensor · megatron-core 백엔드 | 백엔드 따라(자동) | 전 스케일(ray) |
+| slime | megatron-core | 명시(`--hf-checkpoint`→변환) | 전 스케일(SGLang+Megatron) |
+| Megatron-LM | megatron-core | 명시(continued 는 AutoBridge 글루) | 전 스케일(다중 엔트리) |
+| Megatron-Bridge | megatron-core | 명시(AutoBridge = 본업) | 전 스케일 |
+| torchtitan | torchtitan(DCP) | 플래그(`initial_load_in_hf`) | 전 스케일 |
+
+- **megatron-core 가 공유 엔진**이다(slime·Megatron-LM·Megatron-Bridge·verl/NeMo-RL 의 megatron 백엔드). Megatron-LM(repo)↔Megatron-Bridge(라이브러리)는 *같은 엔진의 다른 진입 레이어* — 그래서 비교축으로 별 행이다.
+- **변환은 전 프레임워크 공통 전제**(모든 단계 인터페이스 = HF 체크포인트)라 매트릭스 축이 아니다. HF-네이티브는 변환이 암묵이고, mcore 계열만 명시 도구(AutoBridge 등)가 필요할 뿐.
 
 ## 설치
 
