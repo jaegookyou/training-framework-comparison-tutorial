@@ -1,0 +1,17 @@
+extends: _base.yaml
+
+framework: torchtitan
+tuning: full
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/torchtitan-rl:latest
+
+# torchtitan GRPO = experiments/rl(Monarch actors + vLLM rollout). 별도 cu130 스택이라 SFT/사전학습
+# 이미지(cu124)와 다른 torchtitan-rl 이미지. full 전용(experiments/rl 에 LoRA RL 경로 없음).
+# ⚠️ upstream experimental("APIs may change · single-turn only for now").
+# reward = 공유 gsm8k_score(우리 rubric), data = 공유 from_gsm8k → 다른 GRPO 경로와 통제 정합.
+# ⚠️ HP(lr·group_size·temperature·seq_len 등)는 baked config 함수(rl_grpo_qwen3_8b_gsm8k)가 _base grpo
+#    와 같은 눈금으로 박는다 — nested RLTrainer.Config 의 CLI override 경로 미확인이라(추정 금지) host
+#    트레이너는 README 확인된 --hf_assets_path 만 넘긴다(통제 HP 단일 출처 = config 함수).
+
+scale:
+  nodes: 1
+  gpus: 8                        # Monarch 가 4 gen(vLLM) + 4 train(TorchTitan) mesh 로 분리

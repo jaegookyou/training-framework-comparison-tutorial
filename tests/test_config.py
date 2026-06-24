@@ -29,6 +29,7 @@ GRPO_VERL_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__verl__full.yaml"
 GRPO_VERL_LORA = CONFIGS / "grpo" / "qwen3-8b_gsm8k__verl__lora.yaml"
 GRPO_SLIME_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__slime__full.yaml"
 GRPO_MEGATRON_LM_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__megatron-lm__full.yaml"
+GRPO_TORCHTITAN_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__torchtitan__full.yaml"
 ONLINE_DPO_TRL_FULL = CONFIGS / "online_dpo" / "qwen3-8b_ultrafeedback__trl__full.yaml"
 ONLINE_DPO_TRL_LORA = CONFIGS / "online_dpo" / "qwen3-8b_ultrafeedback__trl__lora.yaml"
 PPO_VERL_FULL = CONFIGS / "ppo" / "qwen3-8b_gsm8k__verl__full.yaml"
@@ -389,6 +390,22 @@ def test_grpo_megatron_lm_full_only_config():
     assert cfg.run_name() == "grpo-Qwen3-8B-Base-gsm8k-megatron-lm-full"
 
 
+def test_grpo_torchtitan_full_only_config():
+    cfg = RunConfig.from_file(GRPO_TORCHTITAN_FULL)
+    assert cfg.framework == "torchtitan"
+    assert cfg.method == "grpo"
+    assert cfg.tuning == "full"  # experiments/rl 에 LoRA RL 경로 없음 → full 전용
+    # ⚠️ 별도 cu130 이미지(torchtitan-rl) — SFT/사전학습 torchtitan 이미지(cu124)와 다름
+    assert cfg.image.endswith("/torchtitan-rl:latest")
+    # _base 공통 축 상속 (모델/데이터/reward = 다른 GRPO 와 동일, 통제비교)
+    assert cfg.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert cfg.section("dataset")["source"] == "gsm8k"
+    assert cfg.section("reward")["name"] == "gsm8k"
+    assert cfg.section("hp")["num_generations"] == 8
+    assert cfg.section("scale")["gpus"] == 8
+    assert cfg.run_name() == "grpo-Qwen3-8B-Base-gsm8k-torchtitan-full"
+
+
 def test_online_dpo_trl_full_and_lora_configs():
     full = RunConfig.from_file(ONLINE_DPO_TRL_FULL)
     assert full.framework == "trl"
@@ -536,6 +553,8 @@ def test_dispatch_namespaced_by_method():
     assert TRAINERS["grpo"]["verl"].endswith("verl_grpo")
     assert TRAINERS["grpo"]["slime"].endswith("slime_grpo")
     assert TRAINERS["grpo"]["megatron-lm"].endswith("megatron_lm_grpo")
+    # torchtitan GRPO = experiments/rl(Monarch+vLLM) — full 전용·experimental·별도 cu130 이미지
+    assert TRAINERS["grpo"]["torchtitan"].endswith("torchtitan_grpo")
     # PPO = critic(GAE). verl·slime·nemo-rl 가로(megatron-lm 은 GRPO 전용, TRL 은 neural RM)
     assert TRAINERS["ppo"]["verl"].endswith("verl_ppo")
     assert TRAINERS["ppo"]["slime"].endswith("slime_ppo")

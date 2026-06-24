@@ -51,6 +51,9 @@ TRAINERS: dict[str, dict[str, str]] = {
         "slime": f"{_PKG}.slime_grpo",
         "megatron-lm": f"{_PKG}.megatron_lm_grpo",
         "nemo-rl": f"{_PKG}.nemo_rl_grpo",
+        # torchtitan experiments/rl(Monarch+vLLM, GRPO-based). full 전용·experimental. reward=공유
+        # gsm8k_score. 별도 cu130 이미지(torchtitan-rl) — SFT/사전학습 cu124 와 코어 스택 다름.
+        "torchtitan": f"{_PKG}.torchtitan_grpo",
     },
     # PPO = critic(value model)으로 GAE advantage 추정(GRPO 의 그룹 정규화와 다름). 대규모 RL 인프라
     # 셋(verl=ray main_ppo / slime=SGLang+Megatron / nemo-rl=NeMo, 전부 rule reward 네이티브)으로

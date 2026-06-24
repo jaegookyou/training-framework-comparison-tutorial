@@ -1,0 +1,35 @@
+# tfct GRPO 런 (torchtitan, full·experimental) — SkyPilot task. RL 가로비교의 torchtitan 데이터포인트.
+#
+# torchtitan experiments/rl(Monarch actors + vLLM rollout). entrypoint(tfct-run)가 RunConfig 를 읽어
+# `python -m torchtitan.experiments.rl.train --module <우리 gsm8k> --config rl_grpo_qwen3_8b_gsm8k
+# --hf_assets_path=...` 를 띄운다(torchrun 아님 — Monarch 가 trainer/generator mesh 분할).
+# full 전용(experiments/rl LoRA RL 없음). reward = 공유 gsm8k_score.
+#
+# 사용:
+#   export WANDB_API_KEY=...  HF_TOKEN=...
+#   sky launch -c tfct-grpo-tt sky/grpo.torchtitan.sky.yaml --gpus A100:8 \
+#     --env WANDB_API_KEY --env HF_TOKEN
+#   sky logs tfct-grpo-tt ; sky down tfct-grpo-tt
+#
+# ⚠️ 이미지 = torchtitan-rl (cu130 + Monarch/TorchStore/renderers/FA3/vLLM) — SFT/사전학습 이미지
+#    (cu124)와 별개. docker/torchtitan-rl.Dockerfile 참고. upstream experimental.
+
+name: tfct-grpo-torchtitan
+
+resources:
+  accelerators: A100:8                                 # 4 gen + 4 train mesh(Monarch). 스케일 시 --gpus 확대
+  use_spot: true
+  image_id: docker:ghcr.io/jaegookyou/training-framework-comparison-tutorial/torchtitan-rl:latest
+
+workdir: .
+
+envs:
+  CONFIG: configs/grpo/qwen3-8b_gsm8k__torchtitan__full.yaml
+  WANDB_API_KEY: ""
+  HF_TOKEN: ""                                         # Qwen3-8B-Base 가중치/토크나이저 다운로드
+
+setup: |
+  pip install -e .
+
+run: |
+  tfct-run --config $CONFIG

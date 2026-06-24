@@ -70,10 +70,11 @@ Vast.ai 백엔드는 계정 페이지의 API 키를 `~/.config/vastai/vast_api_k
 - **GRPO**(online RL): TRL(full|lora) · Unsloth(full|lora·단일 GPU·vllm 내장 fast_inference) ·
   verl(full|lora·ray main_ppo·vllm rollout) · slime(full·ray train.py·SGLang 롤아웃+Megatron 학습) ·
   Megatron-LM(full·examples/rl train_rl.py 네이티브 GRPO·환경 에이전트) · NeMo-RL(full|lora·DTensor·
-  커스텀 환경). openai/gsm8k + reward (정답 일치+형식). RL 트랙 기준점 = TRL, GRPO 가로비교를
-  verl·slime·megatron-lm·nemo-rl 으로 확장(전부 GRPO 본진). reward 는 태스크 1:1 채점 코어를 공유하되
-  규약별로 노출(TRL=list 반환 / verl=compute_score / slime=async slime_rm / megatron-lm=환경 에이전트
-  get_reward / nemo-rl=커스텀 environment step). TRL GRPO 는 vllm rollout 필요(이미지 추가 TODO) —
+  커스텀 환경) · torchtitan(full·experiments/rl·Monarch actors+vLLM·experimental·별도 cu130 이미지).
+  openai/gsm8k + reward (정답 일치+형식). RL 트랙 기준점 = TRL, GRPO 가로비교를
+  verl·slime·megatron-lm·nemo-rl·torchtitan 으로 확장(전부 GRPO 본진). reward 는 태스크 1:1 채점 코어를
+  공유하되 규약별로 노출(TRL=list 반환 / verl=compute_score / slime=async slime_rm / megatron-lm=환경
+  에이전트 get_reward / nemo-rl=커스텀 environment step / torchtitan=RewardFn rubric). TRL GRPO 는 vllm rollout 필요(이미지 추가 TODO) —
   Unsloth·verl·slime 은 내장. slime·megatron-lm 은 full 전용(examples/rl 에 LoRA 없음), nemo-rl 은
   full|lora(DTensor v2 lora_cfg). megatron-lm 은 SFT(post_training/modelopt)와 GRPO(examples/rl)가
   한 이미지·두 진입점.
