@@ -54,48 +54,7 @@ DATASETS["wikitext"] = DatasetConfig(
 )
 ''')
 
-# (2) 초소형 Qwen3 flavor 등록 — vocab 151936 유지(Qwen3 토크나이저 정합), dim/층만 축소.
-init = TT / "models" / "qwen3" / "__init__.py"
-init.write_text(init.read_text() + '''
-
-# tfct: 초소형 Qwen3 (dim 512 / 6층 / vocab 151936). 사전학습 배선·파이프라인 연습용.
-def _tfct_tiny(attn_backend: str) -> Qwen3Model.Config:
-    dim = 512
-    head_dim = 64
-    n_layers = 6
-    vocab_size = 151936
-    return Qwen3Model.Config(
-        vocab_size=vocab_size,
-        dim=dim,
-        norm=_qwen3_norm(dim),
-        enable_weight_tying=True,
-        tok_embeddings=Embedding.Config(
-            num_embeddings=vocab_size,
-            embedding_dim=dim,
-            param_init=_EMBEDDING_SKIP_INIT,
-        ),
-        lm_head=Linear.Config(
-            in_features=dim,
-            out_features=vocab_size,
-            param_init=_output_linear_init(dim),
-        ),
-        layers=_build_qwen3_layers(
-            n_layers=n_layers,
-            dim=dim,
-            n_heads=8,
-            n_kv_heads=4,
-            head_dim=head_dim,
-            hidden_dim=1536,
-            attn_backend=attn_backend,
-            rope=CosSinRoPE.Config(dim=head_dim, max_seq_len=4096, theta=1000000.0),
-        ),
-    )
-
-
-qwen3_configs["tfct_tiny"] = _tfct_tiny
-''')
-
-# (3) config 함수 등록 — SFT(traceinversion) + 사전학습(wikitext). torchtitan --config 가 이름 resolve.
+# (2) config 함수 등록 — SFT(traceinversion) + 사전학습(wikitext). torchtitan --config 가 이름 resolve.
 reg = TT / "models" / "qwen3" / "config_registry.py"
 reg.write_text(reg.read_text() + '''
 
@@ -132,27 +91,12 @@ def sft_qwen3_8b_traceinversion_lora() -> Trainer.Config:
     return cfg
 
 
-# tfct: 사전학습 — 초소형 Qwen3 (tfct_tiny) on wikitext. qwen3_0_6b 본떠 flavor+dataloader 교체.
-def pretrain_qwen3_tiny_wikitext() -> Trainer.Config:
-    cfg = qwen3_0_6b()
-    cfg.model_spec = model_registry("tfct_tiny")
-    cfg.dataloader = HuggingFaceTextDataLoader.Config(dataset="wikitext")
-    return cfg
-
-
-# tfct: 스케일업 예시 — 0.6B(native flavor) on wikitext. size preset "0.6b" 가 가리킨다.
-def pretrain_qwen3_0_6b_wikitext() -> Trainer.Config:
-    cfg = qwen3_0_6b()
-    cfg.dataloader = HuggingFaceTextDataLoader.Config(dataset="wikitext")
-    return cfg
-
-
 # tfct: continued-pretrain — Qwen3-8B-Base 가중치를 시드로 wikitext 이어학습(from-scratch 아님).
 # 사전·사후를 같은 8B 로 통일하는 수직 파이프라인용(8B from-scratch 는 250만 토큰엔 무의미 → 이어학습).
 # 시드 메커니즘 = initial_load_in_hf=True + initial_load_path 미지정 → hf_assets_path(=호스트가 받은
 # Qwen3-8B-Base 스냅샷)에서 HF 가중치 로드(initial_load_model_only=True 기본이라 옵티마이저는 fresh =
-# resume 아닌 이어학습). sft_qwen3_8b_math 와 동일 패턴. 0.6b pretrain skeleton(text loader)에 8B
-# flavor·8B assets·HF 시드 checkpoint 만 갈아끼운다.
+# resume 아닌 이어학습). sft_qwen3_8b_math 와 동일 패턴. qwen3_0_6b skeleton(native, text loader)에
+# 8B flavor·8B assets·HF 시드 checkpoint 만 갈아끼운다.
 def pretrain_qwen3_8b_wikitext() -> Trainer.Config:
     cfg = qwen3_0_6b()
     cfg.model_spec = model_registry("8B")
@@ -166,7 +110,7 @@ def pretrain_qwen3_8b_wikitext() -> Trainer.Config:
     )
     return cfg
 ''')
-print("baked: wikitext dataset / tfct_tiny flavor / sft+pretrain config 함수")
+print("baked: wikitext dataset / sft+continued-pretrain config 함수")
 PY
 
 # repo 연결: 이 LABEL 이 패키지를 GitHub repo 의 Packages 에 붙이고 visibility 를 상속시킨다.

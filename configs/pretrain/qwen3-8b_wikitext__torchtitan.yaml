@@ -3,7 +3,7 @@ extends: _base.yaml
 framework: torchtitan
 image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/torchtitan:latest
 
-# Continued-pretrain: 사전·사후를 같은 Qwen3-8B 로 통일. from-scratch(tiny)와 달리 Qwen3-8B-Base
+# Continued-pretrain: 사전·사후를 같은 Qwen3-8B 로 통일. Qwen3-8B-Base
 # 가중치를 시드로 이어학습한다(8B from-scratch 는 데이터 부족으로 무의미). 산출 out/hf 가 SFT/RL 의
 # model.name 이 되는 수직 파이프라인 — 한 8B 가 PT→SFT→RL 전 과정을 통과한다.
 model:

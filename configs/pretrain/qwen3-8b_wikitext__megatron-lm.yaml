@@ -4,7 +4,7 @@ framework: megatron-lm
 # ⚠️ 이미지 = megatron-bridge (megatron-lm 아님). continued-pretrain 은 HF→mcore 시드/export 에
 # AutoBridge 가 필요한데 순수 megatron-lm 이미지엔 megatron.bridge 가 없다(convert.py 는 qwen3 미지원).
 # bridge 이미지는 AutoBridge + (clone 된) Megatron-LM repo 의 pretrain_gpt.py 를 둘 다 가진다 →
-# 학습은 순수 pretrain_gpt.py, 변환만 Bridge 글루. from-scratch tiny config 는 megatron-lm 이미지 유지.
+# 학습은 순수 pretrain_gpt.py, 변환만 Bridge 글루.
 image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/megatron-bridge:latest
 
 # Continued-pretrain 의 순수 Megatron-LM 짝(torchtitan continued 와 같은 칸). Qwen3-8B-Base 가중치를

@@ -1,32 +1,31 @@
-# tfct 사전학습 런 (Megatron-LM, from-scratch) — SkyPilot task. 사전학습 가로비교(torchtitan 짝).
+# tfct 사전학습 런 (Megatron-LM, continued-pretrain 8B) — SkyPilot task. torchtitan continued 의 Megatron 짝.
 #
-# 순수 Megatron-LM(pretrain_gpt.py)으로 초소형 Qwen3 를 wikitext 로 from-scratch 학습.
-# entrypoint(tfct-run)가 RunConfig 를 읽어 ① wikitext→JSONL ② preprocess_data.py 인덱싱
-# ③ torchrun pretrain_gpt.py 를 내부에서 띄운다 → run 블록은 다른 sky 와 동일하게 한 줄.
-# 초소형 → 단일 GPU. 스케일(0.6b / wikitext-103) 시 --gpus·TP 키우면 Megatron 샤딩.
+# 순수 Megatron-LM(pretrain_gpt.py)으로 Qwen3-8B-Base 를 wikitext 로 이어학습. HF↔mcore 변환만 Bridge
+# (AutoBridge import/export) 글루로 쓴다 — 순수 convert.py 는 qwen3 미지원이라. entrypoint(tfct-run)가
+# convert(Bridge)→preprocess→pretrain_gpt.py→export(Bridge) 를 내부에서 띄우므로 run 블록은 한 줄.
 #
 # 사용:
 #   export WANDB_API_KEY=...  HF_TOKEN=...
-#   sky launch -c tfct-pretrain-mlm sky/pretrain.megatron-lm.sky.yaml --gpus A100:1 \
+#   sky launch -c tfct-pretrain-mlm sky/pretrain.megatron-lm.sky.yaml --gpus A100:8 \
 #     --env WANDB_API_KEY --env HF_TOKEN
 #   sky logs tfct-pretrain-mlm ; sky down tfct-pretrain-mlm
 #
-# ⚠️ 이미지는 megatron-lm SFT/GRPO 와 동일(megatron-core 0.17.1 + TE). 한 프레임워크 = 한 이미지,
-#    세 진입점(SFT=post_training/modelopt · GRPO=examples/rl · pretrain=pretrain_gpt.py).
+# ⚠️ 이미지 = megatron-bridge (AutoBridge + clone 된 Megatron-LM repo 의 pretrain_gpt.py 둘 다 보유).
+#    from-scratch 는 제거됨(continued 전용).
 
 name: tfct-pretrain-megatron-lm
 
 resources:
-  accelerators: A100:1                                 # 초소형 → 단일 GPU. 스케일 시 --gpus 로 확대
+  accelerators: A100:8                                 # 8B continued(TP=4) → DP=2. 스케일 시 --gpus 확대
   use_spot: true
-  image_id: docker:ghcr.io/jaegookyou/training-framework-comparison-tutorial/megatron-lm:latest
+  image_id: docker:ghcr.io/jaegookyou/training-framework-comparison-tutorial/megatron-bridge:latest
 
 workdir: .
 
 envs:
-  CONFIG: configs/pretrain/qwen3-tiny_wikitext__megatron-lm.yaml
+  CONFIG: configs/pretrain/qwen3-8b_wikitext__megatron-lm.yaml
   WANDB_API_KEY: ""
-  HF_TOKEN: ""                                         # 토크나이저(Qwen3) 다운로드 시
+  HF_TOKEN: ""                                         # 8B-Base 가중치 다운로드(시드)
 
 setup: |
   pip install -e .

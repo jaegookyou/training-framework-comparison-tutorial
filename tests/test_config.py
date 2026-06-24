@@ -15,8 +15,6 @@ MEGATRON_BRIDGE_LORA = CONFIGS / "sft" / "qwen3-8b_traceinversion__megatron-brid
 TORCHTITAN = CONFIGS / "sft" / "qwen3-8b_traceinversion__torchtitan__full.yaml"
 TORCHTITAN_LORA = CONFIGS / "sft" / "qwen3-8b_traceinversion__torchtitan__lora.yaml"
 SLIME_SFT_FULL = CONFIGS / "sft" / "qwen3-8b_traceinversion__slime__full.yaml"
-PRETRAIN = CONFIGS / "pretrain" / "qwen3-tiny_wikitext__torchtitan.yaml"
-PRETRAIN_MEGATRON_LM = CONFIGS / "pretrain" / "qwen3-tiny_wikitext__megatron-lm.yaml"
 PRETRAIN_8B_TORCHTITAN = CONFIGS / "pretrain" / "qwen3-8b_wikitext__torchtitan.yaml"
 PRETRAIN_8B_MEGATRON_LM = CONFIGS / "pretrain" / "qwen3-8b_wikitext__megatron-lm.yaml"
 DPO_FULL = CONFIGS / "dpo" / "qwen3-8b_ultrafeedback__trl__full.yaml"
@@ -184,27 +182,13 @@ def test_torchtitan_full_and_lora_configs():
     assert lora.run_name() == "sft-Qwen3-8B-Base-traceinversion-torchtitan-lora"
 
 
-def test_pretrain_config_torchtitan():
-    cfg = RunConfig.from_file(PRETRAIN)
-    assert cfg.method == "pretrain"
-    assert cfg.framework == "torchtitan"
-    # from-scratch 라 model.name 이 아니라 model.size (arch preset)
-    assert cfg.section("model")["size"] == "tiny"
-    assert cfg.section("model")["tokenizer"] == "Qwen/Qwen3-8B-Base"  # SFT/RL 과 동일 토크나이저
-    assert cfg.section("dataset")["source"] == "wikitext"
-    # 사전학습 run_name = method-size-ds-framework (tuning 축 없음)
-    assert cfg.run_name() == "pretrain-tiny-wikitext-torchtitan"
-
-
 def test_model_size_presets_map_to_torchtitan():
     from training_framework_comparison_tutorial.model_sizes import (
         torchtitan_config_fn,
         torchtitan_flavor,
     )
 
-    assert torchtitan_flavor("tiny") == "tfct_tiny"
-    assert torchtitan_config_fn("tiny") == "pretrain_qwen3_tiny_wikitext"
-    # 8b continued-pretrain: native 8B flavor + baked pretrain_qwen3_8b_wikitext
+    # 8b continued-pretrain: native 8B flavor + baked pretrain_qwen3_8b_wikitext (from-scratch 제거)
     assert torchtitan_flavor("8b") == "8B"
     assert torchtitan_config_fn("8b") == "pretrain_qwen3_8b_wikitext"
 
@@ -218,27 +202,10 @@ def test_pretrain_8b_continued_config():
     # 시드 = Qwen3-8B-Base (initial_load_in_hf 가 이걸 이어학습 → 사후학습 base 와 통일)
     assert cfg.section("model")["init_from"] == "Qwen/Qwen3-8B-Base"
     assert cfg.section("model")["tokenizer"] == "Qwen/Qwen3-8B-Base"
-    # continued 는 from-scratch(3e-4)보다 작은 lr + 멀티GPU
+    # continued 는 작은 lr + 멀티GPU
     assert float(cfg.section("hp")["learning_rate"]) == 2.0e-5
     assert cfg.section("scale")["gpus"] == 4
     assert cfg.run_name() == "pretrain-8b-wikitext-torchtitan"
-    # from-scratch tiny 는 init_from 없음(랜덤 초기화) — 대조
-    assert "init_from" not in RunConfig.from_file(PRETRAIN).section("model")
-
-
-def test_pretrain_config_megatron_lm():
-    # 순수 Megatron-LM 사전학습(가로비교: torchtitan 과 동일 arch·데이터). 같은 _base 상속.
-    cfg = RunConfig.from_file(PRETRAIN_MEGATRON_LM)
-    assert cfg.method == "pretrain"
-    assert cfg.framework == "megatron-lm"
-    assert cfg.image.endswith("/megatron-lm:latest")
-    assert cfg.section("model")["size"] == "tiny"  # torchtitan 과 동일 arch preset
-    assert cfg.section("model")["tokenizer"] == "Qwen/Qwen3-8B-Base"
-    assert cfg.section("dataset")["source"] == "wikitext"
-    # megatron 고유 knob
-    assert cfg.section("megatron")["tensor_model_parallel_size"] == 1
-    assert cfg.section("megatron")["preprocess_workers"] == 8
-    assert cfg.run_name() == "pretrain-tiny-wikitext-megatron-lm"
 
 
 def test_pretrain_8b_continued_config_megatron_lm():
@@ -260,14 +227,14 @@ def test_pretrain_8b_continued_config_megatron_lm():
     # 사전학습 = full-param (tuning 축 없음 → 기본 full)
     assert cfg.tuning == "full"
     assert cfg.run_name() == "pretrain-8b-wikitext-megatron-lm"
-    # from-scratch tiny(megatron-lm)는 init_from 없음 — 대조
-    assert "init_from" not in RunConfig.from_file(PRETRAIN_MEGATRON_LM).section("model")
+    # megatron 고유 knob (preprocess)
+    assert cfg.section("megatron")["preprocess_workers"] == 8
 
 
 def test_megatron_arch_args_8b_untied():
     from training_framework_comparison_tutorial.model_sizes import megatron_arch_args
 
-    # 8b = Qwen3-8B (untied, max-pos 40960) — tiny(tied)와 대조
+    # 8b = Qwen3-8B (untied, max-pos 40960)
     args = megatron_arch_args("8b", seq_len=2048)
     pairs = {args[i]: args[i + 1] for i in range(0, len(args) - 1)}
     assert pairs["--num-layers"] == "36"
@@ -277,32 +244,15 @@ def test_megatron_arch_args_8b_untied():
     assert pairs["--num-query-groups"] == "8"
     assert pairs["--kv-channels"] == "128"
     assert pairs["--max-position-embeddings"] == "40960"  # native(seq_len 아님)
-    # 8b 는 untied → --untie 붙음 / tiny 는 tied → 안 붙음
+    # 8b 는 untied → --untie 붙음
     assert "--untie-embeddings-and-output-weights" in args
-    assert "--untie-embeddings-and-output-weights" not in megatron_arch_args("tiny", seq_len=2048)
-
-
-def test_megatron_arch_args_match_tfct_tiny():
-    from training_framework_comparison_tutorial.model_sizes import megatron_arch_args
-
-    args = megatron_arch_args("tiny", seq_len=2048)
-    # tfct_tiny 치수 정합 (dim512/6층/heads8/kv4/head_dim64/ffn1536/vocab151936)
-    pairs = {args[i]: args[i + 1] for i in range(0, len(args) - 1)}
-    assert pairs["--num-layers"] == "6"
-    assert pairs["--hidden-size"] == "512"
-    assert pairs["--ffn-hidden-size"] == "1536"
-    assert pairs["--num-attention-heads"] == "8"
-    assert pairs["--num-query-groups"] == "4"
-    assert pairs["--kv-channels"] == "64"
-    assert pairs["--seq-length"] == "2048"
+    # vocab 고정 + Qwen3 플래그(값 없는 스위치) 존재
     assert pairs["--vocab-size"] == "151936"
     assert pairs["--rotary-base"] == "1000000"
-    # Qwen3 플래그(값 없는 스위치) 존재 + tied embeddings(--untie 안 붙임)
     assert "--swiglu" in args
     assert "--qk-layernorm" in args
     assert "--disable-bias-linear" in args
     assert "--group-query-attention" in args
-    assert "--untie-embeddings-and-output-weights" not in args
 
 
 def test_dpo_full_and_lora_configs():

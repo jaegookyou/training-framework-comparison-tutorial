@@ -1,25 +1,22 @@
-"""순수 Megatron-LM 사전학습 경로 (full) — 수직 파이프라인 1단계 + 가로비교.
+"""순수 Megatron-LM 사전학습 경로 (continued-pretrain·full) — 수직 파이프라인 1단계 + 가로비교.
 
-두 모드(`model.init_from` 으로 분기):
-  - **from-scratch**(init_from 없음, tiny): 초소형 Qwen3 를 랜덤 초기화에서 학습. torchtitan
-    from-scratch 와 같은 칸(동일 arch·데이터, 프레임워크만 변수 = 가로비교). 기업이 콕 집어 요구하는
-    'Megatron-LM 경험'. SFT(post_training/modelopt)·GRPO(examples/rl)에 이은 세 번째 진입점.
-  - **continued-pretrain**(init_from=Qwen3-8B-Base, 8b): 8B 가중치를 시드로 이어학습. 사전·사후를
-    같은 8B 로 통일(torchtitan continued 의 Megatron 짝). 학습 루프는 **순수 pretrain_gpt.py**,
-    HF↔mcore 변환만 Bridge(AutoBridge import/export) 글루로 쓴다 — 순수 Megatron-LM 의
-    tools/checkpoint/convert.py 는 qwen3 HF 로더가 없어(qwen2.5까지) 8B 시드를 못 만들기 때문.
-    그래서 continued config 는 megatron-bridge 이미지(AutoBridge + Megatron-LM repo clone)를 쓴다.
+**continued-pretrain 전용**(`model.init_from`=Qwen3-8B-Base 필수, from-scratch 제거): 8B 가중치를
+시드로 이어학습. 사전·사후를 같은 8B 로 통일(torchtitan continued 의 Megatron 짝). 학습 루프는
+**순수 pretrain_gpt.py**(기업이 콕 집어 요구하는 'Megatron-LM 경험'), HF↔mcore 변환만 Bridge
+(AutoBridge import/export) 글루로 쓴다 — 순수 Megatron-LM 의 tools/checkpoint/convert.py 는 qwen3
+HF 로더가 없어(qwen2.5까지) 8B 시드를 못 만들기 때문. 그래서 이 config 는 megatron-bridge 이미지
+(AutoBridge + Megatron-LM repo clone)를 쓴다.
 
 arch 플래그·값 = upstream core_v0.17.1 의 examples/rl/model_configs/qwen3_8b.sh(arch)·examples/gpt3/
 train_gpt3_175b_distributed.sh(training/data/logging) 미러(같은 태그라 버전 정합, 추정 아님).
-arch = model_sizes.megatron_arch_args(tiny=tfct_tiny tied / 8b=Qwen3-8B untied).
+arch = model_sizes.megatron_arch_args(8b=Qwen3-8B untied).
 
 train() subprocess 단계:
-  1. (continued만) torchrun _megatron_bridge_entry --stage convert : init_from HF → mcore 시드.
+  1. torchrun _megatron_bridge_entry --stage convert : init_from HF → mcore 시드.
   2. wikitext → JSONL → tools/preprocess_data.py 인덱싱(.bin/.idx).
-  3. torchrun pretrain_gpt.py <arch> <training> <data> : from-scratch(랜덤) 또는 continued
-     (--pretrained-checkpoint <시드> --finetune = 가중치만 로드, 옵티마이저 fresh).
-  4. (continued만) torchrun _megatron_bridge_entry --stage export : 학습 mcore → out/hf(파이프라인).
+  3. torchrun pretrain_gpt.py <arch> <training> <data> --pretrained-checkpoint <시드> --finetune
+     (가중치만 로드, 옵티마이저 fresh).
+  4. torchrun _megatron_bridge_entry --stage export : 학습 mcore → out/hf(파이프라인).
 
 무거운 deps(megatron-core/TE/bridge)는 이미지에만 있고 torchrun/preprocess 서브프로세스가 임포트.
 이 호스트 모듈은 datasets/transformers/yaml 만 지연 임포트.
@@ -102,7 +99,12 @@ def train(cfg: RunConfig) -> None:
     wandb_cfg = cfg.section("wandb")
 
     repo = os.environ.get("MEGATRON_LM_DIR", "/opt/Megatron-LM")
-    init_from = model_cfg.get("init_from")  # 있으면 continued-pretrain(8B 시드 이어학습)
+    init_from = model_cfg.get("init_from")  # continued-pretrain(8B 시드 이어학습) — 필수
+    if not init_from:
+        raise SystemExit(
+            "Megatron-LM 사전학습은 continued-pretrain 전용이다(from-scratch 제거). "
+            "model.init_from 에 시드 모델(예: Qwen/Qwen3-8B-Base)을 지정해야 한다."
+        )
 
     out_dir = Path(out.get("local_dir", "out"))
     work = out_dir / "megatron_pretrain_workspace"
@@ -149,7 +151,7 @@ def train(cfg: RunConfig) -> None:
     min_lr = float(hp.get("min_learning_rate", lr / 10))
 
     args = [
-        # ARCH (model_sizes: tiny=tfct_tiny tied / 8b=Qwen3-8B untied, qwen3_8b.sh 미러).
+        # ARCH (model_sizes: 8b=Qwen3-8B untied, qwen3_8b.sh 미러).
         *megatron_arch_args(model_cfg["size"], seq_len),
         # 병렬 / 백엔드
         "--tensor-model-parallel-size", str(tp),

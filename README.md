@@ -4,7 +4,7 @@
 
 ## 무엇을 비교하나
 
-- **사전학습**: torchtitan, Megatron (초소형 모델 + 작은 코퍼스)
+- **사전학습**: torchtitan, Megatron (continued-pretrain 8B + 작은 코퍼스)
 - **사후학습**: 5개 프레임워크로 SFT / DPO / GRPO 등 유명 방법론 두루
   - Megatron 사후학습 = verl + Megatron 백엔드
   - torchtitan 사후학습 = torchforge (불안정 → 도전 챕터로 격리)
@@ -50,13 +50,11 @@ Vast.ai 백엔드는 계정 페이지의 API 키를 `~/.config/vastai/vast_api_k
 
 현재 구현:
 - **사전학습**: torchtitan · Megatron-LM(순수 `pretrain_gpt.py`·preprocess_data.py 인덱싱).
-  `method: pretrain`. 두 모드 — ① **from-scratch tiny**(dim512/6층, vocab151936 on wikitext-2): 동일
-  arch·데이터·프레임워크만 변수(가로비교; torchtitan·Megatron-LM). ② **continued-pretrain 8B**
-  (`init_from: Qwen3-8B-Base` 시드 이어학습): 사전·사후를 **같은 8B 로 통일** — 한 모델이 PT→SFT→RL
-  전 과정 통과(8B from-scratch 는 데이터 부족으로 무의미 → 이어학습). **torchtitan**
-  (`initial_load_in_hf`) · **Megatron-LM**(학습=순수 `pretrain_gpt.py --finetune`, HF↔mcore 변환만
-  Bridge `AutoBridge` 글루 — 순수 convert.py 가 qwen3 미지원이라; bridge 이미지 사용) 두 경로. 산출
-  `out/hf` 가 사후학습 `model.name`.
+  `method: pretrain`. **continued-pretrain 8B 전용**(`init_from: Qwen3-8B-Base` 시드 이어학습,
+  from-scratch 는 제거): 사전·사후를 **같은 8B 로 통일** — 한 모델이 PT→SFT→RL 전 과정 통과(8B
+  from-scratch 는 데이터 부족으로 무의미 → 이어학습). **torchtitan**(`initial_load_in_hf`) ·
+  **Megatron-LM**(학습=순수 `pretrain_gpt.py --finetune`, HF↔mcore 변환만 Bridge `AutoBridge` 글루 —
+  순수 convert.py 가 qwen3 미지원이라; bridge 이미지 사용) 두 경로. 산출 `out/hf` 가 사후학습 `model.name`.
 - **SFT**: TRL(full|lora) · Unsloth(full|lora·단일 GPU) · verl(full|lora·hydra+torchrun) ·
   Megatron-LM(full·convert→finetune→export) · Megatron-Bridge(full|lora·HF↔mcore 브리지+네이티브
   PEFT) · torchtitan(full|lora·nightly SHA 핀·ChatDataset·네이티브 LoRAConverter, 이미지 박제로
@@ -101,8 +99,8 @@ online 생성+reward)라 별 method 로 둔다.
 통제비교(가로축)와 별개로, **단일 모델이 사전학습→SFT→RL 전 과정을 통과하는 종단 파이프라인**도
 설계돼 있다. 단계 간 인터페이스 = **HF 체크포인트**(각 단계 산출 `out/hf` → 다음 단계 `model.name`).
 크기 knob(`model.size`)·데이터·`scale.gpus` 만 바꾸면 코드 수정 없이 스케일된다.
-- **사전학습**(구현): `torchtitan` · `Megatron-LM` from-scratch (초소형 Qwen3 `tiny` + wikitext-2) +
-  continued-pretrain 8B(`torchtitan` · `Megatron-LM`). `method: pretrain` 축, `configs/pretrain/`,
+- **사전학습**(구현): `torchtitan` · `Megatron-LM` continued-pretrain 8B(Qwen3-8B-Base 시드 +
+  wikitext-2, from-scratch 제거). `method: pretrain` 축, `configs/pretrain/`,
   `model_sizes.py`(size preset → torchtitan flavor / megatron arch 플래그). `tfct-run --config
   configs/pretrain/...`. 파이프라인 단계 입력은 각 트레이너의 HF export `out/hf`(Megatron-LM continued
   는 AutoBridge.export_ckpt 로 mcore→HF).

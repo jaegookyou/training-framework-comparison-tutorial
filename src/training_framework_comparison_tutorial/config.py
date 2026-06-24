@@ -66,7 +66,7 @@ class RunConfig:
     def run_name(self) -> str:
         ds = self.section("dataset").get("source", "?")
         model_sec = self.section("model")
-        # 사후학습(sft/rl)은 model.name(HF 경로/ID), 사전학습은 from-scratch 라 model.size.
+        # 사후학습(sft/rl)은 model.name(HF 경로/ID), 사전학습(continued)은 arch 정합용 model.size.
         model = model_sec.get("name") or model_sec.get("size", "?")
         model = str(model).split("/")[-1]
         parts = [self.method, model, ds, self.framework]

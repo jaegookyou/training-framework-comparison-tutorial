@@ -1,9 +1,0 @@
-extends: _base.yaml
-
-framework: torchtitan
-image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/torchtitan:latest
-
-# 초소형(tiny) → 단일 GPU 로 충분. 스케일(0.6b+ / wikitext-103) 시 gpus 키우면 FSDP 자동 샤딩.
-scale:
-  nodes: 1
-  gpus: 1
