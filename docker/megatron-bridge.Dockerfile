@@ -52,6 +52,12 @@ RUN pip install --upgrade pip huggingface_hub wandb
 RUN pip install "torch==2.6.0" "ninja" "packaging" "setuptools" "wheel" "pybind11" \
     && pip install "transformer-engine[core,pytorch]==2.16.0"
 
+# --ignore-installed blinker = devel base(ubuntu22.04) 의 software-properties-common 이 깐 시스템
+#   blinker 1.4(distutils) 를 megatron-bridge 의 flask-restful→Flask 가 업그레이드하려다 'Cannot
+#   uninstall'(distutils-installed) 로 실패 → pip 로 새 blinker 를 강제 설치해 시스템 것을 shadow.
+#   (megatron-lm 이미지와 동일 패턴.)
+RUN pip install --ignore-installed blinker
+
 # megatron-bridge 본체. --no-build-isolation = mamba-ssm/causal-conv1d 가 build 시 위 torch 를 보게.
 # MAX_JOBS 제한으로 mamba 컴파일 OOM 회피(빌드 노드 메모리 보호).
 ENV MAX_JOBS=4
