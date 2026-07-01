@@ -5,9 +5,12 @@
 # 무료(public repo), SSH·디스크 저글링 없음.
 #
 # 실행: GitHub → Actions 탭 → "build-images" → Run workflow.
-#   include_heavy=false (기본): base + verl/trl/unsloth/torchtitan/megatron-lm (우리 slim base 위, Actions 에서 안정).
-#   include_heavy=true       : 위 + megatron-bridge/nemo-rl/slime/torchtitan-rl (남의 큰 베이스+nvcc 컴파일 —
-#                              러너 디스크/시간/업스트림 pull 인증에 걸릴 수 있어 opt-in. 실패하면 그 이미지만 Vast+podman 으로).
+#   only 비움 + include_heavy=false (기본): base + verl/trl/unsloth/torchtitan/megatron-lm.
+#   only 비움 + include_heavy=true       : 위 + megatron-bridge/nemo-rl/slime/torchtitan-rl (남의 큰 베이스+nvcc
+#                                          컴파일 — 러너 디스크/시간/업스트림 pull 인증에 걸릴 수 있어 opt-in).
+#   only="megatron-bridge,torchtitan-rl" : 지정한 이미지들만 빌드(include_heavy 무시). 재빌드 낭비 방지.
+#     - base 를 목록에 넣지 않으면 base 는 재빌드 안 하고 GHCR 의 base:latest 를 그대로 FROM 한다.
+#     - only 에 base 를 넣으면 base 도 재빌드된다(frameworks 가 새 base 를 쓰려면 함께 지정).
 #
 # 이미지 경로는 Dockerfile 의 이름과 정확히 일치: ghcr.io/<owner>/<repo>/<img>:latest
 
@@ -17,9 +20,13 @@ on:
   workflow_dispatch:
     inputs:
       include_heavy:
-        description: "무거운 이미지(megatron-bridge/nemo-rl/slime/torchtitan-rl)도 빌드"
+        description: "무거운 이미지(megatron-bridge/nemo-rl/slime/torchtitan-rl)도 빌드 (only 비었을 때만 적용)"
         type: boolean
         default: false
+      only:
+        description: "특정 이미지만 빌드(쉼표구분, 예: megatron-bridge,torchtitan-rl). 비우면 include_heavy 규칙."
+        type: string
+        default: ""
 
 permissions:
   contents: read      # checkout
@@ -30,8 +37,45 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # 0) 입력(only/include_heavy)을 빌드할 이미지 목록으로 해석 → 아래 job 들의 동적 매트릭스.
+  #    only 지정 시 그 목록만, 아니면 base+frameworks(+heavy 면 standalone).
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      base: ${{ steps.plan.outputs.base }}
+      frameworks: ${{ steps.plan.outputs.frameworks }}
+      standalone: ${{ steps.plan.outputs.standalone }}
+    steps:
+      - id: plan
+        env:
+          ONLY: ${{ inputs.only }}
+          HEAVY: ${{ inputs.include_heavy }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          only = [x.strip() for x in os.environ["ONLY"].split(",") if x.strip()]
+          heavy = os.environ["HEAVY"] == "true"
+          frameworks = ["verl", "trl", "unsloth", "torchtitan", "megatron-lm"]
+          standalone = ["megatron-bridge", "nemo-rl", "slime", "torchtitan-rl"]
+          if only:
+              base = "base" in only
+              frameworks = [x for x in frameworks if x in only]
+              standalone = [x for x in standalone if x in only]
+          else:
+              base = True
+              standalone = standalone if heavy else []
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"base={'true' if base else 'false'}\n")
+              f.write("frameworks=" + json.dumps(frameworks) + "\n")
+              f.write("standalone=" + json.dumps(standalone) + "\n")
+          print("base:", base, "frameworks:", frameworks, "standalone:", standalone)
+          PY
+
   # 1) 공통 base — 아래 frameworks 가 FROM 하는 부모. 먼저 push 되어야 한다.
+  #    only 로 base 를 지정하지 않으면 건너뛴다(기존 GHCR base:latest 재사용).
   base:
+    needs: setup
+    if: ${{ needs.setup.outputs.base == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -50,14 +94,16 @@ jobs:
           docker build -f docker/base.Dockerfile -t "$R/base:latest" .
           docker push "$R/base:latest"
 
-  # 2) 우리 base:latest 위에 얹는 이미지들 (base 완료 후 병렬)
+  # 2) 우리 base:latest 위에 얹는 이미지들 (base 완료 후 병렬).
+  #    base 를 이번에 안 빌드해도(needs 스킵) 기존 base:latest 를 FROM → !failure() 로 진행.
   frameworks:
-    needs: base
+    needs: [setup, base]
+    if: ${{ !failure() && !cancelled() && needs.setup.outputs.frameworks != '[]' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false          # 하나 실패해도 나머지는 계속
       matrix:
-        img: [verl, trl, unsloth, torchtitan, megatron-lm]
+        img: ${{ fromJSON(needs.setup.outputs.frameworks) }}
     steps:
       - uses: actions/checkout@v4
       - name: Free up disk
@@ -75,14 +121,15 @@ jobs:
           docker build -f docker/${{ matrix.img }}.Dockerfile -t "$R/${{ matrix.img }}:latest" .
           docker push "$R/${{ matrix.img }}:latest"
 
-  # 3) 남의 큰 베이스에서 독립 빌드 (opt-in). base 불필요 → 병렬.
+  # 3) 남의 큰 베이스에서 독립 빌드. base 불필요 → 병렬.
   standalone:
-    if: ${{ inputs.include_heavy }}
+    needs: setup
+    if: ${{ needs.setup.outputs.standalone != '[]' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        img: [megatron-bridge, nemo-rl, slime, torchtitan-rl]
+        img: ${{ fromJSON(needs.setup.outputs.standalone) }}
     steps:
       - uses: actions/checkout@v4
       - name: Free up disk
