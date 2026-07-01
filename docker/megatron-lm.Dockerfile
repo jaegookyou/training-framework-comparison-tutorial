@@ -1,4 +1,4 @@
-# Megatron-LM SFT(순수, full 전용) 이미지. base 위에 Megatron 학습 스택을 얹는다.
+# Megatron-LM SFT(순수, full 전용) 이미지. cu12 devel(nvcc) 위에 Megatron 학습 스택을 얹는다.
 #   docker build -f docker/megatron-lm.Dockerfile -t ghcr.io/jaegookyou/training-framework-comparison-tutorial/megatron-lm:latest .
 #
 # "순수 Megatron-LM 으로 사후학습(SFT)" 경로 — verl 백엔드/ms-swift 래퍼가 아니라 Megatron-LM
@@ -11,13 +11,32 @@
 # megatron 패키지(megatron.core + megatron.training + post_training 스크립트)는 PyPI 가 아니라
 # repo 에 있으므로 Megatron-LM repo 를 core_v0.17.1 태그(SHA 266f1c97)로 clone 해 설치한다(=megatron-core PyPI 미설치, 버전 스큐 방지).
 #
-# transformer-engine: prebuilt 휠(transformer_engine_cu12 바이너리)이라 nvcc 소스 빌드 불필요 →
-# CUDA 12.4 runtime 베이스로 OK. 단 torch/TE/megatron-core/modelopt 정확한 조합 호환은
-# 이미지 빌드 시 GPU 에서 최종 검증 필요(unsloth 이미지와 같은 단서).
-ARG BASE_IMAGE=ghcr.io/jaegookyou/training-framework-comparison-tutorial/base:latest
-FROM ${BASE_IMAGE}
+# ⚠️ base(cu12 *runtime*) 가 아니라 cu12 *devel*(nvcc 포함) 에서 출발한다 — megatron-bridge 와 동일:
+#   transformer-engine[core,pytorch] 는 core(transformer_engine_cu12)만 prebuilt 고 pytorch 바인딩
+#   (transformer_engine_torch)은 sdist 라 nvcc 소스 빌드가 필요하다(runtime 베이스에서 'Could neither find
+#   NVCC' 로 실패). 그래서 base 이미지 레이어(python3.12 + hf/wandb + repo)를 여기서 재구성한다(FROM base 불가).
+ARG CUDA_IMAGE=nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
+FROM ${CUDA_IMAGE}
 
-RUN pip install "torch==2.6.0" \
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+# --- base 이미지 레이어 재구성 (devel 베이스라 FROM base 불가) ---
+RUN apt-get update && apt-get install -y --no-install-recommends software-properties-common \
+    && add-apt-repository -y ppa:deadsnakes/ppa \
+    && apt-get update && apt-get install -y --no-install-recommends \
+        python3.12 python3.12-venv python3.12-dev \
+        git curl ca-certificates openssh-client \
+    && rm -rf /var/lib/apt/lists/* \
+    && curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12 \
+    && update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
+RUN pip install --upgrade pip huggingface_hub wandb
+
+# --- 학습 스택 ---
+# MAX_JOBS 제한 = TE pytorch 바인딩 nvcc 컴파일의 병렬 job 을 줄여 빌드 노드 OOM 회피(megatron-bridge 와 동일).
+ENV MAX_JOBS=4
+RUN pip install "torch==2.6.0" "ninja" "packaging" "setuptools" "wheel" \
     && pip install "transformer-engine[core,pytorch]==2.16.0" \
     && pip install \
         "nvidia-modelopt==0.43.0" \
@@ -59,6 +78,11 @@ RUN sed -i 's|TOKENIZER_MODEL=${HF_MODEL_CKPT}|TOKENIZER_MODEL=${TOKENIZER_MODEL
 # flask-restful·datasets·diskcache 는 위에서 이미 설치됨. 핀 = PyPI 확인값(추정 아님; evaluate 는
 # datasets>=2.0 만 요구 → 위 5.0.0 과 호환).
 RUN pip install "uvloop==0.22.1" "evaluate==0.4.6" "math-verify==0.9.0"
+
+# repo 설치(코어=pyyaml 만, torch 무영향) — 무거운 스택 뒤에 둬서 코드 수정이 위 레이어 캐시를 안 깬다.
+WORKDIR /workspace/repo
+COPY . .
+RUN pip install .
 
 # repo 연결: 이 LABEL 이 패키지를 GitHub repo 의 Packages 에 붙이고 visibility 를 상속시킨다.
 LABEL org.opencontainers.image.source=https://github.com/jaegookyou/training-framework-comparison-tutorial
