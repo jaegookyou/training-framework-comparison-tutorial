@@ -6,9 +6,12 @@
 #   transformers<=5.5.0 · peft>=0.18.0 · datasets>=3.4.1,<4.4.0(4.0.*/4.1.0 제외).
 #   trl 이미지는 torch 2.12 / trl 1.6 / transformers 5.12 / datasets 5.0.
 #
-# 베이스 CUDA 가 12.4 → cu124 → unsloth cu124 extra 의 상한인 torch 2.6.0 을 쓴다
-# (torch 2.7+ 는 cu126/cu128 extra). 아래 핀은 제약에서 도출한 값이며, 정확한
-# torch/xformers/bitsandbytes/vllm 조합 호환은 이미지 빌드 시 최종 검증 필요(GPU 빌드).
+# 베이스 CUDA 가 12.4 → cu124 → torch 2.6.0(cu124 정합) 을 명시 핀한다(torch 2.7+ 는 cu126/cu128).
+# ⚠️ unsloth 의 [cu124-torch260] extra 는 쓰지 않는다(=plain unsloth): 이 extra 는
+# unsloth[cu124onlytorch260] 을 끌어 xformers==0.0.29.post3 을 하드 핀하는데, torch 2.6.0 용 vllm
+# (0.8.x)은 전부 xformers==0.0.29.post2 을 핀해 정확충돌(ResolutionImpossible)한다. plain unsloth 의
+# 무조건 제약은 xformers>=0.0.27.post2(느슨)이라 vllm 의 post2 가 이를 만족 → 양립(PyPI 확인, 추정 아님).
+# bitsandbytes(>=0.45.5)도 plain unsloth 무조건 dep 라 별도 명시 불필요.
 #
 # vllm 은 GRPO(trainers/unsloth_grpo.py)의 fast_inference rollout 에 필요(SFT/DPO 엔 불필요).
 # vllm 휠은 특정 torch 에 박혀 빌드되므로 torch 2.6.0 과 맞는 0.8.5.post1 로 핀(=verl 이미지와 동일본):
@@ -19,7 +22,7 @@ FROM ${BASE_IMAGE}
 
 RUN pip install "torch==2.6.0" "torchvision" \
     && pip install \
-        "unsloth[cu124-torch260]==2026.6.7" \
+        "unsloth==2026.6.7" \
         "unsloth_zoo==2026.6.5" \
         "transformers==5.5.0" \
         "trl==0.24.0" \

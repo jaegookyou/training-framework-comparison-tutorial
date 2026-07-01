@@ -35,9 +35,13 @@ RUN pip install --upgrade pip huggingface_hub wandb
 
 # --- 학습 스택 ---
 # MAX_JOBS 제한 = TE pytorch 바인딩 nvcc 컴파일의 병렬 job 을 줄여 빌드 노드 OOM 회피(megatron-bridge 와 동일).
+# --ignore-installed blinker = devel base(ubuntu22.04) 의 software-properties-common 이 깐 시스템
+#   python3-blinker 1.4(distutils) 를 flask-restful→Flask 가 업그레이드하려다 'Cannot uninstall'
+#   실패 → pip 로 새 blinker 를 강제 설치해 시스템 것을 shadow(python3.12 site-packages 우선).
 ENV MAX_JOBS=4
 RUN pip install "torch==2.6.0" "ninja" "packaging" "setuptools" "wheel" \
     && pip install "transformer-engine[core,pytorch]==2.16.0" \
+    && pip install --ignore-installed blinker \
     && pip install \
         "nvidia-modelopt==0.43.0" \
         "transformers==5.3.0" \
