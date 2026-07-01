@@ -1,0 +1,101 @@
+# 프레임워크 이미지 빌드 → GHCR push (수동 실행).
+#
+# 왜 Actions 인가: 렌트 박스(Vast 등 신뢰 못 하는 하드웨어)에 크레덴셜을 안 올린다.
+# push 인증은 job 마다 자동 발급되는 임시 GITHUB_TOKEN 이라 job 끝나면 소멸 → 외부로 안 샌다.
+# 무료(public repo), SSH·디스크 저글링 없음.
+#
+# 실행: GitHub → Actions 탭 → "build-images" → Run workflow.
+#   include_heavy=false (기본): base + verl/trl/unsloth/torchtitan/megatron-lm (우리 slim base 위, Actions 에서 안정).
+#   include_heavy=true       : 위 + megatron-bridge/nemo-rl/slime/torchtitan-rl (남의 큰 베이스+nvcc 컴파일 —
+#                              러너 디스크/시간/업스트림 pull 인증에 걸릴 수 있어 opt-in. 실패하면 그 이미지만 Vast+podman 으로).
+#
+# 이미지 경로는 Dockerfile 의 이름과 정확히 일치: ghcr.io/<owner>/<repo>/<img>:latest
+
+name: build-images
+
+on:
+  workflow_dispatch:
+    inputs:
+      include_heavy:
+        description: "무거운 이미지(megatron-bridge/nemo-rl/slime/torchtitan-rl)도 빌드"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read      # checkout
+  packages: write     # GHCR push
+
+concurrency:
+  group: build-images
+  cancel-in-progress: false
+
+jobs:
+  # 1) 공통 base — 아래 frameworks 가 FROM 하는 부모. 먼저 push 되어야 한다.
+  base:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Free up disk
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android \
+                      /usr/local/.ghcup /opt/hostedtoolcache/CodeQL \
+                      /usr/local/share/boost "${AGENT_TOOLSDIRECTORY:-}" || true
+          sudo docker image prune --all --force || true
+          df -h
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Build & push base
+        run: |
+          R=ghcr.io/${{ github.repository }}
+          docker build -f docker/base.Dockerfile -t "$R/base:latest" .
+          docker push "$R/base:latest"
+
+  # 2) 우리 base:latest 위에 얹는 이미지들 (base 완료 후 병렬)
+  frameworks:
+    needs: base
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false          # 하나 실패해도 나머지는 계속
+      matrix:
+        img: [verl, trl, unsloth, torchtitan, megatron-lm]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Free up disk
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android \
+                      /usr/local/.ghcup /opt/hostedtoolcache/CodeQL \
+                      /usr/local/share/boost "${AGENT_TOOLSDIRECTORY:-}" || true
+          sudo docker image prune --all --force || true
+          df -h
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Build & push ${{ matrix.img }}
+        run: |
+          R=ghcr.io/${{ github.repository }}
+          docker build -f docker/${{ matrix.img }}.Dockerfile -t "$R/${{ matrix.img }}:latest" .
+          docker push "$R/${{ matrix.img }}:latest"
+
+  # 3) 남의 큰 베이스에서 독립 빌드 (opt-in). base 불필요 → 병렬.
+  standalone:
+    if: ${{ inputs.include_heavy }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        img: [megatron-bridge, nemo-rl, slime, torchtitan-rl]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Free up disk
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android \
+                      /usr/local/.ghcup /opt/hostedtoolcache/CodeQL \
+                      /usr/local/share/boost "${AGENT_TOOLSDIRECTORY:-}" || true
+          sudo docker image prune --all --force || true
+          df -h
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Build & push ${{ matrix.img }}
+        run: |
+          R=ghcr.io/${{ github.repository }}
+          docker build -f docker/${{ matrix.img }}.Dockerfile -t "$R/${{ matrix.img }}:latest" .
+          docker push "$R/${{ matrix.img }}:latest"
