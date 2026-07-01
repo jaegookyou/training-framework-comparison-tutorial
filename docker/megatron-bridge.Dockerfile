@@ -44,7 +44,7 @@ RUN pip install --upgrade pip huggingface_hub wandb
 
 # --- 학습 스택 ---
 # torch + cu12 TE 를 먼저 고정(cu13 기본 override). build 도구(mamba/causal-conv1d sdist 용)도 준비.
-RUN pip install "torch==2.6.0" "ninja" "packaging" "setuptools" "wheel" \
+RUN pip install "torch==2.6.0" "ninja" "packaging" "setuptools" "wheel" "pybind11" \
     && pip install "transformer-engine[core,pytorch]==2.16.0"
 
 # megatron-bridge 본체. --no-build-isolation = mamba-ssm/causal-conv1d 가 build 시 위 torch 를 보게.

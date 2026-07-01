@@ -19,7 +19,8 @@ FROM ${BASE_IMAGE}
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
         git python3.12 python3.12-venv python3-pip ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -f /usr/lib/python3.*/EXTERNALLY-MANAGED   # ubuntu24.04 PEP668: 시스템 pip/uv --system 설치 허용
 
 RUN pip install --no-cache-dir uv
 
