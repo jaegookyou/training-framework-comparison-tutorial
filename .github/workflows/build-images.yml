@@ -91,8 +91,10 @@ jobs:
       - name: Build & push base
         run: |
           R=ghcr.io/${{ github.repository }}
-          docker build -f docker/base.Dockerfile -t "$R/base:latest" .
+          D=$(date +%Y%m%d)
+          docker build -f docker/base.Dockerfile -t "$R/base:latest" -t "$R/base:$D" .
           docker push "$R/base:latest"
+          docker push "$R/base:$D"   # 불변 태그 박제(휠 증발 대비)
 
   # 2) 우리 base:latest 위에 얹는 이미지들 (base 완료 후 병렬).
   #    base 를 이번에 안 빌드해도(needs 스킵) 기존 base:latest 를 FROM → !failure() 로 진행.
@@ -118,8 +120,10 @@ jobs:
       - name: Build & push ${{ matrix.img }}
         run: |
           R=ghcr.io/${{ github.repository }}
-          docker build -f docker/${{ matrix.img }}.Dockerfile -t "$R/${{ matrix.img }}:latest" .
+          D=$(date +%Y%m%d)
+          docker build -f docker/${{ matrix.img }}.Dockerfile -t "$R/${{ matrix.img }}:latest" -t "$R/${{ matrix.img }}:$D" .
           docker push "$R/${{ matrix.img }}:latest"
+          docker push "$R/${{ matrix.img }}:$D"   # 불변 태그 박제
 
   # 3) 남의 큰 베이스에서 독립 빌드. base 불필요 → 병렬.
   standalone:
@@ -144,5 +148,7 @@ jobs:
       - name: Build & push ${{ matrix.img }}
         run: |
           R=ghcr.io/${{ github.repository }}
-          docker build -f docker/${{ matrix.img }}.Dockerfile -t "$R/${{ matrix.img }}:latest" .
+          D=$(date +%Y%m%d)
+          docker build -f docker/${{ matrix.img }}.Dockerfile -t "$R/${{ matrix.img }}:latest" -t "$R/${{ matrix.img }}:$D" .
           docker push "$R/${{ matrix.img }}:latest"
+          docker push "$R/${{ matrix.img }}:$D"   # 불변 태그 박제

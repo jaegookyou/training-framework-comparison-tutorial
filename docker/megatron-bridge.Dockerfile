@@ -32,6 +32,10 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PIP_NO_CACHE_DIR=1
 
 # --- base 이미지 레이어 재구성 (devel 베이스라 FROM base 불가) ---
+# python·python3 둘 다 3.12 로 건다: base 규약은 python3=3.10(시스템) 이지만, megatron-core 의 빌드
+# 훅(setup)이 `python3 -m pybind11 --includes` 를 하드코딩해 include 경로를 찾는다 → python3 가 3.10 이면
+# pybind11(3.12 에 설치) 을 못 찾아 metadata-generation-failed. 또 3.10 으로 빌드하면 확장 include 경로도
+# 어긋난다(휠은 3.12 타깃). 이 이미지는 전부 3.12 로 도니 apt 완료 후 python3→3.12 로 통일해 안전.
 RUN apt-get update && apt-get install -y --no-install-recommends software-properties-common \
     && add-apt-repository -y ppa:deadsnakes/ppa \
     && apt-get update && apt-get install -y --no-install-recommends \
@@ -39,7 +43,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends software-proper
         git curl ca-certificates openssh-client \
     && rm -rf /var/lib/apt/lists/* \
     && curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12 \
-    && update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
+    && update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 \
+    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
 RUN pip install --upgrade pip huggingface_hub wandb
 
 # --- 학습 스택 ---

@@ -8,11 +8,15 @@
 # 설치 단계 = upstream README(torchtitan/experiments/rl) 그대로 미러(추정 금지). torchtitan 은
 # 같은 커밋 SHA(SFT 이미지와 동일 9ccbb57)로 clone — RL 코드/우리 gsm8k 모듈이 같은 트리.
 #
-# ⚠️ GPU 빌드 검증 대기(다른 미빌드 이미지와 동일 단서): cu130 base 정확 태그·flash-attn-3/vllm
-#   nightly 휠 호환(dev 날짜 정합)·Monarch/TorchStore/renderers main 빌드. 빌드 성공분을 불변 태그로
-#   박제(휠 증발 대비). 미빌드 = 핀 미확정(아래 TODO).
+# ✅ GHCR 빌드 성공(2026-07-01, Actions build-images). 검증된 해석 세트(uv, cu130 nightly):
+#   torch==2.14.0.dev20260620+cu130 · vllm==1.0.0.dev20260620+cu130 (torch/vllm dev 날짜 20260620 정합) ·
+#   torchcomms==0.3.0.dev20260621+cu130 · flash-attn-3==3.0.0 · torchmonarch==0.5.0 · renderers==0.1.8.dev53 ·
+#   torchstore==0.0.0.dev0(git@main) · triton==3.7.1+git5d6048aa.
+#   ⚠️ nightly/git@main 휠은 pruning 으로 증발한다 → 하드핀하면 재빌드가 언젠가 깨진다. 그래서 `--pre` 무핀을
+#   유지해 최신 nightly 로 재빌드되게 두고, **재현 아티팩트는 불변 이미지 태그**(build-images 가 :latest 와
+#   :YYYYMMDD 를 함께 push)로 박제한다 — "환경=이미지 핀" 원칙(휠이 아니라 이미지가 진실).
 
-# ⚠️ cu130 devel base — 정확 태그는 GPU 빌드 때 확정(torch/vllm cu130 휠과 정합). TODO: 박제 시 핀.
+# cu130 devel base(13.0.1 태그 고정) — torch/vllm cu130 nightly 휠과 정합 확인됨(2026-07-01 빌드 성공).
 ARG BASE_IMAGE=nvidia/cuda:13.0.1-cudnn-devel-ubuntu24.04
 FROM ${BASE_IMAGE}
 
@@ -40,8 +44,8 @@ RUN uv pip install --system torchmonarch \
 # (3) Flash Attention 3 (H100/H200+; A100 은 PyTorch 번들 FA2 자동). cu130 test 인덱스.
 RUN uv pip install --system flash-attn-3 --extra-index-url=https://download.pytorch.org/whl/test/cu130
 
-# (4) PyTorch nightly + vLLM(nightly torch 정합) + torchcomms — cu130. ⚠️ vllm dev 날짜는 torch
-#     nightly 와 맞아야 함(README) → GPU 빌드 때 교차확인 후 핀(현재 미핀). TODO.
+# (4) PyTorch nightly + vLLM(nightly torch 정합) + torchcomms — cu130. 무핀 `--pre`(pruning 증발 대비 —
+#     상단 검증 세트 참고, 재현은 불변 이미지 태그로). vllm dev 날짜는 torch nightly 와 자동 정합(20260620).
 RUN uv pip install --system torch vllm torchcomms --pre \
         --extra-index-url https://download.pytorch.org/whl/nightly/cu130 \
         --index-strategy unsafe-best-match
