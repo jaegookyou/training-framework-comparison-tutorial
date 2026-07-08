@@ -1,0 +1,13 @@
+# GPU 스모크 전용 — 순수 Megatron-LM full SFT 를 실제 8B·bf16·이미지로 end-to-end 검증.
+# HF→mcore 변환(convert.sh)·finetune.sh·sft_dataset.py 캐논 template 마스킹·mcore→HF 재변환까지
+# 태운다. megatron-lm 은 full 전용(LoRA 없음) → A100:8 필요(8B full = TP=8 샤딩).
+#
+# ⚠️ megatron-lm 은 debug.max_steps 를 소비하지 않는다 — 스모크 레버는 megatron.train_samples 뿐
+#    (트레이너가 --train-samples/--lr-decay-samples 로 전달, megatron_lm_sft.py:104-105).
+#    train_iters = train_samples / global_batch(= baked finetune.sh 가 정함, 이미지 안이라 로컬 미확인).
+#    train_samples 는 그 global_batch 의 배수여야 iters>0 (GPU 검증에서 실제 배치 확인 후 조정).
+# 통과하면 train_samples:15000 풀런으로 승격.
+extends: qwen3-8b_traceinversion__megatron-lm__full.yaml
+
+megatron:
+  train_samples: 256            # 15000→256 (~60x 축소). global_batch 배수 정합은 GPU 검증 시 확인

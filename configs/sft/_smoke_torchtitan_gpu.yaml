@@ -1,0 +1,9 @@
+# GPU 스모크 전용 — torchtitan LoRA SFT 를 실제 8B·bf16·이미지·캐논 template 로 end-to-end 검증.
+# 네이티브 LoRAConverter(빌드시점 baked)·hf_assets(캐논 template 구운 토크나이저) 경로까지 태운다.
+# subsample 은 소비 안 함(torchtitan 은 ChatDataset 을 스트리밍 → max_steps 로 자연히 몇 배치만 소비).
+# 통과하면 max_steps:-1 풀런으로 승격.
+# knob 소비: max_steps→steps=torchtitan_sft.py:81-83.
+extends: qwen3-8b_traceinversion__torchtitan__lora.yaml
+
+debug:
+  max_steps: 5                  # 5 step 만 — torchrun·LoRAConverter·hf_assets·wandb 정합만 확인

@@ -1,0 +1,9 @@
+# GPU 스모크 전용 — Megatron-Bridge LoRA(네이티브 PEFT) SFT 를 실제 8B·bf16·이미지로 end-to-end 검증.
+# HF→mcore 변환(AutoBridge)·qwen3_8b_peft_config·HFDatasetConfig·캐논 template 경로까지 태운다.
+# subsample 은 소비 안 함(HFDatasetConfig 가 스트리밍 → max_steps→train_iters 로 몇 배치만 소비).
+# 통과하면 max_steps:-1 풀런으로 승격. TP=1·A100 1장(PEFT 는 frozen 가중치라 싸다).
+# knob 소비: max_steps→config.train.train_iters=_megatron_bridge_entry.py:134-136.
+extends: qwen3-8b_traceinversion__megatron-bridge__lora.yaml
+
+debug:
+  max_steps: 5                  # 5 iter 만 — AutoBridge 변환·PEFT·wandb 정합만 확인

@@ -1,0 +1,9 @@
+# GPU 스모크 전용 — NeMo-RL LoRA SFT 를 실제 8B·bf16·이미지·캐논 template 로 end-to-end 검증.
+# run_sft.py Hydra override 경로·data_path 인제스트·baked 토크나이저 loss 마스킹·lora_cfg 까지 태운다.
+# subsample 은 소비 안 함(NeMo 가 data_path 스트리밍 → max_num_steps 로 몇 배치만 소비).
+# 통과하면 max_num_steps 풀런(base sft.yaml 눈금)으로 승격.
+# knob 소비: max_steps→sft.max_num_steps + sft.val_at_start=false (nemo_rl_sft.py, v0.5.0 실물 키).
+extends: qwen3-8b_traceinversion__nemo-rl__lora.yaml
+
+debug:
+  max_steps: 5                  # sft.max_num_steps=5 (val 데이터 없이 시작 eval 스킵)

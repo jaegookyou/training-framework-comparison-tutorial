@@ -1,0 +1,11 @@
+# GPU 스모크 전용 — 실제 8B·LoRA·trl 이미지·캐논 template 를 GPU 에서 end-to-end 로
+# 검증한다(통제비교 run 아님). CPU 스모크(_smoke_trl_cpu)와 달리 모델·seq·bf16 은 실제
+# 그대로 두고(이미지·mcore 무관 경로·VRAM 정합까지 봄) 데이터·step 만 줄여 싸게 돌린다.
+# 통과하면 같은 이미지로 max_steps:-1 풀런(qwen3-8b_traceinversion__trl__lora)으로 승격.
+extends: qwen3-8b_traceinversion__trl__lora.yaml
+
+dataset:
+  subsample: 64                 # 한 줌만 (어댑터·template 경로는 실제로 태움)
+
+debug:
+  max_steps: 5                  # 5 step 만 돌고 끝 — 로딩·학습·wandb 로깅 정합만 확인

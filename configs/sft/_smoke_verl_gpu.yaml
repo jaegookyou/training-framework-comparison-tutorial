@@ -1,0 +1,11 @@
+# GPU 스모크 전용 — verl LoRA SFT 를 실제 8B·bf16·이미지·캐논 template 로 end-to-end 검증.
+# torchrun/FSDP 경로가 도는지·데이터 어댑터·캐논 template 마스킹까지 태운다(통제비교 run 아님).
+# 통과하면 max_steps:-1 풀런으로 승격.
+# knob 소비: subsample=verl_sft.py:33-35 / max_steps→trainer.total_training_steps=verl_sft.py:123-125.
+extends: qwen3-8b_traceinversion__verl__lora.yaml
+
+dataset:
+  subsample: 64                 # 한 줌만 (어댑터·template 경로는 실제로 태움)
+
+debug:
+  max_steps: 5                  # 5 step 만 — torchrun·FSDP·wandb 정합만 확인

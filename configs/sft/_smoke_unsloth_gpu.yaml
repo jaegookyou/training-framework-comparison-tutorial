@@ -1,0 +1,11 @@
+# GPU 스모크 전용 — Unsloth LoRA SFT 를 실제 8B·bf16·이미지·캐논 template 로 end-to-end 검증.
+# _smoke_trl_gpu 와 동형: 모델·seq·bf16 은 실제 그대로(VRAM·fast_inference 무관 경로까지 봄),
+# 데이터·step 만 줄여 싸게 돌린다. 통과하면 max_steps:-1 풀런으로 승격.
+# knob 소비: subsample=unsloth_sft.py:50-52 / max_steps=unsloth_sft.py:103.
+extends: qwen3-8b_traceinversion__unsloth__lora.yaml
+
+dataset:
+  subsample: 64                 # 한 줌만 (어댑터·template 경로는 실제로 태움)
+
+debug:
+  max_steps: 5                  # 5 step 만 — 로딩·학습·wandb 로깅 정합만 확인

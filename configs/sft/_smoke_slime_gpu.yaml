@@ -1,0 +1,12 @@
+# GPU 스모크 전용 — slime full SFT 를 실제 8B·bf16·이미지·캐논 template 로 end-to-end 검증.
+# rollout 추상 재활용(sft_rollout)·Megatron 백엔드·loss-mask 캐논 template 정합까지 태운다.
+# slime 은 full 전용(base slime LoRA 없음) → A100:8 필요(8B full = Megatron 샤딩).
+# 통과하면 num-rollout 풀런으로 승격.
+# knob 소비: subsample=slime_sft.py:60-62 / max_steps→--num-rollout=slime_sft.py:134-137.
+extends: qwen3-8b_traceinversion__slime__full.yaml
+
+dataset:
+  subsample: 64                 # 한 줌만 (어댑터·template 경로는 실제로 태움)
+
+debug:
+  max_steps: 5                  # --num-rollout 5 (--debug-train-only 로 SGLang 엔진 스킵)

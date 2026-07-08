@@ -33,4 +33,13 @@ def train(cfg: RunConfig) -> None:
         f"data.train.data_path={ds['hf_path']}",
         f"data.train.split={ds.get('split', 'train')}",
     ]
+
+    # 로컬/스모크: max_steps>0 이면 sft.max_num_steps 로 그만큼만 돌고 끝.
+    # 키는 NeMo-RL v0.5.0 examples/configs/sft.yaml 실물 확인(sft.max_num_steps/val_at_start).
+    # val 데이터를 안 넘기므로 시작 eval(val_at_start) 은 스모크에서 끈다.
+    debug = cfg.section("debug")
+    max_steps = debug.get("max_steps", -1)
+    if max_steps and max_steps > 0:
+        overrides += [f"sft.max_num_steps={max_steps}", "sft.val_at_start=false"]
+
     nemo.run("run_sft.py", nm.get("base_config", "sft.yaml"), overrides)
