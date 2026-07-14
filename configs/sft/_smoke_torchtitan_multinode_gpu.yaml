@@ -1,11 +1,11 @@
 # 멀티노드 GPU 스모크 — torchtitan SFT 를 **2노드**로 end-to-end 검증(랑데부·FSDP 샤딩·wandb).
 #
 # 목적은 성능이 아니라 **배선**이다: torchrun static 랑데부(node_rank/master_addr)가 두 노드를 한
-# job 으로 묶는지, FSDP 가 노드 경계를 넘어 샤딩하는지만 본다. 그래서 제일 싼 형태(노드당 1 GPU)로
-# 잡는다 — 노드가 2개이기만 하면 배선 검증은 8×H100 2노드와 똑같이 성립하고, 값은 1/20 이다.
+# job 으로 묶는지, FSDP 가 노드 경계를 넘어 샤딩하는지만 본다. 그래서 노드당 1 GPU 로 잡는다 —
+# 노드가 2개이기만 하면 배선 검증은 8×H100 2노드와 똑같이 성립하고, 값은 한 자릿수 달러다.
 #
-# 대여 예 (Cudo L40S ≈ $0.90/GPU-h → 2노드×1장 = 시간당 약 $1.8):
-#   sky launch -c tfct-tt-mn sky/sft.torchtitan.sky.yaml --num-nodes 2 --gpus L40S:1 --cloud cudo \
+# 대여 예 (Cudo A100 80GB ≈ $1.53/GPU-h → 2노드×1장 = 시간당 약 $3.1):
+#   sky launch -c tfct-tt-mn sky/sft.torchtitan.sky.yaml --num-nodes 2 --gpus A100:1 --cloud cudo \
 #     --env CONFIG=configs/sft/_smoke_torchtitan_multinode_gpu.yaml --env WANDB_API_KEY --env HF_TOKEN
 #   sky down tfct-tt-mn        # 반드시 — idle 과금 방지
 #
