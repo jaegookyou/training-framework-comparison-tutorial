@@ -29,6 +29,7 @@ from pathlib import Path
 
 from ..adapters import resolve_chat_template
 from ..config import RunConfig
+from . import _dist
 
 
 def _prepare_hf_assets(cfg: RunConfig, work: Path) -> str:
@@ -69,13 +70,12 @@ def train(cfg: RunConfig) -> None:
 
     assets = _prepare_hf_assets(cfg, work)
 
-    gpus = scale.get("gpus", 1)
-    nodes = scale.get("nodes", 1)
+    topo = _dist.resolve(scale)
     micro = hp["per_device_batch_size"]
 
-    # torchtitan 은 step 단위(epoch 아님). 단노드 FSDP 면 dp=gpus →
+    # torchtitan 은 step 단위(epoch 아님). FSDP dp = 전체 프로세스 수(nodes×gpus) →
     # steps ≈ train_samples/(micro×dp). 다른 경로의 train_samples 눈금과 일치(통제비교).
-    dp = gpus * nodes
+    dp = topo.world_size
     train_samples = tt.get("train_samples", 15000)
     steps = max(1, train_samples // (micro * dp))
     max_steps = debug.get("max_steps", -1)
@@ -104,12 +104,12 @@ def train(cfg: RunConfig) -> None:
     else:
         config_name = "sft_qwen3_8b_traceinversion"
 
-    # 단노드 다중 GPU = torchrun(FSDP 자동). 멀티노드(3단계)는 rdzv 멀티노드로 추후 배선.
+    # torchrun(FSDP 자동). 단노드는 standalone, 멀티노드는 static 랑데부 — _dist 가 판단한다.
+    # hf_assets 준비는 노드마다 돈다(위): initial_load_in_hf 가 각 rank 의 로컬 경로에서
+    # 가중치를 읽으므로 head 만 받으면 worker 가 못 연다 — 중복 다운로드가 아니라 필수다.
     cmd = [
         "torchrun",
-        f"--nproc_per_node={gpus}",
-        "--rdzv_backend=c10d",
-        "--rdzv_endpoint=localhost:0",
+        *_dist.torchrun_args(topo),
         "-m",
         "torchtitan.train",
         "--module",

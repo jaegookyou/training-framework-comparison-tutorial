@@ -28,6 +28,7 @@ from pathlib import Path
 
 from ..config import RunConfig
 from ..model_sizes import torchtitan_config_fn, torchtitan_flavor
+from . import _dist
 
 
 def _prepare_assets(cfg: RunConfig, work: Path) -> str:
@@ -71,7 +72,7 @@ def train(cfg: RunConfig) -> None:
 
     assets = _prepare_assets(cfg, work)
 
-    gpus = scale.get("gpus", 1)
+    topo = _dist.resolve(scale)
     micro = hp["per_device_batch_size"]
     steps = hp.get("steps", 10)
     debug_steps = cfg.section("debug").get("max_steps", -1)
@@ -91,9 +92,7 @@ def train(cfg: RunConfig) -> None:
     ]
     train_cmd = [
         "torchrun",
-        f"--nproc_per_node={gpus}",
-        "--rdzv_backend=c10d",
-        "--rdzv_endpoint=localhost:0",
+        *_dist.torchrun_args(topo),
         "-m",
         "torchtitan.train",
         "--module",
@@ -105,6 +104,11 @@ def train(cfg: RunConfig) -> None:
     subprocess.run(train_cmd, check=True, env={**os.environ})
 
     # DCP → HF export. 산출 HF ckpt 가 파이프라인 다음 단계(SFT)의 model.name 이 된다.
+    # **head 에서만** — 멀티노드면 이 함수가 노드마다 돌고 있어서, 가드가 없으면 worker 도 같은
+    # hf_dir 에 동시에 써 체크포인트가 깨진다(단노드에선 rank=0 뿐이라 안 보이던 함정).
+    if not topo.is_head:
+        return
+
     repo = os.environ.get("TORCHTITAN_DIR", "/opt/torchtitan")
     convert = Path(repo) / "scripts" / "checkpoint_conversion" / "convert_to_hf.py"
     export_cmd = [
