@@ -1,0 +1,25 @@
+# 싱글노드·멀티GPU(SNMG) 스모크 — torchtitan SFT 를 **1노드 2GPU** 로 검증(FSDP 노드내 샤딩).
+#
+# 사다리의 중간 발판이다:
+#   SNSG(_smoke_torchtitan_gpu, 1노드 1GPU)   = 이미지·HF·template·LoRA·wandb (비분산)
+#   SNMG(이 파일,               1노드 2GPU)   = + FSDP 샤딩 + 노드 내 NCCL     ← 여기
+#   MN  (_smoke_..._multinode,  2노드 2GPU)   = + torchrun 랑데부 + 노드 간 network
+#
+# SNSG→SNMG 는 **한 대(2GPU 박스)** 를 빌려 config 만 바꿔 연달아 돌리면 재렌트 없이 끝난다.
+# 이 계층에서 깨지면 원인은 순수하게 샤딩/노드내 NCCL(프레임워크 몫) — 랑데부(MN)와 분리된다.
+#
+# 대여 예 (Cudo A100 1노드×2장 ≈ 시간당 $3.1; --num-nodes 없음 = 단노드):
+#   sky launch -c tfct-tt sky/sft.torchtitan.sky.yaml --gpus A100:2 --cloud cudo \
+#     --env CONFIG=configs/sft/_smoke_torchtitan_snmg_gpu.yaml --env WANDB_API_KEY --env HF_TOKEN
+#   sky down tfct-tt
+#
+# _dist 관점에선 SNSG·SNMG 가 같은 경로(nodes=1 → --standalone). GPU 개수만 다르다.
+# knob 소비: nodes/gpus→_dist.resolve=torchtitan_sft.py:73, max_steps→steps=torchtitan_sft.py:80-82.
+extends: qwen3-8b_traceinversion__torchtitan__lora.yaml
+
+scale:
+  nodes: 1                      # 단노드
+  gpus: 2                       # 2장 = FSDP 노드내 샤딩 검증
+
+debug:
+  max_steps: 5                  # 5 step — 샤딩·노드내 NCCL·체크포인트 경로만 확인

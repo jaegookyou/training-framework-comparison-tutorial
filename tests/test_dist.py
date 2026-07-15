@@ -68,3 +68,24 @@ def test_ip_count_mismatch_dies(monkeypatch):
 
     with pytest.raises(SystemExit, match="SKYPILOT_NODE_IPS"):
         _dist.resolve({"nodes": 2, "gpus": 1})
+
+
+# --- guard_wired: 미배선 조합의 거짓말 knob 방지 ---
+
+def test_guard_allows_single_node_for_any_framework():
+    """단노드는 어떤 (method, framework)든 통과 — 가드는 멀티노드에만 관여."""
+    _dist.guard_wired("grpo", "slime", {"nodes": 1, "gpus": 8})       # 예외 안 남
+    _dist.guard_wired("sft", "unsloth", {"nodes": 1, "gpus": 1})      # 예외 안 남
+
+
+def test_guard_allows_wired_multinode_combos():
+    """배선된 조합은 멀티노드 통과."""
+    for method, fw in [("sft", "torchtitan"), ("pretrain", "torchtitan"), ("sft", "verl")]:
+        _dist.guard_wired(method, fw, {"nodes": 2, "gpus": 2})        # 예외 안 남
+
+
+def test_guard_blocks_unwired_multinode():
+    """미배선 조합에 nodes>1 이면 학습 시작 전에 죽는다(ray/trl 계열)."""
+    for method, fw in [("grpo", "slime"), ("ppo", "verl"), ("sft", "trl"), ("sft", "unsloth")]:
+        with pytest.raises(SystemExit, match="멀티노드 미배선"):
+            _dist.guard_wired(method, fw, {"nodes": 2, "gpus": 8})

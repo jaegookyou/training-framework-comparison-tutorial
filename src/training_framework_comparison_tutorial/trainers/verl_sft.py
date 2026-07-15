@@ -19,6 +19,7 @@ from pathlib import Path
 
 from ..adapters import get_format, get_source, resolve_chat_template
 from ..config import RunConfig
+from . import _dist
 
 
 def _prepare_parquet(cfg: RunConfig, out_dir: Path) -> str:
@@ -77,13 +78,15 @@ def train(cfg: RunConfig) -> None:
     train_parquet = _prepare_parquet(cfg, out_dir)
     tokenizer_dir = _prepare_tokenizer_dir(cfg, out_dir)
 
-    nodes = scale.get("nodes", 1)
-    gpus = scale.get("gpus", 1)
+    topo = _dist.resolve(scale)
+    nodes = topo.nodes
+    gpus = topo.gpus
 
     # 효과적 배치 = micro × grad_accum × dp. trl/unsloth 와 같은 눈금을 맞추려고
-    # global train_batch_size = per_device × grad_accum × gpus 로 둔다(통제비교).
+    # global train_batch_size = per_device × grad_accum × (전체 프로세스 수) 로 둔다(통제비교).
+    # 멀티노드면 dp = nodes×gpus 라 world_size 를 곱해야 다른 프레임워크와 눈금이 맞는다.
     micro = hp["per_device_batch_size"]
-    global_bs = micro * hp.get("gradient_accumulation", 1) * gpus
+    global_bs = micro * hp.get("gradient_accumulation", 1) * topo.world_size
 
     # tuning=lora 면 lora_rank>0. full 이면 0(전체 파라미터). verl 은 model.lora_rank 로 분기.
     lora_rank = lora.get("r", 16) if cfg.tuning == "lora" else 0
@@ -124,13 +127,12 @@ def train(cfg: RunConfig) -> None:
     if max_steps and max_steps > 0:
         overrides.append(f"trainer.total_training_steps={max_steps}")
 
-    # 단일 노드 다중 GPU = torchrun --standalone. 멀티노드(3단계)는 verl 의 ray 변형
-    # (sft_trainer_ray)이 필요 — 그건 추후 sky 멀티노드와 함께 배선한다.
+    # verl SFT 는 단일 torchrun(sft_trainer, FSDP) — GRPO/PPO 의 ray main_ppo 와 달리 torchrun
+    # 랑데부만으로 멀티노드가 성립한다(별도 ray 클러스터 부트스트랩 불필요). 단노드는 --standalone,
+    # 멀티노드는 static 랑데부 — _dist 가 SkyPilot env(NODE_RANK/IPS)를 읽어 판단한다.
     cmd = [
         "torchrun",
-        "--standalone",
-        f"--nnodes={nodes}",
-        f"--nproc_per_node={gpus}",
+        *_dist.torchrun_args(topo),
         "-m",
         "verl.trainer.sft_trainer",
         *overrides,

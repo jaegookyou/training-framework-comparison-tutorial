@@ -91,6 +91,39 @@ def resolve(scale: dict[str, Any]) -> Topology:
     )
 
 
+# 멀티노드 랑데부가 실제로 배선된 (method, framework) 조합. 여기 없는 조합에 nodes>1 을 주면
+# guard_wired 가 즉시 죽인다 — knob 이 조용히 거짓말하는 대신("nodes=2 넣었는데 실은 1노드로
+# 학습") 정직하게 "미배선"이라고 말하게 한다. 새 프레임워크를 멀티노드로 배선하면 여기 한 줄 추가.
+#
+# torchrun 계열만 있다: 단일 torchrun 랑데부로 멀티노드가 성립하는 경로들.
+# **ray 계열(verl grpo/ppo·slime·nemo-rl)**은 노드 간 ray 클러스터 부트스트랩(head/worker
+# `ray start`)이 별도로 필요하고 프레임워크별 ray.init 거동 확인이 선행돼야 해 아직 미배선이다.
+# **trl/unsloth**는 인프로세스 HF Trainer(torchrun 아님) → 멀티노드=accelerate 런처(별도 설계).
+MULTINODE_WIRED: frozenset[tuple[str, str]] = frozenset({
+    ("sft", "torchtitan"),
+    ("pretrain", "torchtitan"),
+    ("sft", "verl"),
+})
+
+
+def guard_wired(method: str, framework: str, scale: dict[str, Any]) -> None:
+    """nodes>1 인데 이 (method, framework)가 멀티노드 미배선이면 SystemExit.
+
+    dispatch 초입에서 부른다 — 배선 안 된 경로에 멀티노드 config 를 주면 학습이 시작되기 전에
+    막아, 조용히 단노드로 돌거나(눈금 오염) 프레임워크가 리소스를 기다리며 행 거는 걸 예방한다.
+    """
+    if int(scale.get("nodes", 1)) <= 1:
+        return
+    if (method, framework) in MULTINODE_WIRED:
+        return
+    raise SystemExit(
+        f"{method}/{framework} 는 아직 멀티노드 미배선인데 scale.nodes>1 이다. "
+        f"멀티노드 배선된 조합: {sorted(MULTINODE_WIRED)}. "
+        "이 조합은 scale.nodes=1 로 돌리거나, 멀티노드 배선을 먼저 추가하라 "
+        "(ray 계열은 노드 간 ray 부트스트랩, trl/unsloth 는 accelerate 런처가 필요)."
+    )
+
+
 def torchrun_args(topo: Topology) -> list[str]:
     """torchrun 랑데부 인자.
 

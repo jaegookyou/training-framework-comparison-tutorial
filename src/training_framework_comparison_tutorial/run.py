@@ -82,6 +82,10 @@ def dispatch(cfg: RunConfig) -> None:
         raise SystemExit(
             f"no trainer registered for {cfg.method}/{cfg.framework!r}"
         )
+    # 멀티노드 미배선 조합에 nodes>1 을 주면 여기서 정직하게 죽인다(거짓말 knob 방지).
+    # 배선된 trainer 는 내부에서 _dist.resolve 로 실제 프로비저닝까지 재확인한다.
+    from .trainers import _dist
+    _dist.guard_wired(cfg.method, cfg.framework, cfg.section("scale"))
     importlib.import_module(module_name).train(cfg)
 
 
