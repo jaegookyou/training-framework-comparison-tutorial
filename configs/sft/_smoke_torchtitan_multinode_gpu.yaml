@@ -1,22 +1,23 @@
 # 멀티노드 GPU 스모크 — torchtitan SFT 를 **2노드**로 end-to-end 검증(랑데부·FSDP 샤딩·wandb).
 #
 # 목적은 성능이 아니라 **배선**이다: torchrun static 랑데부(node_rank/master_addr)가 두 노드를 한
-# job 으로 묶는지, FSDP 가 노드 경계를 넘어 샤딩하는지만 본다. 그래서 노드당 1 GPU 로 잡는다 —
-# 노드가 2개이기만 하면 배선 검증은 8×H100 2노드와 똑같이 성립하고, 값은 한 자릿수 달러다.
+# job 으로 묶는지, FSDP 가 노드 경계를 넘어 샤딩하는지만 본다. 노드당 2장 = 실무에서 제일 보편적인
+# 멀티노드 토폴로지(노드 내 NVLink 샤딩 + 노드 간 네트워크) → 이 조합이 실제로 도는 걸 검증한다.
 #
-# 대여 예 (Cudo A100 80GB ≈ $1.53/GPU-h → 2노드×1장 = 시간당 약 $3.1):
-#   sky launch -c tfct-tt-mn sky/sft.torchtitan.sky.yaml --num-nodes 2 --gpus A100:1 --cloud cudo \
+# 대여 예 (Cudo A100 80GB ≈ $1.53/GPU-h → 2노드×2장 = 4 GPU = 시간당 약 $6.1):
+#   sky launch -c tfct-tt-mn sky/sft.torchtitan.sky.yaml --num-nodes 2 --gpus A100:2 --cloud cudo \
 #     --env CONFIG=configs/sft/_smoke_torchtitan_multinode_gpu.yaml --env WANDB_API_KEY --env HF_TOKEN
 #   sky down tfct-tt-mn        # 반드시 — idle 과금 방지
 #
-# ⚠️ scale.nodes 는 `--num-nodes` 와 **반드시 같아야** 한다. 어긋나면 trainers/_dist.py:resolve 가
-# 즉시 SystemExit — dp 눈금이 조용히 어긋나 가로비교가 오염되는 걸 막는다.
+# ⚠️ scale.gpus 는 `--gpus A100:N` 의 N 과, scale.nodes 는 `--num-nodes` 와 **반드시 같아야** 한다.
+# 어긋나면 trainers/_dist.py:resolve 가 즉시 SystemExit — dp 눈금(=nodes×gpus)이 조용히 어긋나
+# step 수·유효 배치가 달라져 가로비교가 오염되는 걸 막는다.
 # knob 소비: nodes/gpus→_dist.resolve=torchtitan_sft.py:73, max_steps→steps=torchtitan_sft.py:80-82.
 extends: qwen3-8b_traceinversion__torchtitan__lora.yaml
 
 scale:
-  nodes: 2                      # ← 멀티노드 스모크의 유일한 요점
-  gpus: 1                       # 노드당 1장 (배선 검증엔 충분, 최저가)
+  nodes: 2                      # 멀티노드
+  gpus: 2                       # 노드당 2장 = 보편 토폴로지(노드 내 NVLink + 노드 간 network)
 
 debug:
   max_steps: 5                  # 5 step — 랑데부·샤딩·체크포인트 경로만 확인

@@ -15,7 +15,7 @@
 #   sky down tfct-torchtitan
 #
 #   # 멀티노드 (노드 수는 config scale.nodes 와 반드시 일치해야 함 — 어긋나면 _dist 가 즉시 죽인다):
-#   sky launch -c tfct-tt-mn sky/sft.torchtitan.sky.yaml --num-nodes 2 --gpus A100:1 --cloud cudo \
+#   sky launch -c tfct-tt-mn sky/sft.torchtitan.sky.yaml --num-nodes 2 --gpus A100:2 --cloud cudo \
 #     --env CONFIG=configs/sft/_smoke_torchtitan_multinode_gpu.yaml \
 #     --env WANDB_API_KEY --env HF_TOKEN
 #
