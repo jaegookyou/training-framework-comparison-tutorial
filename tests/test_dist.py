@@ -79,13 +79,19 @@ def test_guard_allows_single_node_for_any_framework():
 
 
 def test_guard_allows_wired_multinode_combos():
-    """배선된 조합은 멀티노드 통과."""
-    for method, fw in [("sft", "torchtitan"), ("pretrain", "torchtitan"), ("sft", "verl")]:
+    """배선된 조합은 멀티노드 통과 — torchrun 계열 + ray 계열 둘 다."""
+    wired = [
+        ("sft", "torchtitan"), ("pretrain", "torchtitan"), ("sft", "verl"),   # torchrun
+        ("grpo", "verl"), ("ppo", "verl"),                                     # ray
+        ("sft", "slime"), ("grpo", "slime"), ("ppo", "slime"),                 # ray
+        ("sft", "nemo-rl"), ("dpo", "nemo-rl"), ("grpo", "nemo-rl"), ("ppo", "nemo-rl"),  # ray
+    ]
+    for method, fw in wired:
         _dist.guard_wired(method, fw, {"nodes": 2, "gpus": 2})        # 예외 안 남
 
 
 def test_guard_blocks_unwired_multinode():
-    """미배선 조합에 nodes>1 이면 학습 시작 전에 죽는다(ray/trl 계열)."""
-    for method, fw in [("grpo", "slime"), ("ppo", "verl"), ("sft", "trl"), ("sft", "unsloth")]:
+    """미배선 조합에 nodes>1 이면 학습 시작 전에 죽는다(trl/unsloth = accelerate 미배선)."""
+    for method, fw in [("sft", "trl"), ("dpo", "trl"), ("sft", "unsloth"), ("grpo", "unsloth")]:
         with pytest.raises(SystemExit, match="멀티노드 미배선"):
             _dist.guard_wired(method, fw, {"nodes": 2, "gpus": 8})

@@ -91,18 +91,31 @@ def resolve(scale: dict[str, Any]) -> Topology:
     )
 
 
-# 멀티노드 랑데부가 실제로 배선된 (method, framework) 조합. 여기 없는 조합에 nodes>1 을 주면
+# 멀티노드가 실제로 배선된 (method, framework) 조합. 여기 없는 조합에 nodes>1 을 주면
 # guard_wired 가 즉시 죽인다 — knob 이 조용히 거짓말하는 대신("nodes=2 넣었는데 실은 1노드로
 # 학습") 정직하게 "미배선"이라고 말하게 한다. 새 프레임워크를 멀티노드로 배선하면 여기 한 줄 추가.
 #
-# torchrun 계열만 있다: 단일 torchrun 랑데부로 멀티노드가 성립하는 경로들.
-# **ray 계열(verl grpo/ppo·slime·nemo-rl)**은 노드 간 ray 클러스터 부트스트랩(head/worker
-# `ray start`)이 별도로 필요하고 프레임워크별 ray.init 거동 확인이 선행돼야 해 아직 미배선이다.
-# **trl/unsloth**는 인프로세스 HF Trainer(torchrun 아님) → 멀티노드=accelerate 런처(별도 설계).
+# 두 배선 계열:
+#   ① torchrun 랑데부(이 모듈 torchrun_args): torchtitan SFT·pretrain, verl SFT.
+#   ② ray 클러스터 부트스트랩(sky/ray_bootstrap.sh, head/worker `ray start`): verl RL·slime·
+#      nemo-rl. 트레이너는 안 바뀐다(이미 nnodes 를 프레임워크에 전달) — sky run 블록이 노드 간
+#      ray 를 세우고 head 에서만 드라이버를 돌린다. verl 공식 멀티노드 문서 + SkyPilot 예제 기준.
+# **trl/unsloth**는 인프로세스 HF Trainer → 멀티노드=accelerate 런처(별도 설계·미배선).
 MULTINODE_WIRED: frozenset[tuple[str, str]] = frozenset({
+    # ① torchrun 랑데부
     ("sft", "torchtitan"),
     ("pretrain", "torchtitan"),
     ("sft", "verl"),
+    # ② ray 클러스터 부트스트랩(sky/ray_bootstrap.sh)
+    ("grpo", "verl"),
+    ("ppo", "verl"),
+    ("sft", "slime"),
+    ("grpo", "slime"),
+    ("ppo", "slime"),
+    ("sft", "nemo-rl"),
+    ("dpo", "nemo-rl"),
+    ("grpo", "nemo-rl"),
+    ("ppo", "nemo-rl"),
 })
 
 

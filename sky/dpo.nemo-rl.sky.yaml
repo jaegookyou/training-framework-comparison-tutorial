@@ -31,4 +31,6 @@ setup: |
   pip install -e .          # NeMo 는 uv 환경 — 필요 시 `uv pip install -e .`(GPU 빌드 때 확정)
 
 run: |
-  tfct-run --config $CONFIG
+  # 멀티노드면 ray 클러스터 부트스트랩 후 head 에서만 드라이버 실행(sky/ray_bootstrap.sh).
+  # 단노드면 그대로 tfct-run(프레임워크가 로컬 ray 자동 기동).
+  bash sky/ray_bootstrap.sh "tfct-run --config $CONFIG"
