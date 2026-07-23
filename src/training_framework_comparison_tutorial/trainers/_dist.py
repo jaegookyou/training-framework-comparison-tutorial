@@ -100,7 +100,8 @@ def resolve(scale: dict[str, Any]) -> Topology:
 #   ② ray 클러스터 부트스트랩(sky/ray_bootstrap.sh, head/worker `ray start`): verl RL·slime·
 #      nemo-rl. 트레이너는 안 바뀐다(이미 nnodes 를 프레임워크에 전달) — sky run 블록이 노드 간
 #      ray 를 세우고 head 에서만 드라이버를 돌린다. verl 공식 멀티노드 문서 + SkyPilot 예제 기준.
-# **trl/unsloth**는 인프로세스 HF Trainer → 멀티노드=accelerate 런처(별도 설계·미배선).
+# ③ HF Trainer torchrun 런처(sky/hf_torchrun_launch.sh): trl SFT·DPO(full=FSDP).
+# **unsloth**는 단일 GPU 전용(설계) → 멀티노드 대상 아님. trl GRPO·online_dpo 는 vLLM 미배선.
 MULTINODE_WIRED: frozenset[tuple[str, str]] = frozenset({
     # ① torchrun 랑데부
     ("sft", "torchtitan"),
@@ -116,6 +117,10 @@ MULTINODE_WIRED: frozenset[tuple[str, str]] = frozenset({
     ("dpo", "nemo-rl"),
     ("grpo", "nemo-rl"),
     ("ppo", "nemo-rl"),
+    # ③ HF Trainer torchrun 런처(sky/hf_torchrun_launch.sh, full=FSDP): trl SFT·DPO.
+    #    trl GRPO·online_dpo 는 vLLM 생성 + 분산 상호작용이 GPU 검증 선행이라 아직 미배선.
+    ("sft", "trl"),
+    ("dpo", "trl"),
 })
 
 
