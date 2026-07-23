@@ -85,7 +85,7 @@ def test_guard_allows_wired_multinode_combos():
         ("grpo", "verl"), ("ppo", "verl"),                                     # ray
         ("sft", "slime"), ("grpo", "slime"), ("ppo", "slime"),                 # ray
         ("sft", "nemo-rl"), ("dpo", "nemo-rl"), ("grpo", "nemo-rl"), ("ppo", "nemo-rl"),  # ray
-        ("sft", "trl"), ("dpo", "trl"),                                       # HF torchrun
+        ("sft", "trl"), ("dpo", "trl"), ("grpo", "trl"), ("online_dpo", "trl"),  # HF torchrun
         ("pretrain", "megatron-lm"), ("sft", "megatron-lm"),                  # megatron 다단계
         ("sft", "megatron-bridge"), ("grpo", "megatron-lm"),
     ]
@@ -95,7 +95,8 @@ def test_guard_allows_wired_multinode_combos():
 
 def test_guard_blocks_unwired_multinode():
     """미배선 조합에 nodes>1 이면 죽는다: unsloth(단일GPU 전용)·trl RL(vLLM 분산 GPU 검증 선행)."""
-    unwired = [("grpo", "trl"), ("online_dpo", "trl"), ("sft", "unsloth"), ("grpo", "unsloth")]
+    # 미배선 = unsloth(단일GPU 설계) · torchtitan GRPO(Monarch mesh = 우리 메커니즘 밖).
+    unwired = [("sft", "unsloth"), ("dpo", "unsloth"), ("grpo", "unsloth"), ("grpo", "torchtitan")]
     for method, fw in unwired:
         with pytest.raises(SystemExit, match="멀티노드 미배선"):
             _dist.guard_wired(method, fw, {"nodes": 2, "gpus": 8})

@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from ..adapters import get_format, get_reward_funcs, get_source, resolve_chat_template
 from ..config import RunConfig
-from .trl_sft import _lora_config  # TRL-family 공유 헬퍼(config.lora → peft LoraConfig)
+from .trl_sft import _lora_config, apply_multigpu_fsdp  # TRL-family 공유 헬퍼
 
 
 def train(cfg: RunConfig) -> None:
@@ -74,6 +74,11 @@ def train(cfg: RunConfig) -> None:
         push_to_hub=bool(out.get("hf_repo")),
         hub_model_id=out.get("hf_repo"),
     )
+
+    # 멀티노드/멀티GPU(torchrun) 런치면 full FT 에 FSDP 샤딩(단일 프로세스면 no-op).
+    # ⚠️ GRPO 는 루프 내 생성 — FSDP 하 generation 은 TRL 이 지원하나(SFT 보다 복잡) GPU 검증 대기.
+    # use_vllm=true 멀티노드는 vLLM 자체 병렬과 충돌 = 별개 과제.
+    apply_multigpu_fsdp(args, cfg.tuning)
 
     trainer = GRPOTrainer(
         model=model_cfg["name"],

@@ -34,4 +34,6 @@ setup: |
   pip install -e .                                     # 코드만 (무거운 deps 는 image 에 이미 있음)
 
 run: |
-  tfct-run --config $CONFIG
+  # 멀티GPU/멀티노드면 torchrun 으로 tfct-run 을 감싼다(HF Trainer=DDP/FSDP 자동 감지, SFT/DPO 와 동일).
+  # 단노드 1GPU 면 그대로 tfct-run. full FT FSDP 는 trainer 의 apply_multigpu_fsdp 가 켠다.
+  bash sky/hf_torchrun_launch.sh "$CONFIG"
