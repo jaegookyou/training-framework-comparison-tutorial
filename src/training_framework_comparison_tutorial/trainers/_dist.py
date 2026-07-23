@@ -121,6 +121,13 @@ MULTINODE_WIRED: frozenset[tuple[str, str]] = frozenset({
     #    trl GRPO·online_dpo 는 vLLM 생성 + 분산 상호작용이 GPU 검증 선행이라 아직 미배선.
     ("sft", "trl"),
     ("dpo", "trl"),
+    # ④ megatron(다단계): convert=노드별 로컬 / train=torchrun 랑데부 / export=head 전용.
+    #    megatron_lm_sft 는 arguments.sh 의 LAUNCH_SCRIPT override 훅으로 랑데부 주입.
+    #    ⚠️ export·resume 은 torch_dist 분산 ckpt 라 멀티노드에선 공유 FS 필요(스모크=train 검증).
+    ("pretrain", "megatron-lm"),
+    ("sft", "megatron-lm"),
+    ("sft", "megatron-bridge"),
+    ("grpo", "megatron-lm"),
 })
 
 

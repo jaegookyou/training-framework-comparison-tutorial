@@ -86,6 +86,8 @@ def test_guard_allows_wired_multinode_combos():
         ("sft", "slime"), ("grpo", "slime"), ("ppo", "slime"),                 # ray
         ("sft", "nemo-rl"), ("dpo", "nemo-rl"), ("grpo", "nemo-rl"), ("ppo", "nemo-rl"),  # ray
         ("sft", "trl"), ("dpo", "trl"),                                       # HF torchrun
+        ("pretrain", "megatron-lm"), ("sft", "megatron-lm"),                  # megatron 다단계
+        ("sft", "megatron-bridge"), ("grpo", "megatron-lm"),
     ]
     for method, fw in wired:
         _dist.guard_wired(method, fw, {"nodes": 2, "gpus": 2})        # 예외 안 남

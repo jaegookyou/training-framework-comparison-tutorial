@@ -37,6 +37,7 @@ import subprocess
 from pathlib import Path
 
 from ..config import RunConfig
+from . import _dist
 
 # env config 가 가리킬 우리 커스텀 에이전트(통제 변수 reward·프롬프트).
 _AGENT_TYPE = "training_framework_comparison_tutorial.megatron_rl.gsm8k_agent.TfctGSM8KAgent"
@@ -99,8 +100,7 @@ def train(cfg: RunConfig) -> None:
     mcore_ckpt = mg.get("mcore_checkpoint") or str(run_dir / "mcore_init")
 
     # 병렬 곱 = nproc_per_node × nnodes. TP×PP×DP = gpus(노드 내).
-    gpus = scale.get("gpus", 1)
-    nodes = scale.get("nodes", 1)
+    topo = _dist.resolve(scale)
     tp = mg.get("tensor_model_parallel_size", 1)
     pp = mg.get("pipeline_model_parallel_size", 1)
 
@@ -188,13 +188,15 @@ def train(cfg: RunConfig) -> None:
         )
 
     extra = shlex.join(static)
-    nproc = gpus
+    # 랑데부: 단노드 standalone / 멀티노드 static(node_rank·master_addr) — _dist 가 판단.
+    # convert_block(위, python3 convert.py 단일 프로세스)은 노드마다 로컬 mcore 를 만든다(결정적).
+    launch = shlex.join(_dist.torchrun_args(topo))
     # bash 래퍼: arch args 는 model_script source 가 채운다(MODEL_OPTIONS/COMMON_OPTIONS/
     # ENV_DEPENDENT 는 bash 배열/문자열이라 Python 에서 못 만든다 — source 가 정석, slime 과 같은
     # 패턴). cwd=repo(examples.rl 점경로 임포트·상대경로 정합).
     script = f"""set -ex
 {convert_block}source {shlex.quote(str(model_script))}
-torchrun --nproc-per-node={nproc} --nnodes={nodes} examples/rl/train_rl.py \
+torchrun {launch} examples/rl/train_rl.py \
   {extra} $COMMON_OPTIONS $MODEL_OPTIONS $ENV_DEPENDENT
 """
     subprocess.run(["bash", "-c", script], check=True, env=model_env, cwd=repo)

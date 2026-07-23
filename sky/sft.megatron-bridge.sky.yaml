@@ -19,6 +19,9 @@
 # Vast.ai 백엔드: ~/.config/vastai/vast_api_key 에 키 저장 → SkyPilot 이 Vast 오퍼를 띄운다.
 # (멀티노드 3단계는 추후 — 단일 노드 멀티GPU 까지가 이 yaml 범위.)
 
+# ⚠️ 멀티노드(--num-nodes N): convert=노드별 로컬 변환·train=torchrun 랑데부(자동)·export=head 전용.
+#    export/resume 은 torch_dist 분산 체크포인트라 **공유 FS 가 필요**하다(SkyPilot file_mounts
+#    또는 NFS). 공유 FS 없는 멀티노드 스모크는 train 랑데부까지만 검증되고 export 는 불완전하다.
 name: tfct-sft-megatron-bridge
 
 resources:

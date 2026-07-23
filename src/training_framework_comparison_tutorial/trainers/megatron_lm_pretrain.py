@@ -36,6 +36,7 @@ from pathlib import Path
 
 from ..config import RunConfig
 from ..model_sizes import megatron_arch_args
+from . import _dist
 
 _BRIDGE_ENTRY = "training_framework_comparison_tutorial.trainers._megatron_bridge_entry"
 
@@ -111,11 +112,12 @@ def train(cfg: RunConfig) -> None:
     dcp_dir = work / "checkpoint"   # DCP 체크포인트(torch_dist) — 학습 저장/재개
     work.mkdir(parents=True, exist_ok=True)
 
-    gpus = scale.get("gpus", 1)
-    nodes = scale.get("nodes", 1)
+    topo = _dist.resolve(scale)
     tp = mg.get("tensor_model_parallel_size", 1)
     pp = mg.get("pipeline_model_parallel_size", 1)
-    dp = max(1, gpus // (tp * pp))
+    # dp = 전체 프로세스(nodes×gpus) / (tp×pp). 멀티노드면 TP·PP 는 노드 내에 두고 DP 로 노드를
+    # 가로지르는 게 표준(TP 통신은 NVLink 내부, DP 는 노드 간). global_bs 눈금도 world_size 기준.
+    dp = max(1, topo.world_size // (tp * pp))
 
     # --- continued-pretrain: HF init_from → mcore 시드 (Bridge 변환 글루) ---
     pretrained_ckpt: str | None = None
@@ -197,10 +199,11 @@ def train(cfg: RunConfig) -> None:
     if pretrained_ckpt:
         args += ["--pretrained-checkpoint", pretrained_ckpt, "--finetune"]
 
+    # convert(위 --standalone --nnodes=1)는 노드마다 로컬 mcore_init 을 만든다(결정적 → 동일).
+    # train 은 랑데부: 단노드 standalone / 멀티노드 static(node_rank·master_addr) — _dist 판단.
     cmd = [
         "torchrun",
-        f"--nproc_per_node={gpus}",
-        f"--nnodes={nodes}",
+        *_dist.torchrun_args(topo),
         str(Path(repo) / "pretrain_gpt.py"),
         *args,
     ]
@@ -208,7 +211,11 @@ def train(cfg: RunConfig) -> None:
     subprocess.run(cmd, check=True, cwd=repo, env=env)
 
     # --- continued-pretrain: 학습 결과 mcore → HF export (파이프라인 다음 단계 model.name) ---
-    if init_from:
+    # **head 에서만.** 멀티노드면 train() 이 노드마다 도니 가드 없으면 워커도 export 한다.
+    # ⚠️ torch_dist 분산 체크포인트는 rank 별 shard 라, 멀티노드에선 dcp_dir 이 공유 FS 여야
+    # head 가 완전한 체크포인트를 읽어 export 한다(SkyPilot file_mounts/NFS). 공유 FS 없는
+    # 멀티노드 스모크는 train 랑데부까지만 검증하고 export 는 건너뛴다(GPU 검증 대기).
+    if init_from and topo.is_head:
         hf_dir = out_dir / "hf"
         subprocess.run(
             [

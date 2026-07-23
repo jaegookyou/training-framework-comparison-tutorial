@@ -26,6 +26,7 @@ from pathlib import Path
 
 from ..adapters import resolve_chat_template
 from ..config import RunConfig
+from . import _dist
 
 
 def _stage_tokenizer(cfg: RunConfig, out_dir: Path) -> str | None:
@@ -74,10 +75,11 @@ def train(cfg: RunConfig) -> None:
     tokenizer_dir = _stage_tokenizer(cfg, out_dir)
 
     # 병렬 곱 = nproc_per_node = gpus (arguments.sh: ETP(=TP)·EP(=1)·PP·CP(=1)·DP 의 곱).
-    gpus = scale.get("gpus", 1)
+    # 멀티노드면 DP 로 노드를 가로지른다(TP·PP 는 노드 내) → dp = world_size/(tp×pp).
+    topo = _dist.resolve(scale)
     tp = mg.get("tensor_model_parallel_size", 1)
     pp = mg.get("pipeline_model_parallel_size", 1)
-    dp = max(1, gpus // (tp * pp))
+    dp = max(1, topo.world_size // (tp * pp))
 
     # arguments.sh 계약대로의 공통 env. (HF_MODEL_CKPT = _base 의 Qwen3-8B-Base 로 conf 기본값 덮음)
     base_env = {
@@ -95,7 +97,16 @@ def train(cfg: RunConfig) -> None:
         cmd = ["bash", str(scripts / script), model_cfg_name]
         subprocess.run(cmd, check=True, env={**base_env, **env_extra}, cwd=str(scripts))
 
-    # 1) HF → mcore
+    # arguments.sh 는 LAUNCH_SCRIPT 가 비었을 때만 단노드 torchrun 을 만든다(line 85 `if [ -z ...`).
+    # 멀티노드 finetune 은 이 훅으로 랑데부 torchrun 주입(추정 아님 — 스크립트가 연 override).
+    # convert/export 는 주입 안 함 → 단노드 기본(convert=노드별 로컬, export=head 전용).
+    finetune_launch = (
+        {"LAUNCH_SCRIPT": "torchrun " + " ".join(_dist.torchrun_args(topo))}
+        if topo.is_multinode
+        else {}
+    )
+
+    # 1) HF → mcore (노드마다 로컬 변환, 결정적 → 각 rank 가 로컬에서 자기 shard 로드).
     run("convert.sh", {"MLM_MODEL_SAVE": str(mcore_init)})
 
     # 2) SFT. DATASET=traceinversion(이미지 baked 변환기가 messages 인식), train-samples ≈ epochs×N.
@@ -114,8 +125,13 @@ def train(cfg: RunConfig) -> None:
             "MLM_MODEL_SAVE": str(mcore_sft),
             "DATASET": ds_cfg["hf_path"],
             "MLM_DATA_ARGS": finetune_data_args,
+            **finetune_launch,  # 멀티노드면 랑데부 torchrun 주입(단노드면 빈 dict)
         },
     )
 
-    # 3) mcore → HF
-    run("export.sh", {"MLM_MODEL_CKPT": str(mcore_sft), "MLM_MODEL_SAVE": str(hf_export)})
+    # 3) mcore → HF — **head 전용.** 멀티노드면 train() 이 노드마다 돌아 export 도 중복된다.
+    # ⚠️ mcore_sft(torch_dist 분산 체크포인트)는 rank 별 shard 라, 멀티노드에선 공유 FS 여야
+    # head 가 완전한 체크포인트를 export 한다(SkyPilot file_mounts/NFS). 공유 FS 없는 멀티노드
+    # 스모크는 finetune 랑데부까지만 검증하고 export 는 건너뛴다(GPU 검증 대기).
+    if topo.is_head:
+        run("export.sh", {"MLM_MODEL_CKPT": str(mcore_sft), "MLM_MODEL_SAVE": str(hf_export)})

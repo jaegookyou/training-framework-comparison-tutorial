@@ -26,6 +26,7 @@ import yaml
 
 from ..adapters import resolve_chat_template
 from ..config import RunConfig
+from . import _dist
 
 _ENTRY = "training_framework_comparison_tutorial.trainers._megatron_bridge_entry"
 
@@ -67,15 +68,18 @@ def train(cfg: RunConfig) -> None:
 
     tokenizer_dir = _stage_tokenizer(cfg, out_dir)
 
-    nodes = scale.get("nodes", 1)
-    gpus = scale.get("gpus", 1)
+    topo = _dist.resolve(scale)  # 병렬도는 entry 가 run_yaml(scale)에서 읽음 — 여기선 랑데부만.
 
-    def torchrun(stage: str, nproc: int, *extra: str) -> None:
+    def torchrun(stage: str, *extra: str) -> None:
+        # convert = 단일 프로세스 변환(노드마다 로컬 mcore_init, 결정적). finetune = 학습 랑데부:
+        # 단노드 standalone / 멀티노드 static(node_rank·master_addr) — _dist 가 판단.
+        if stage == "finetune":
+            launch = _dist.torchrun_args(topo)
+        else:
+            launch = ["--standalone", "--nnodes=1", "--nproc_per_node=1"]
         cmd = [
             "torchrun",
-            "--standalone",
-            f"--nnodes={nodes if stage == 'finetune' else 1}",
-            f"--nproc_per_node={nproc}",
+            *launch,
             "-m",
             _ENTRY,
             "--stage",
@@ -88,9 +92,9 @@ def train(cfg: RunConfig) -> None:
         ]
         subprocess.run(cmd, check=True)
 
-    # 1) HF base → mcore 체크포인트(단일 프로세스 변환).
-    torchrun("convert", 1)
+    # 1) HF base → mcore 체크포인트(단일 프로세스 변환, 노드마다 로컬).
+    torchrun("convert")
 
     # 2) 그 체크포인트에 SFT. tokenizer-dir 로 캐논 chat template 주입.
     finetune_extra = ["--tokenizer-dir", tokenizer_dir] if tokenizer_dir else []
-    torchrun("finetune", gpus, *finetune_extra)
+    torchrun("finetune", *finetune_extra)

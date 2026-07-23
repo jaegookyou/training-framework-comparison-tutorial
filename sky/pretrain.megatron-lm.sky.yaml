@@ -13,6 +13,9 @@
 # ⚠️ 이미지 = megatron-bridge (AutoBridge + clone 된 Megatron-LM repo 의 pretrain_gpt.py 둘 다 보유).
 #    from-scratch 는 제거됨(continued 전용).
 
+# ⚠️ 멀티노드(--num-nodes N): convert=노드별 로컬 변환·train=torchrun 랑데부(자동)·export=head 전용.
+#    export/resume 은 torch_dist 분산 체크포인트라 **공유 FS 가 필요**하다(SkyPilot file_mounts
+#    또는 NFS). 공유 FS 없는 멀티노드 스모크는 train 랑데부까지만 검증되고 export 는 불완전하다.
 name: tfct-pretrain-megatron-lm
 
 resources:
