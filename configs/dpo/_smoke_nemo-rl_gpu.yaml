@@ -1,0 +1,8 @@
+# GPU 스모크(SNSG) — nemo-rl LoRA DPO 를 실제 8B·bf16·이미지·캐논 template 로 end-to-end 검증.
+# NeMo 헤비 DTensor DPO 경로: PreferenceDataset 인제스트 + DTensor v2 lora_cfg + Skywork ref.
+# subsample 은 소비 안 함(NeMo 가 data_path 스트리밍 → max_num_steps 로 몇 배치만 소비).
+# knob 소비: max_steps→dpo.max_num_steps + dpo.val_at_start=false (nemo_rl_dpo.py, v0.5.0 실물 키).
+extends: qwen3-8b_ultrafeedback__nemo-rl__lora.yaml
+
+debug:
+  max_steps: 5                  # dpo.max_num_steps=5 (val 데이터 없이 시작 eval 스킵)

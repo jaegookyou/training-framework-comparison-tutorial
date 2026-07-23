@@ -1,0 +1,10 @@
+# GPU 스모크(SNSG) — unsloth LoRA DPO 를 실제 8B·bf16·이미지·캐논 template 로 end-to-end 검증.
+# unsloth 는 통제비교의 단일 GPU 슬롯 — DPO 도 FastLanguageModel + get_peft_model 경로를 태운다.
+# knob 소비: subsample=unsloth_dpo.py:50-52 / max_steps=unsloth_dpo.py:99(DPOConfig.max_steps).
+extends: qwen3-8b_ultrafeedback__unsloth__lora.yaml
+
+dataset:
+  subsample: 64                 # 한 줌만 (선호쌍 어댑터·template 경로는 실제로 태움)
+
+debug:
+  max_steps: 5                  # 5 step 만 — DPO loss·unsloth 커널·wandb 정합만 확인

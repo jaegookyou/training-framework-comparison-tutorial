@@ -1,0 +1,10 @@
+# GPU 스모크(SNSG) — unsloth LoRA GRPO 를 실제 8B·bf16·이미지·캐논 template 로 end-to-end 검증.
+# unsloth GRPO 의 본령 = fast_inference(vLLM 내장) + LoRA 를 한 카드에서 → SNSG 에 가장 자연스러운 GRPO.
+# knob 소비: subsample=unsloth_grpo.py:47-49 / max_steps=unsloth_grpo.py:103(GRPOConfig.max_steps).
+extends: qwen3-8b_gsm8k__unsloth__lora.yaml
+
+dataset:
+  subsample: 64                 # gsm8k 한 줌만 (프롬프트·정답추출·reward 경로는 실제로 태움)
+
+debug:
+  max_steps: 5                  # 5 step 만 — fast_inference 생성·reward·advantage·wandb 정합만 확인

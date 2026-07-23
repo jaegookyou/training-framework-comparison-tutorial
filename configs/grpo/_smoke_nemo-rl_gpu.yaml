@@ -1,0 +1,8 @@
+# GPU 스모크(SNSG) — nemo-rl LoRA GRPO 를 실제 8B·bf16·이미지·캐논 template 로 end-to-end 검증.
+# NeMo 종합 RL 경로: native gsm8k 로더 + 커스텀 TfctGsm8kEnvironment(공유 gsm8k_score) + vLLM 생성.
+# subsample 은 소비 안 함(NeMo 가 데이터셋 스트리밍 → max_num_steps 로 몇 배치만 소비).
+# knob 소비: max_steps→grpo.max_num_steps + grpo.val_at_start=false (nemo_rl_grpo.py, v0.5.0 소스 키).
+extends: qwen3-8b_gsm8k__nemo-rl__lora.yaml
+
+debug:
+  max_steps: 5                  # grpo.max_num_steps=5 (시작 eval 스킵)

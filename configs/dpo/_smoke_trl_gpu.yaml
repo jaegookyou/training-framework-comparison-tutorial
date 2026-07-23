@@ -1,0 +1,11 @@
+# GPU 스모크(SNSG) — trl LoRA DPO 를 실제 8B·bf16·이미지·캐논 template 로 end-to-end 검증.
+# SFT 와 다른 경로를 태운다: 선호쌍(chosen/rejected) 데이터 어댑터 + DPOTrainer + ref 모델.
+# 통과하면 max_steps:-1 풀런으로 승격.
+# knob 소비: subsample=trl_dpo.py:33-35 / max_steps=trl_dpo.py:65(DPOConfig.max_steps).
+extends: qwen3-8b_ultrafeedback__trl__lora.yaml
+
+dataset:
+  subsample: 64                 # 한 줌만 (선호쌍 어댑터·template 경로는 실제로 태움)
+
+debug:
+  max_steps: 5                  # 5 step 만 — DPO loss·ref 모델·wandb 정합만 확인

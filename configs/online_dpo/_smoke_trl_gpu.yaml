@@ -1,0 +1,12 @@
+# GPU 스모크(SNSG) — trl LoRA online DPO 를 실제 8B·bf16·이미지·캐논 template 로 end-to-end 검증.
+# offline DPO 와 다른 경로: 학습 루프 안에서 on-policy 생성 + Skywork RM 채점(OAIF).
+# ⚠️ SNSG 중 가장 tight — 8B 정책 + reward 모델을 한 카드에 올린다(첫 GPU 런에서 OOM 가능성 최고,
+#    나오면 gpus 상향 or A100 80GB). repo 가 gpus=1 로 설계한 의도는 존중하되 표시해 둠.
+# knob 소비: subsample=trl_online_dpo.py:46-48 / max_steps=trl_online_dpo.py:93(OnlineDPOConfig.max_steps).
+extends: qwen3-8b_ultrafeedback__trl__lora.yaml
+
+dataset:
+  subsample: 64                 # 프롬프트 한 줌만 (생성+RM 채점 경로는 실제로 태움)
+
+debug:
+  max_steps: 5                  # 5 step 만 — on-policy 생성·RM 채점·online DPO loss·wandb 정합만 확인

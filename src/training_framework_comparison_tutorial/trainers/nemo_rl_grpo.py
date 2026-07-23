@@ -40,5 +40,12 @@ def train(cfg: RunConfig) -> None:
         # GRPO 그룹 크기 G(advantage 정규화 단위) — 다른 GRPO 와 같은 눈금.
         f"grpo.num_generations_per_prompt={hp.get('num_generations', 8)}",
     ]
+
+    # 로컬/스모크: max_steps>0 이면 grpo.max_num_steps 로 그만큼만. 키는 v0.5.0 소스 실물 확인
+    # (nemo_rl/algorithms/grpo.py GRPOConfig.max_num_steps/val_at_start). 시작 eval 끔.
+    max_steps = cfg.section("debug").get("max_steps", -1)
+    if max_steps and max_steps > 0:
+        overrides += [f"grpo.max_num_steps={max_steps}", "grpo.val_at_start=false"]
+
     base = nm.get("base_config", "grpo_math_8B.yaml")
     nemo.run("run_grpo.py", base, overrides, env_name=_ENV_NAME)

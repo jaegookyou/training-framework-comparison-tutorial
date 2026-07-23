@@ -34,4 +34,11 @@ def train(cfg: RunConfig) -> None:
         f"data.train.data_path={ds['hf_path']}",
         f"data.train.split={ds.get('split', 'train')}",
     ]
+
+    # 로컬/스모크: max_steps>0 이면 dpo.max_num_steps 로 그만큼만. 키는 v0.5.0 실물 확인
+    # (examples/configs/dpo.yaml: dpo.max_num_steps/val_at_start). val 데이터 미제공 → 시작 eval 끔.
+    max_steps = cfg.section("debug").get("max_steps", -1)
+    if max_steps and max_steps > 0:
+        overrides += [f"dpo.max_num_steps={max_steps}", "dpo.val_at_start=false"]
+
     nemo.run("run_dpo.py", nm.get("base_config", "dpo.yaml"), overrides)
