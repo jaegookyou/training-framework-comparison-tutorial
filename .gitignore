@@ -10,3 +10,7 @@ build/
 .env
 wandb/
 out/
+
+# 로컬 크레덴셜 (절대 커밋 금지)
+*.pem
+*credentials*.json
