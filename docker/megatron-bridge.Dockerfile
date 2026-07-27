@@ -15,7 +15,7 @@
 #   accelerate 1.14.0 · peft 0.19.1 · hydra-core 1.3.2 · nvidia-modelopt 0.43.0 → Megatron-LM 이미지와
 #   *동일 코어 스택*(megatron-core 0.17.1 / TE 2.16.0 / torch 2.6 / transformers 5.3) 으로 수렴 = 정합.
 #   mamba-ssm 2.3.1 · causal-conv1d 1.6.2.post1 · flash-linear-attention 0.4.2 는 hybrid-Mamba 용 →
-#   dense Qwen3-8B SFT 는 런타임에 안 쓰지만 bridge 필수 dep 라 빌드해 둔다.
+#   dense Qwen3-4B SFT 는 런타임에 안 쓰지만 bridge 필수 dep 라 빌드해 둔다.
 #
 # transformer-engine: bridge 기본은 [core_cu13](CUDA 13) 이지만 우리 베이스가 cu12 → cu12 prebuilt
 #   ([core,pytorch]==2.16.0, transformer_engine_cu12 바이너리)을 먼저 깔고, bridge 가 끌어온 cu13 휠은

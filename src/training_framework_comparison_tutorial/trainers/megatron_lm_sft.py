@@ -2,11 +2,11 @@
 
 verl 백엔드/래퍼가 아니라 **Megatron-LM repo 의 examples/post_training/modelopt** 워크플로를
 그대로 구동한다(=기업이 요구하는 'Megatron-LM 경험'). 3단계 셸 오케스트레이션:
-  1. convert.sh  : HF Qwen3-8B-Base → Megatron-core 체크포인트 (nvidia-modelopt 글루)
+  1. convert.sh  : HF Qwen3-4B-Base → Megatron-core 체크포인트 (nvidia-modelopt 글루)
   2. finetune.sh : 그 체크포인트에 SFT (sft_dataset.py 가 messages→conversation+loss 마스킹+packing)
   3. export.sh   : SFT 된 mcore 체크포인트 → HF 포맷
 
-스크립트는 cfg(MLM_MODEL_CFG=Qwen/Qwen3-8B)로 repo 의 conf/<cfg>.sh(arch args)를 source 하고,
+스크립트는 cfg(MLM_MODEL_CFG=Qwen/Qwen3-4B)로 repo 의 conf/<cfg>.sh(arch args)를 source 하고,
 env 로 동작을 조정한다(arguments.sh 계약): HF_MODEL_CKPT/TOKENIZER_MODEL/TP/PP/DP/MLM_WORK_DIR/
 MLM_MODEL_CKPT/MLM_MODEL_SAVE/DATASET. 이미지(docker/megatron-lm.Dockerfile)가 ① traceinversion
 변환기 등록 ② conf 의 TOKENIZER_MODEL 미리세팅 존중을 baked 패치로 넣어둔다.
@@ -63,7 +63,7 @@ def train(cfg: RunConfig) -> None:
 
     repo = os.environ.get("MEGATRON_LM_DIR", "/opt/Megatron-LM")
     scripts = Path(repo) / "examples" / "post_training" / "modelopt"
-    model_cfg_name = mg["model_cfg"]  # 예: Qwen/Qwen3-8B → conf/Qwen/Qwen3-8B.sh
+    model_cfg_name = mg["model_cfg"]  # 예: Qwen/Qwen3-4B → conf/Qwen/Qwen3-4B.sh
 
     out_dir = Path(out.get("local_dir", "out"))
     work_dir = out_dir / "megatron_workspace"
@@ -81,7 +81,7 @@ def train(cfg: RunConfig) -> None:
     pp = mg.get("pipeline_model_parallel_size", 1)
     dp = max(1, topo.world_size // (tp * pp))
 
-    # arguments.sh 계약대로의 공통 env. (HF_MODEL_CKPT = _base 의 Qwen3-8B-Base 로 conf 기본값 덮음)
+    # arguments.sh 계약대로의 공통 env. (HF_MODEL_CKPT = _base 의 Qwen3-4B-Base 로 conf 기본값 덮음)
     base_env = {
         **os.environ,
         "MLM_WORK_DIR": str(work_dir),

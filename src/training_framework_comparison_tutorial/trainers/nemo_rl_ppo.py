@@ -10,7 +10,7 @@ base config(ppo_*)가 들고, 우리는 통제 변수(model/data/배치/출력)�
 LoRA: NeMo lora.md 가 SFT/GRPO/DPO 만 LoRA 지원이라 명시 → **PPO 는 full 전용**(verl·slime PPO 와
 같은 제약). base config 는 megatron 백엔드(ppo_math_1B_megatron) — 우리는 model 을 8B 로 override.
 
-⚠️ GPU 검증 대기: PPO base config 의 1B→8B override(병렬·critic 메모리)·env metadata ground truth
+⚠️ GPU 검증 대기: PPO base config 의 1B→4B override(병렬·critic 메모리)·env metadata ground truth
 키·NeMo override 키는 NeMo-RL 이미지 end-to-end 에서 최종 확인(verl/slime PPO 와 동일한 단서).
 """
 

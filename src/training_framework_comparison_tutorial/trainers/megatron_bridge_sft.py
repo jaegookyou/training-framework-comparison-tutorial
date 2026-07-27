@@ -6,9 +6,9 @@
 
 이 모듈(호스트 프로세스)은 megatron 을 import 하지 않는다 — verl/megatron-lm 과 동일하게
 torchrun 서브프로세스가 무거운 deps 를 import 한다. 2단계 오케스트레이션:
-  1. convert  : HF Qwen3-8B-Base → Megatron-core 체크포인트 (AutoBridge.import_ckpt)
+  1. convert  : HF Qwen3-4B-Base → Megatron-core 체크포인트 (AutoBridge.import_ckpt)
                 finetune() 가 pretrained_checkpoint(mcore)를 요구하므로 선행 변환이 필수.
-  2. finetune : 그 체크포인트에 recipe(qwen3_8b_sft_config|qwen3_8b_peft_config)로 SFT.
+  2. finetune : 그 체크포인트에 recipe(qwen3_4b_sft_config|qwen3_4b_peft_config)로 SFT.
 실제 번역(RunConfig → ConfigContainer)·finetune 호출은 _megatron_bridge_entry 가 담당
 (torchrun -m 로 띄운다). 이 모듈은 토크나이저만 transformers 지연 import 로 굽는다.
 

@@ -8,7 +8,7 @@ ckpt 와 정합해야 하므로 `model.size`(config) 를 여기서 프레임워�
 ⚠️ 사전학습 모델도 토크나이저(Qwen3, vocab 151936)와 정합해야 하므로 vocab_size 는 151936 고정
 이다(SFT/RL 이 같은 토크나이저를 이어 쓰는 파이프라인 정합).
 
-torchtitan 값은 qwen3 `qwen3_configs` flavor 이름이다(native "8B" + 이미지 baked config 함수).
+torchtitan 값은 qwen3 `qwen3_configs` flavor 이름이다(native "4B" + 이미지 baked config 함수).
 다른 프레임워크(megatron 등)는 사전학습 트랙을 그 프레임워크로 배선할 때 키를 채운다.
 """
 
@@ -16,29 +16,30 @@ from __future__ import annotations
 
 # size preset -> {framework: (arch flavor, torchtitan config 함수명)}
 SIZES: dict[str, dict[str, str]] = {
-    # 8b: continued-pretrain 전용 — Qwen3-8B-Base 가중치를 시드로 이어학습(config.init_from + baked
-    # pretrain_qwen3_8b_wikitext 의 initial_load_in_hf=True). 사전·사후를 같은 8B 로 통일하는 수직
-    # 파이프라인용(8B from-scratch 는 데이터 부족으로 무의미 → continued). 스케일 시 키 추가.
-    "8b": {"torchtitan": "8B", "torchtitan_config": "pretrain_qwen3_8b_wikitext"},
+    # 4b: continued-pretrain 전용 — Qwen3-4B-Base 가중치를 시드로 이어학습(config.init_from + baked
+    # pretrain_qwen3_4b_wikitext 의 initial_load_in_hf=True). 사전·사후를 같은 4B 로 통일하는 수직
+    # 파이프라인용(4B from-scratch 는 데이터 부족으로 무의미 → continued). 8B→4B 전환: 표준 dense
+    # 유지(작아서 검증 빠름·싸다). 스케일 시 키 추가.
+    "4b": {"torchtitan": "4B", "torchtitan_config": "pretrain_qwen3_4b_wikitext"},
 }
 
 # size preset -> Megatron-LM Qwen3 arch 치수. 비-치수 Qwen3 플래그(RMSNorm·SwiGLU·rope·qk-layernorm·
 # disable-bias 등)는 megatron_arch_args 가 공통으로 붙인다. 플래그명·값 = upstream core_v0.17.1
-# examples/rl/model_configs/qwen3_8b.sh 미러(추정 아님).
-#   tie: 8b(Qwen3-8B)=untied(--untie 붙임).
-#   max_position_embeddings: 8b=native 40960 (continued 는 import 한 8B ckpt arch 와 정합해야).
+# examples/rl/model_configs/qwen3_4b.sh 미러(추정 아님).
+#   tie: 4b(Qwen3-4B)=tied(--untie 안 붙임 — 8B 와 다른 결정적 차이).
+#   max_position_embeddings: 4b=native 40960 (continued 는 import 한 4B ckpt arch 와 정합해야).
 MEGATRON_ARCH: dict[str, dict[str, int | bool]] = {
-    # 8b: Qwen3-8B (36층/4096/ffn12288/heads32/kv8(GQA)/head_dim128/max-pos40960). untied.
+    # 4b: Qwen3-4B (36층/2560/ffn9728/heads32/kv8(GQA)/head_dim128/max-pos40960). tied embeddings.
     # continued-pretrain 전용 — AutoBridge.import_ckpt 가 만든 mcore 시드의 arch 와 일치해야 한다.
-    "8b": {
+    "4b": {
         "num_layers": 36,
-        "hidden_size": 4096,
-        "ffn_hidden_size": 12288,
+        "hidden_size": 2560,
+        "ffn_hidden_size": 9728,
         "num_attention_heads": 32,
         "num_query_groups": 8,
         "kv_channels": 128,
         "max_position_embeddings": 40960,
-        "tie": False,
+        "tie": True,
     },
 }
 
@@ -46,9 +47,9 @@ MEGATRON_ARCH: dict[str, dict[str, int | bool]] = {
 def megatron_arch_args(size: str, seq_len: int) -> list[str]:
     """size preset → Megatron-LM pretrain_gpt.py arch 플래그 리스트.
 
-    치수는 MEGATRON_ARCH(8b=Qwen3-8B), 나머지 Qwen3 플래그는 qwen3_8b.sh 미러(같은 태그라 버전
+    치수는 MEGATRON_ARCH(4b=Qwen3-4B), 나머지 Qwen3 플래그는 qwen3_4b.sh 미러(같은 태그라 버전
     정합). vocab 151936 고정(Qwen3 토크나이저 — 파이프라인/통제 정합). 사전학습은 raw text 라 chat
-    template 불필요. untied(8b)면 --untie 붙인다(tied preset 추가 시 생략).
+    template 불필요. untied 면 --untie 붙인다(4b=tied 라 생략).
     """
     try:
         a = MEGATRON_ARCH[size]

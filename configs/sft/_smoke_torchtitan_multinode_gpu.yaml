@@ -13,7 +13,7 @@
 # 어긋나면 trainers/_dist.py:resolve 가 즉시 SystemExit — dp 눈금(=nodes×gpus)이 조용히 어긋나
 # step 수·유효 배치가 달라져 가로비교가 오염되는 걸 막는다.
 # knob 소비: nodes/gpus→_dist.resolve=torchtitan_sft.py:73, max_steps→steps=torchtitan_sft.py:80-82.
-extends: qwen3-8b_traceinversion__torchtitan__lora.yaml
+extends: qwen3-4b_traceinversion__torchtitan__lora.yaml
 
 scale:
   nodes: 2                      # 멀티노드

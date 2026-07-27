@@ -4,11 +4,11 @@ torchtitan 의 SFT(ChatDataset)는 정식 릴리스(0.2.2)엔 없고 main 에만
 이미지가 torch nightly(cu124) + torchtitan@<SHA> 를 박고, 그 빌드된 이미지를 불변 태그로 박제해
 재현성을 확보한다(휠이 증발해도 이미지 환경은 영구 재현 = 컨테이너의 본질). docker/torchtitan.
 Dockerfile 참고. LoRA = 네이티브 LoRAConverter(components/lora.py)로 지원 — baked LoRA config 함수
-(sft_qwen3_8b_traceinversion_lora)가 같은 flavor 의 model_spec 을 converter 와 함께 재생성한다
+(sft_qwen3_4b_traceinversion_lora)가 같은 flavor 의 model_spec 을 converter 와 함께 재생성한다
 (Linear→LoRALinear, base frozen). rank/alpha 는 host 가 env TFCT_LORA_* 로 넘긴다.
 
 런치 = `torchrun -m torchtitan.train --module qwen3 --config <함수> [override]`. config 함수는
-이미지 baked patch 가 config_registry.py 에 등록한 `sft_qwen3_8b_traceinversion`(= 기존
+이미지 baked patch 가 config_registry.py 에 등록한 `sft_qwen3_4b_traceinversion`(= 기존
 sft_qwen3_8b_math 를 우리 traceinversion dataloader 로 교체, sample_processor=from_traceinversion).
 torchtitan 은 `initial_load_in_hf=True` 로 HF 가중치를 직접 로드하므로 megatron 식 사전 convert 가
 없다 — 이 모듈은 hf_assets(토크나이저에 캐논 chat template 주입 + 모델 가중치) 만 준비하고 torchrun.
@@ -33,7 +33,7 @@ from . import _dist
 
 
 def _prepare_hf_assets(cfg: RunConfig, work: Path) -> str:
-    """Qwen3-8B-Base 전체(가중치+토크나이저)를 받아 캐논 chat template 을 덮어 디렉토리를 돌려준다.
+    """Qwen3-4B-Base 전체(가중치+토크나이저)를 받아 캐논 chat template 을 덮어 디렉토리를 돌려준다.
 
     torchtitan 의 hf_assets_path 는 토크나이저(apply_chat_template)와 initial_load_in_hf 가중치
     로드의 출처다. base 모델엔 {% generation %} 가 없으니 다른 경로처럼 REASONING_CHATML 을 구워
@@ -98,11 +98,11 @@ def train(cfg: RunConfig) -> None:
     # torchtitan --config 함수는 인자 못 받음 → env 가 정석. full 은 기본 config.
     env = {**os.environ}
     if cfg.tuning == "lora":
-        config_name = "sft_qwen3_8b_traceinversion_lora"
+        config_name = "sft_qwen3_4b_traceinversion_lora"
         env["TFCT_LORA_RANK"] = str(lora.get("r", 16))
         env["TFCT_LORA_ALPHA"] = str(lora.get("alpha", 32))
     else:
-        config_name = "sft_qwen3_8b_traceinversion"
+        config_name = "sft_qwen3_4b_traceinversion"
 
     # torchrun(FSDP 자동). 단노드는 standalone, 멀티노드는 static 랑데부 — _dist 가 판단한다.
     # hf_assets 준비는 노드마다 돈다(위): initial_load_in_hf 가 각 rank 의 로컬 경로에서

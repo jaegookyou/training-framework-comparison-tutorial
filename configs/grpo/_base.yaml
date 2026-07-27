@@ -6,7 +6,7 @@ method: grpo
 tuning: full
 
 model:
-  name: Qwen/Qwen3-8B-Base     # SFT/DPO 와 동일 base (통제비교: 모델 고정). 수직 파이프라인이면 앞 단계 ckpt 로 교체.
+  name: Qwen/Qwen3-4B-Base     # SFT/DPO 와 동일 base (통제비교: 모델 고정). 수직 파이프라인이면 앞 단계 ckpt 로 교체.
   max_seq_len: 1536            # gsm8k 짧은 프롬프트 + reasoning 응답. prompt+completion 상한 가늠용.
   chat_template: reasoning_chatml  # base → 캐논 ChatML. add_generation_prompt 로 rollout 프롬프트 큐 정합.
 
@@ -36,7 +36,7 @@ hp:
   max_prompt_length: 512
   max_completion_length: 1024
   temperature: 1.0
-  use_vllm: false               # true = vllm rollout(현실적 8B GRPO 엔 사실상 필수, trl 이미지에 vllm 추가 필요)
+  use_vllm: false               # true = vllm rollout(현실적 GRPO 엔 사실상 필수, trl 이미지에 vllm 추가 필요)
 
 # tuning=lora 일 때만 소비. full 이면 무시.
 lora:

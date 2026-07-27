@@ -4,7 +4,7 @@
 
 ## 무엇을 비교하나
 
-**고정 축(통제 변수)**: 모델 = `Qwen/Qwen3-8B-Base` 단일 · 데이터 = SFT(traceinversion) / DPO·online DPO(ultrafeedback) / GRPO·PPO(openai/gsm8k) · reward = 태스크 1:1 공유 `gsm8k_score`(rule) · chat template = 캐논 `REASONING_CHATML` 전 프레임워크 공유. **프레임워크만 변수**로 둔다(controlled comparison).
+**고정 축(통제 변수)**: 모델 = `Qwen/Qwen3-4B-Base` 단일 · 데이터 = SFT(traceinversion) / DPO·online DPO(ultrafeedback) / GRPO·PPO(openai/gsm8k) · reward = 태스크 1:1 공유 `gsm8k_score`(rule) · chat template = 캐논 `REASONING_CHATML` 전 프레임워크 공유. **프레임워크만 변수**로 둔다(controlled comparison).
 
 ### 프레임워크 × 방법 매트릭스
 
@@ -24,7 +24,7 @@
 빈칸/`F` 는 전부 upstream 실물로 검증한 **정직한 경로 부재**다(누락 아님). 네이티브 기준 maxed.
 
 ¹ TRL PPO 는 설계상 제외 — `PPOTrainer` 가 neural reward model 강제라 rule gsm8k reward 부적합(선호 패러다임).
-² 사전학습 = **continued-pretrain 8B 전용**(`init_from: Qwen3-8B-Base` 시드, from-scratch 제거).
+² 사전학습 = **continued-pretrain 4B 전용**(`init_from: Qwen3-4B-Base` 시드, from-scratch 제거).
 ³ Megatron-Bridge = HF↔mcore 변환 라이브러리 + SFT recipe. 네이티브 RL 트레이너 0개(RL 에선 NeMo-RL 의 변환 부품으로 쓰임).
 ⁴ torchtitan GRPO = `experiments/rl`(Monarch+vLLM, experimental), SFT/pretrain(cu124)과 다른 **별도 cu130 이미지**.
 ⁵ NeMo-RL PPO = full 만(`lora.md`: LoRA 는 SFT/GRPO/DPO 만 지원).
@@ -84,8 +84,8 @@ Vast.ai 백엔드는 계정 페이지의 API 키를 `~/.config/vastai/vast_api_k
 
 현재 구현:
 - **사전학습**: torchtitan · Megatron-LM(순수 `pretrain_gpt.py`·preprocess_data.py 인덱싱).
-  `method: pretrain`. **continued-pretrain 8B 전용**(`init_from: Qwen3-8B-Base` 시드 이어학습,
-  from-scratch 는 제거): 사전·사후를 **같은 8B 로 통일** — 한 모델이 PT→SFT→RL 전 과정 통과(8B
+  `method: pretrain`. **continued-pretrain 4B 전용**(`init_from: Qwen3-4B-Base` 시드 이어학습,
+  from-scratch 는 제거): 사전·사후를 **같은 4B 로 통일** — 한 모델이 PT→SFT→RL 전 과정 통과(4B
   from-scratch 는 데이터 부족으로 무의미 → 이어학습). **torchtitan**(`initial_load_in_hf`) ·
   **Megatron-LM**(학습=순수 `pretrain_gpt.py --finetune`, HF↔mcore 변환만 Bridge `AutoBridge` 글루 —
   순수 convert.py 가 qwen3 미지원이라; bridge 이미지 사용) 두 경로. 산출 `out/hf` 가 사후학습 `model.name`.
@@ -94,7 +94,7 @@ Vast.ai 백엔드는 계정 페이지의 API 키를 `~/.config/vastai/vast_api_k
   PEFT) · torchtitan(full|lora·nightly SHA 핀·ChatDataset·네이티브 LoRAConverter, 이미지 박제로
   재현) · NeMo-RL(full|lora·DTensor) · slime(full·rollout 추상 재활용 sft_rollout·loss mask=캐논
   template). slime 은 RL 프레임워크지만 SFT 도 네이티브(full 전용 — base slime LoRA 없음).
-  reasoning 트랙 (Qwen3-8B-Base + TraceInversion).
+  reasoning 트랙 (Qwen3-4B-Base + TraceInversion).
 - **DPO**(offline preference): TRL(full|lora) · Unsloth(full|lora·단일 GPU) · NeMo-RL(full|lora·헤비/
   DTensor). trl-lib/ultrafeedback_binarized.
 - **Online DPO**(online preference, on-policy): TRL(full|lora). 같은 DPO loss 지만 선호쌍을 학습
@@ -134,7 +134,7 @@ online 생성+reward)라 별 method 로 둔다.
 통제비교(가로축)와 별개로, **단일 모델이 사전학습→SFT→RL 전 과정을 통과하는 종단 파이프라인**도
 설계돼 있다. 단계 간 인터페이스 = **HF 체크포인트**(각 단계 산출 `out/hf` → 다음 단계 `model.name`).
 크기 knob(`model.size`)·데이터·`scale.gpus` 만 바꾸면 코드 수정 없이 스케일된다.
-- **사전학습**(구현): `torchtitan` · `Megatron-LM` continued-pretrain 8B(Qwen3-8B-Base 시드 +
+- **사전학습**(구현): `torchtitan` · `Megatron-LM` continued-pretrain 4B(Qwen3-4B-Base 시드 +
   wikitext-2, from-scratch 제거). `method: pretrain` 축, `configs/pretrain/`,
   `model_sizes.py`(size preset → torchtitan flavor / megatron arch 플래그). `tfct-run --config
   configs/pretrain/...`. 파이프라인 단계 입력은 각 트레이너의 HF export `out/hf`(Megatron-LM continued
@@ -143,7 +143,7 @@ online 생성+reward)라 별 method 로 둔다.
 - **파이프라인 러너 `tfct-pipeline`**(구현): 선언적 spec(`pipelines/*.yaml`)이 단계 config 를 나열하면
   러너가 순서대로 돌리며 단계 사이 `model.name ← 직전 단계 산출 HF` 를 자동 연결(단계별 분리 출력
   디렉토리). 기존 standalone 단계 위 **얇은 재사용 레이어** — trainer·config 무수정, 단독 실행도 그대로.
-  `tfct-pipeline --pipeline pipelines/qwen3-8b.yaml`. 산출 HF 경로 규약은 프레임워크별(pretrain·
+  `tfct-pipeline --pipeline pipelines/qwen3-4b.yaml`. 산출 HF 경로 규약은 프레임워크별(pretrain·
   megatron-lm=`out/hf` / trl·unsloth full=`out`)로 명시(소비 단계는 full 핸드오프).
 
 ## 개발

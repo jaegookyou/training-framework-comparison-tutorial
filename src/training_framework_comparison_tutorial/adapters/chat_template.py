@@ -1,6 +1,6 @@
 """캐논 학습용 chat template.
 
-왜 필요한가: 통제비교 대상 모델이 **base 모델**(Qwen3-8B-Base)이라 그 토크나이저의
+왜 필요한가: 통제비교 대상 모델이 **base 모델**(Qwen3-4B-Base)이라 그 토크나이저의
 기본 template 에는 `assistant_only_loss` 가 요구하는 `{% generation %}` 마커가 없다
 (base 의 ChatML template 에 generation 마커만 빠져 있음). 그러면 TRL 이 assistant
 토큰 마스크를 못 뽑아 깨진다.

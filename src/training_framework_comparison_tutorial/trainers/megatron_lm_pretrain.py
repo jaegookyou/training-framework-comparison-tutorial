@@ -1,15 +1,15 @@
 """순수 Megatron-LM 사전학습 경로 (continued-pretrain·full) — 수직 파이프라인 1단계 + 가로비교.
 
-**continued-pretrain 전용**(`model.init_from`=Qwen3-8B-Base 필수, from-scratch 제거): 8B 가중치를
-시드로 이어학습. 사전·사후를 같은 8B 로 통일(torchtitan continued 의 Megatron 짝). 학습 루프는
+**continued-pretrain 전용**(`model.init_from`=Qwen3-4B-Base 필수, from-scratch 제거): 4B 가중치를
+시드로 이어학습. 사전·사후를 같은 4B 로 통일(torchtitan continued 의 Megatron 짝). 학습 루프는
 **순수 pretrain_gpt.py**(기업이 콕 집어 요구하는 'Megatron-LM 경험'), HF↔mcore 변환만 Bridge
 (AutoBridge import/export) 글루로 쓴다 — 순수 Megatron-LM 의 tools/checkpoint/convert.py 는 qwen3
-HF 로더가 없어(qwen2.5까지) 8B 시드를 못 만들기 때문. 그래서 이 config 는 megatron-bridge 이미지
+HF 로더가 없어(qwen2.5까지) 4B(qwen3) 시드를 못 만들기 때문. 그래서 이 config 는 megatron-bridge
 (AutoBridge + Megatron-LM repo clone)를 쓴다.
 
-arch 플래그·값 = upstream core_v0.17.1 의 examples/rl/model_configs/qwen3_8b.sh(arch)·examples/gpt3/
+arch 플래그·값 = upstream core_v0.17.1 의 examples/rl/model_configs/qwen3_4b.sh(arch)·examples/gpt3/
 train_gpt3_175b_distributed.sh(training/data/logging) 미러(같은 태그라 버전 정합, 추정 아님).
-arch = model_sizes.megatron_arch_args(8b=Qwen3-8B untied).
+arch = model_sizes.megatron_arch_args(4b=Qwen3-4B tied).
 
 train() subprocess 단계:
   1. torchrun _megatron_bridge_entry --stage convert : init_from HF → mcore 시드.
@@ -24,7 +24,7 @@ train() subprocess 단계:
 ⚠️ GPU 검증 대기: Megatron 은 CPU 스모크 불가(TE/CUDA) → 학습 루프·preprocess 인자·arch boolean 관례·
 wandb 플래그명은 GPU 에서 확인. continued 추가 항목: **pretrain_gpt.py 가 AutoBridge.import_ckpt
 산출 mcore 를 `--pretrained-checkpoint`+`--finetune` 로 로드하는 정합**(둘 다 torch_dist 0.17.1 라
-원칙 호환, arch 메타 정합 확인) · 8b untie/arch · AutoBridge export_ckpt → HF · TP4 병렬.
+원칙 호환, arch 메타 정합 확인) · 4b tie/arch · AutoBridge export_ckpt → HF · TP2 병렬.
 """
 
 from __future__ import annotations
@@ -100,11 +100,11 @@ def train(cfg: RunConfig) -> None:
     wandb_cfg = cfg.section("wandb")
 
     repo = os.environ.get("MEGATRON_LM_DIR", "/opt/Megatron-LM")
-    init_from = model_cfg.get("init_from")  # continued-pretrain(8B 시드 이어학습) — 필수
+    init_from = model_cfg.get("init_from")  # continued-pretrain(4B 시드 이어학습) — 필수
     if not init_from:
         raise SystemExit(
             "Megatron-LM 사전학습은 continued-pretrain 전용이다(from-scratch 제거). "
-            "model.init_from 에 시드 모델(예: Qwen/Qwen3-8B-Base)을 지정해야 한다."
+            "model.init_from 에 시드 모델(예: Qwen/Qwen3-4B-Base)을 지정해야 한다."
         )
 
     out_dir = Path(out.get("local_dir", "out"))
@@ -153,7 +153,7 @@ def train(cfg: RunConfig) -> None:
     min_lr = float(hp.get("min_learning_rate", lr / 10))
 
     args = [
-        # ARCH (model_sizes: 8b=Qwen3-8B untied, qwen3_8b.sh 미러).
+        # ARCH (model_sizes: 4b=Qwen3-4B tied, qwen3_4b.sh 미러).
         *megatron_arch_args(model_cfg["size"], seq_len),
         # 병렬 / 백엔드
         "--tensor-model-parallel-size", str(tp),

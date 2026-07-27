@@ -3,45 +3,45 @@ from pathlib import Path
 from training_framework_comparison_tutorial.config import RunConfig
 
 CONFIGS = Path(__file__).resolve().parents[1] / "configs"
-FULL = CONFIGS / "sft" / "qwen3-8b_traceinversion__trl__full.yaml"
-LORA = CONFIGS / "sft" / "qwen3-8b_traceinversion__trl__lora.yaml"
-UNSLOTH = CONFIGS / "sft" / "qwen3-8b_traceinversion__unsloth__lora.yaml"
-UNSLOTH_FULL = CONFIGS / "sft" / "qwen3-8b_traceinversion__unsloth__full.yaml"
-VERL_FULL = CONFIGS / "sft" / "qwen3-8b_traceinversion__verl__full.yaml"
-VERL_LORA = CONFIGS / "sft" / "qwen3-8b_traceinversion__verl__lora.yaml"
-MEGATRON_LM = CONFIGS / "sft" / "qwen3-8b_traceinversion__megatron-lm__full.yaml"
-MEGATRON_BRIDGE_FULL = CONFIGS / "sft" / "qwen3-8b_traceinversion__megatron-bridge__full.yaml"
-MEGATRON_BRIDGE_LORA = CONFIGS / "sft" / "qwen3-8b_traceinversion__megatron-bridge__lora.yaml"
-TORCHTITAN = CONFIGS / "sft" / "qwen3-8b_traceinversion__torchtitan__full.yaml"
-TORCHTITAN_LORA = CONFIGS / "sft" / "qwen3-8b_traceinversion__torchtitan__lora.yaml"
-SLIME_SFT_FULL = CONFIGS / "sft" / "qwen3-8b_traceinversion__slime__full.yaml"
-PRETRAIN_8B_TORCHTITAN = CONFIGS / "pretrain" / "qwen3-8b_wikitext__torchtitan.yaml"
-PRETRAIN_8B_MEGATRON_LM = CONFIGS / "pretrain" / "qwen3-8b_wikitext__megatron-lm.yaml"
-DPO_FULL = CONFIGS / "dpo" / "qwen3-8b_ultrafeedback__trl__full.yaml"
-DPO_LORA = CONFIGS / "dpo" / "qwen3-8b_ultrafeedback__trl__lora.yaml"
-GRPO_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__trl__full.yaml"
-GRPO_LORA = CONFIGS / "grpo" / "qwen3-8b_gsm8k__trl__lora.yaml"
-DPO_UNSLOTH_FULL = CONFIGS / "dpo" / "qwen3-8b_ultrafeedback__unsloth__full.yaml"
-DPO_UNSLOTH_LORA = CONFIGS / "dpo" / "qwen3-8b_ultrafeedback__unsloth__lora.yaml"
-GRPO_UNSLOTH_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__unsloth__full.yaml"
-GRPO_UNSLOTH_LORA = CONFIGS / "grpo" / "qwen3-8b_gsm8k__unsloth__lora.yaml"
-GRPO_VERL_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__verl__full.yaml"
-GRPO_VERL_LORA = CONFIGS / "grpo" / "qwen3-8b_gsm8k__verl__lora.yaml"
-GRPO_SLIME_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__slime__full.yaml"
-GRPO_MEGATRON_LM_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__megatron-lm__full.yaml"
-GRPO_TORCHTITAN_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__torchtitan__full.yaml"
-ONLINE_DPO_TRL_FULL = CONFIGS / "online_dpo" / "qwen3-8b_ultrafeedback__trl__full.yaml"
-ONLINE_DPO_TRL_LORA = CONFIGS / "online_dpo" / "qwen3-8b_ultrafeedback__trl__lora.yaml"
-PPO_VERL_FULL = CONFIGS / "ppo" / "qwen3-8b_gsm8k__verl__full.yaml"
-PPO_VERL_LORA = CONFIGS / "ppo" / "qwen3-8b_gsm8k__verl__lora.yaml"
-PPO_SLIME_FULL = CONFIGS / "ppo" / "qwen3-8b_gsm8k__slime__full.yaml"
-NEMO_SFT_FULL = CONFIGS / "sft" / "qwen3-8b_traceinversion__nemo-rl__full.yaml"
-NEMO_SFT_LORA = CONFIGS / "sft" / "qwen3-8b_traceinversion__nemo-rl__lora.yaml"
-NEMO_DPO_FULL = CONFIGS / "dpo" / "qwen3-8b_ultrafeedback__nemo-rl__full.yaml"
-NEMO_DPO_LORA = CONFIGS / "dpo" / "qwen3-8b_ultrafeedback__nemo-rl__lora.yaml"
-NEMO_GRPO_FULL = CONFIGS / "grpo" / "qwen3-8b_gsm8k__nemo-rl__full.yaml"
-NEMO_GRPO_LORA = CONFIGS / "grpo" / "qwen3-8b_gsm8k__nemo-rl__lora.yaml"
-NEMO_PPO_FULL = CONFIGS / "ppo" / "qwen3-8b_gsm8k__nemo-rl__full.yaml"
+FULL = CONFIGS / "sft" / "qwen3-4b_traceinversion__trl__full.yaml"
+LORA = CONFIGS / "sft" / "qwen3-4b_traceinversion__trl__lora.yaml"
+UNSLOTH = CONFIGS / "sft" / "qwen3-4b_traceinversion__unsloth__lora.yaml"
+UNSLOTH_FULL = CONFIGS / "sft" / "qwen3-4b_traceinversion__unsloth__full.yaml"
+VERL_FULL = CONFIGS / "sft" / "qwen3-4b_traceinversion__verl__full.yaml"
+VERL_LORA = CONFIGS / "sft" / "qwen3-4b_traceinversion__verl__lora.yaml"
+MEGATRON_LM = CONFIGS / "sft" / "qwen3-4b_traceinversion__megatron-lm__full.yaml"
+MEGATRON_BRIDGE_FULL = CONFIGS / "sft" / "qwen3-4b_traceinversion__megatron-bridge__full.yaml"
+MEGATRON_BRIDGE_LORA = CONFIGS / "sft" / "qwen3-4b_traceinversion__megatron-bridge__lora.yaml"
+TORCHTITAN = CONFIGS / "sft" / "qwen3-4b_traceinversion__torchtitan__full.yaml"
+TORCHTITAN_LORA = CONFIGS / "sft" / "qwen3-4b_traceinversion__torchtitan__lora.yaml"
+SLIME_SFT_FULL = CONFIGS / "sft" / "qwen3-4b_traceinversion__slime__full.yaml"
+PRETRAIN_4B_TORCHTITAN = CONFIGS / "pretrain" / "qwen3-4b_wikitext__torchtitan.yaml"
+PRETRAIN_4B_MEGATRON_LM = CONFIGS / "pretrain" / "qwen3-4b_wikitext__megatron-lm.yaml"
+DPO_FULL = CONFIGS / "dpo" / "qwen3-4b_ultrafeedback__trl__full.yaml"
+DPO_LORA = CONFIGS / "dpo" / "qwen3-4b_ultrafeedback__trl__lora.yaml"
+GRPO_FULL = CONFIGS / "grpo" / "qwen3-4b_gsm8k__trl__full.yaml"
+GRPO_LORA = CONFIGS / "grpo" / "qwen3-4b_gsm8k__trl__lora.yaml"
+DPO_UNSLOTH_FULL = CONFIGS / "dpo" / "qwen3-4b_ultrafeedback__unsloth__full.yaml"
+DPO_UNSLOTH_LORA = CONFIGS / "dpo" / "qwen3-4b_ultrafeedback__unsloth__lora.yaml"
+GRPO_UNSLOTH_FULL = CONFIGS / "grpo" / "qwen3-4b_gsm8k__unsloth__full.yaml"
+GRPO_UNSLOTH_LORA = CONFIGS / "grpo" / "qwen3-4b_gsm8k__unsloth__lora.yaml"
+GRPO_VERL_FULL = CONFIGS / "grpo" / "qwen3-4b_gsm8k__verl__full.yaml"
+GRPO_VERL_LORA = CONFIGS / "grpo" / "qwen3-4b_gsm8k__verl__lora.yaml"
+GRPO_SLIME_FULL = CONFIGS / "grpo" / "qwen3-4b_gsm8k__slime__full.yaml"
+GRPO_MEGATRON_LM_FULL = CONFIGS / "grpo" / "qwen3-4b_gsm8k__megatron-lm__full.yaml"
+GRPO_TORCHTITAN_FULL = CONFIGS / "grpo" / "qwen3-4b_gsm8k__torchtitan__full.yaml"
+ONLINE_DPO_TRL_FULL = CONFIGS / "online_dpo" / "qwen3-4b_ultrafeedback__trl__full.yaml"
+ONLINE_DPO_TRL_LORA = CONFIGS / "online_dpo" / "qwen3-4b_ultrafeedback__trl__lora.yaml"
+PPO_VERL_FULL = CONFIGS / "ppo" / "qwen3-4b_gsm8k__verl__full.yaml"
+PPO_VERL_LORA = CONFIGS / "ppo" / "qwen3-4b_gsm8k__verl__lora.yaml"
+PPO_SLIME_FULL = CONFIGS / "ppo" / "qwen3-4b_gsm8k__slime__full.yaml"
+NEMO_SFT_FULL = CONFIGS / "sft" / "qwen3-4b_traceinversion__nemo-rl__full.yaml"
+NEMO_SFT_LORA = CONFIGS / "sft" / "qwen3-4b_traceinversion__nemo-rl__lora.yaml"
+NEMO_DPO_FULL = CONFIGS / "dpo" / "qwen3-4b_ultrafeedback__nemo-rl__full.yaml"
+NEMO_DPO_LORA = CONFIGS / "dpo" / "qwen3-4b_ultrafeedback__nemo-rl__lora.yaml"
+NEMO_GRPO_FULL = CONFIGS / "grpo" / "qwen3-4b_gsm8k__nemo-rl__full.yaml"
+NEMO_GRPO_LORA = CONFIGS / "grpo" / "qwen3-4b_gsm8k__nemo-rl__lora.yaml"
+NEMO_PPO_FULL = CONFIGS / "ppo" / "qwen3-4b_gsm8k__nemo-rl__full.yaml"
 
 
 def test_extends_inherits_base():
@@ -49,7 +49,7 @@ def test_extends_inherits_base():
     assert cfg.framework == "trl"
     assert cfg.method == "sft"
     # _base.yaml 에서 상속된 공통 축
-    assert cfg.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert cfg.section("model")["name"] == "Qwen/Qwen3-4B-Base"
     assert cfg.section("dataset")["source"] == "traceinversion"
 
 
@@ -70,7 +70,7 @@ def test_tuning_axis_defaults_and_overrides():
 
 def test_run_name_is_descriptive():
     cfg = RunConfig.from_file(LORA)
-    assert cfg.run_name() == "sft-Qwen3-8B-Base-traceinversion-trl-lora"
+    assert cfg.run_name() == "sft-Qwen3-4B-Base-traceinversion-trl-lora"
 
 
 def test_unsloth_config_is_single_gpu_lora():
@@ -79,7 +79,7 @@ def test_unsloth_config_is_single_gpu_lora():
     assert cfg.tuning == "lora"
     assert cfg.section("scale")["gpus"] == 1
     assert cfg.image.endswith("/unsloth:latest")
-    assert cfg.run_name() == "sft-Qwen3-8B-Base-traceinversion-unsloth-lora"
+    assert cfg.run_name() == "sft-Qwen3-4B-Base-traceinversion-unsloth-lora"
 
 
 def test_unsloth_full_config_is_single_gpu():
@@ -90,7 +90,7 @@ def test_unsloth_full_config_is_single_gpu():
     assert cfg.image.endswith("/unsloth:latest")
     # full 은 _base 의 full lr 을 그대로 쓴다(lora 만 2e-4 override)
     assert float(cfg.section("hp")["learning_rate"]) == 2.0e-5
-    assert cfg.run_name() == "sft-Qwen3-8B-Base-traceinversion-unsloth-full"
+    assert cfg.run_name() == "sft-Qwen3-4B-Base-traceinversion-unsloth-full"
 
 
 def test_verl_full_and_lora_configs():
@@ -98,7 +98,7 @@ def test_verl_full_and_lora_configs():
     assert full.framework == "verl"
     assert full.tuning == "full"
     assert full.image.endswith("/verl:latest")
-    assert full.run_name() == "sft-Qwen3-8B-Base-traceinversion-verl-full"
+    assert full.run_name() == "sft-Qwen3-4B-Base-traceinversion-verl-full"
 
     lora = RunConfig.from_file(VERL_LORA)
     assert lora.tuning == "lora"
@@ -115,15 +115,15 @@ def test_sft_slime_full_only_config():
     assert cfg.tuning == "full"
     assert cfg.image.endswith("/slime:latest")
     # _base 공통 축 상속 (모델/데이터 = 다른 SFT 와 동일, 통제비교)
-    assert cfg.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert cfg.section("model")["name"] == "Qwen/Qwen3-4B-Base"
     assert cfg.section("dataset")["source"] == "traceinversion"
     assert cfg.section("model")["chat_template"] == "reasoning_chatml"  # loss mask 통제 변수
     # slime 고유 knob (Megatron + sft_rollout)
-    assert cfg.section("slime")["model_script"] == "qwen3-8B"
+    assert cfg.section("slime")["model_script"] == "qwen3-4B"
     assert cfg.section("slime")["loss_mask_type"] == "qwen3"
     assert cfg.section("slime")["tensor_model_parallel_size"] == 2
     assert cfg.section("scale")["gpus"] == 8
-    assert cfg.run_name() == "sft-Qwen3-8B-Base-traceinversion-slime-full"
+    assert cfg.run_name() == "sft-Qwen3-4B-Base-traceinversion-slime-full"
 
 
 def test_megatron_lm_config_is_full_only_with_megatron_section():
@@ -132,13 +132,13 @@ def test_megatron_lm_config_is_full_only_with_megatron_section():
     assert cfg.tuning == "full"  # 순수 Megatron-LM SFT 는 full 전용(LoRA 없음)
     assert cfg.image.endswith("/megatron-lm:latest")
     # _base 공통 축 상속 (모델/데이터/템플릿 = 통제비교)
-    assert cfg.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert cfg.section("model")["name"] == "Qwen/Qwen3-4B-Base"
     assert cfg.section("dataset")["source"] == "traceinversion"
     # Megatron 고유 knob
     mg = cfg.section("megatron")
-    assert mg["model_cfg"] == "Qwen/Qwen3-8B"
+    assert mg["model_cfg"] == "Qwen/Qwen3-4B"
     assert mg["tensor_model_parallel_size"] == cfg.section("scale")["gpus"]
-    assert cfg.run_name() == "sft-Qwen3-8B-Base-traceinversion-megatron-lm-full"
+    assert cfg.run_name() == "sft-Qwen3-4B-Base-traceinversion-megatron-lm-full"
 
 
 def test_megatron_bridge_full_and_lora_configs():
@@ -147,11 +147,11 @@ def test_megatron_bridge_full_and_lora_configs():
     assert full.tuning == "full"
     assert full.image.endswith("/megatron-bridge:latest")
     # _base 공통 축 상속 (모델/데이터/템플릿 = 통제비교)
-    assert full.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert full.section("model")["name"] == "Qwen/Qwen3-4B-Base"
     assert full.section("dataset")["source"] == "traceinversion"
-    # Megatron 고유 knob (NVIDIA qwen3-8b SFT 권장 TP=4)
-    assert full.section("megatron")["tensor_model_parallel_size"] == 4
-    assert full.run_name() == "sft-Qwen3-8B-Base-traceinversion-megatron-bridge-full"
+    # Megatron 고유 knob (NVIDIA qwen3_4b_sft_2gpu 레시피 미러 TP=2)
+    assert full.section("megatron")["tensor_model_parallel_size"] == 2
+    assert full.run_name() == "sft-Qwen3-4B-Base-traceinversion-megatron-bridge-full"
 
     lora = RunConfig.from_file(MEGATRON_BRIDGE_LORA)
     assert lora.tuning == "lora"  # 순수 Megatron-LM 과 달리 Bridge 는 네이티브 PEFT 지원
@@ -167,11 +167,11 @@ def test_torchtitan_full_and_lora_configs():
     assert cfg.tuning == "full"
     assert cfg.image.endswith("/torchtitan:latest")
     # _base 공통 축 상속 (모델/데이터/템플릿 = 통제비교)
-    assert cfg.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert cfg.section("model")["name"] == "Qwen/Qwen3-4B-Base"
     assert cfg.section("dataset")["source"] == "traceinversion"
     # torchtitan 고유 knob (step 환산용 train_samples)
     assert cfg.section("torchtitan")["train_samples"] == 15000
-    assert cfg.run_name() == "sft-Qwen3-8B-Base-traceinversion-torchtitan-full"
+    assert cfg.run_name() == "sft-Qwen3-4B-Base-traceinversion-torchtitan-full"
 
     # LoRA = 네이티브 LoRAConverter (baked sft_..._lora config, model_spec 재생성)
     lora = RunConfig.from_file(TORCHTITAN_LORA)
@@ -180,7 +180,7 @@ def test_torchtitan_full_and_lora_configs():
     # lora run 이 _base SFT lr 을 override (trl/unsloth/verl SFT lora 와 동일 눈금 2e-4)
     assert float(lora.section("hp")["learning_rate"]) == 2.0e-4
     assert lora.section("lora")["r"] == 16  # trainer 가 env TFCT_LORA_RANK 로 baked config 에 전달
-    assert lora.run_name() == "sft-Qwen3-8B-Base-traceinversion-torchtitan-lora"
+    assert lora.run_name() == "sft-Qwen3-4B-Base-traceinversion-torchtitan-lora"
 
 
 def test_model_size_presets_map_to_torchtitan():
@@ -189,64 +189,64 @@ def test_model_size_presets_map_to_torchtitan():
         torchtitan_flavor,
     )
 
-    # 8b continued-pretrain: native 8B flavor + baked pretrain_qwen3_8b_wikitext (from-scratch 제거)
-    assert torchtitan_flavor("8b") == "8B"
-    assert torchtitan_config_fn("8b") == "pretrain_qwen3_8b_wikitext"
+    # 4b continued-pretrain: native 4B flavor + baked pretrain_qwen3_4b_wikitext (from-scratch 제거)
+    assert torchtitan_flavor("4b") == "4B"
+    assert torchtitan_config_fn("4b") == "pretrain_qwen3_4b_wikitext"
 
 
-def test_pretrain_8b_continued_config():
-    # continued-pretrain: 사전·사후를 같은 8B 로 통일. init_from 시드 = 사후학습 base 와 동일.
-    cfg = RunConfig.from_file(PRETRAIN_8B_TORCHTITAN)
+def test_pretrain_4b_continued_config():
+    # continued-pretrain: 사전·사후를 같은 4B 로 통일. init_from 시드 = 사후학습 base 와 동일.
+    cfg = RunConfig.from_file(PRETRAIN_4B_TORCHTITAN)
     assert cfg.method == "pretrain"
     assert cfg.framework == "torchtitan"
-    assert cfg.section("model")["size"] == "8b"
-    # 시드 = Qwen3-8B-Base (initial_load_in_hf 가 이걸 이어학습 → 사후학습 base 와 통일)
-    assert cfg.section("model")["init_from"] == "Qwen/Qwen3-8B-Base"
-    assert cfg.section("model")["tokenizer"] == "Qwen/Qwen3-8B-Base"
-    # continued 는 작은 lr + 멀티GPU
+    assert cfg.section("model")["size"] == "4b"
+    # 시드 = Qwen3-4B-Base (initial_load_in_hf 가 이걸 이어학습 → 사후학습 base 와 통일)
+    assert cfg.section("model")["init_from"] == "Qwen/Qwen3-4B-Base"
+    assert cfg.section("model")["tokenizer"] == "Qwen/Qwen3-4B-Base"
+    # continued 는 작은 lr + 멀티GPU (4B = 8B 의 4GPU 에서 2GPU 로 축소)
     assert float(cfg.section("hp")["learning_rate"]) == 2.0e-5
-    assert cfg.section("scale")["gpus"] == 4
-    assert cfg.run_name() == "pretrain-8b-wikitext-torchtitan"
+    assert cfg.section("scale")["gpus"] == 2
+    assert cfg.run_name() == "pretrain-4b-wikitext-torchtitan"
 
 
-def test_pretrain_8b_continued_config_megatron_lm():
+def test_pretrain_4b_continued_config_megatron_lm():
     # continued-pretrain 의 순수 Megatron-LM 짝. 학습=pretrain_gpt.py, 변환만 Bridge 글루
     # (convert.py qwen3 블로커 우회) → 이미지는 megatron-bridge.
-    cfg = RunConfig.from_file(PRETRAIN_8B_MEGATRON_LM)
+    cfg = RunConfig.from_file(PRETRAIN_4B_MEGATRON_LM)
     assert cfg.method == "pretrain"
     assert cfg.framework == "megatron-lm"  # 학습 루프 = 순수 Megatron-LM
     # ⚠️ 이미지는 megatron-bridge (AutoBridge + clone 된 pretrain_gpt.py 둘 다 필요)
     assert cfg.image.endswith("/megatron-bridge:latest")
-    assert cfg.section("model")["size"] == "8b"
-    # 시드 = Qwen3-8B-Base (--pretrained-checkpoint 로 로드 = 사후학습 base 와 통일)
-    assert cfg.section("model")["init_from"] == "Qwen/Qwen3-8B-Base"
-    assert cfg.section("model")["tokenizer"] == "Qwen/Qwen3-8B-Base"
-    # continued 는 작은 lr + megatron TP knob
+    assert cfg.section("model")["size"] == "4b"
+    # 시드 = Qwen3-4B-Base (--pretrained-checkpoint 로 로드 = 사후학습 base 와 통일)
+    assert cfg.section("model")["init_from"] == "Qwen/Qwen3-4B-Base"
+    assert cfg.section("model")["tokenizer"] == "Qwen/Qwen3-4B-Base"
+    # continued 는 작은 lr + megatron TP knob (4B = qwen3_4b_pretrain_2gpu 미러 TP2)
     assert float(cfg.section("hp")["learning_rate"]) == 2.0e-5
-    assert cfg.section("megatron")["tensor_model_parallel_size"] == 4
-    assert cfg.section("scale")["gpus"] == 8
+    assert cfg.section("megatron")["tensor_model_parallel_size"] == 2
+    assert cfg.section("scale")["gpus"] == 2
     # 사전학습 = full-param (tuning 축 없음 → 기본 full)
     assert cfg.tuning == "full"
-    assert cfg.run_name() == "pretrain-8b-wikitext-megatron-lm"
+    assert cfg.run_name() == "pretrain-4b-wikitext-megatron-lm"
     # megatron 고유 knob (preprocess)
     assert cfg.section("megatron")["preprocess_workers"] == 8
 
 
-def test_megatron_arch_args_8b_untied():
+def test_megatron_arch_args_4b_tied():
     from training_framework_comparison_tutorial.model_sizes import megatron_arch_args
 
-    # 8b = Qwen3-8B (untied, max-pos 40960)
-    args = megatron_arch_args("8b", seq_len=2048)
+    # 4b = Qwen3-4B (tied embeddings, max-pos 40960). 8B 와 결정적 차이 = tie(--untie 안 붙음).
+    args = megatron_arch_args("4b", seq_len=2048)
     pairs = {args[i]: args[i + 1] for i in range(0, len(args) - 1)}
     assert pairs["--num-layers"] == "36"
-    assert pairs["--hidden-size"] == "4096"
-    assert pairs["--ffn-hidden-size"] == "12288"
+    assert pairs["--hidden-size"] == "2560"
+    assert pairs["--ffn-hidden-size"] == "9728"
     assert pairs["--num-attention-heads"] == "32"
     assert pairs["--num-query-groups"] == "8"
     assert pairs["--kv-channels"] == "128"
     assert pairs["--max-position-embeddings"] == "40960"  # native(seq_len 아님)
-    # 8b 는 untied → --untie 붙음
-    assert "--untie-embeddings-and-output-weights" in args
+    # 4b 는 tied → --untie 안 붙음 (8B=untied 와의 결정적 차이)
+    assert "--untie-embeddings-and-output-weights" not in args
     # vocab 고정 + Qwen3 플래그(값 없는 스위치) 존재
     assert pairs["--vocab-size"] == "151936"
     assert pairs["--rotary-base"] == "1000000"
@@ -263,17 +263,17 @@ def test_dpo_full_and_lora_configs():
     assert full.tuning == "full"
     assert full.image.endswith("/trl:latest")
     # _base 공통 축 상속 (모델 = SFT 와 동일, 통제비교)
-    assert full.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert full.section("model")["name"] == "Qwen/Qwen3-4B-Base"
     assert full.section("dataset")["source"] == "ultrafeedback"
     assert full.section("hp")["beta"] == 0.1  # DPO KL 강도
-    assert full.run_name() == "dpo-Qwen3-8B-Base-ultrafeedback-trl-full"
+    assert full.run_name() == "dpo-Qwen3-4B-Base-ultrafeedback-trl-full"
 
     lora = RunConfig.from_file(DPO_LORA)
     assert lora.tuning == "lora"
     assert lora.section("scale")["gpus"] == 1
     # lora run 이 _base 의 DPO lr 을 override (full 5e-7 → lora 5e-6)
     assert float(lora.section("hp")["learning_rate"]) == 5.0e-6
-    assert lora.run_name() == "dpo-Qwen3-8B-Base-ultrafeedback-trl-lora"
+    assert lora.run_name() == "dpo-Qwen3-4B-Base-ultrafeedback-trl-lora"
 
 
 def test_grpo_full_and_lora_configs():
@@ -283,19 +283,19 @@ def test_grpo_full_and_lora_configs():
     assert full.tuning == "full"
     assert full.image.endswith("/trl:latest")
     # _base 공통 축 상속 (모델 = SFT/DPO 와 동일, 통제비교)
-    assert full.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert full.section("model")["name"] == "Qwen/Qwen3-4B-Base"
     assert full.section("dataset")["source"] == "gsm8k"
     # GRPO 고유 knob: reward 세트 + 그룹 크기
     assert full.section("reward")["name"] == "gsm8k"
     assert full.section("hp")["num_generations"] == 8
-    assert full.run_name() == "grpo-Qwen3-8B-Base-gsm8k-trl-full"
+    assert full.run_name() == "grpo-Qwen3-4B-Base-gsm8k-trl-full"
 
     lora = RunConfig.from_file(GRPO_LORA)
     assert lora.tuning == "lora"
     assert lora.section("scale")["gpus"] == 1
     # lora run 이 _base 의 GRPO lr 을 override (full 1e-6 → lora 1e-5)
     assert float(lora.section("hp")["learning_rate"]) == 1.0e-5
-    assert lora.run_name() == "grpo-Qwen3-8B-Base-gsm8k-trl-lora"
+    assert lora.run_name() == "grpo-Qwen3-4B-Base-gsm8k-trl-lora"
 
 
 def test_dpo_unsloth_full_and_lora_configs():
@@ -307,7 +307,7 @@ def test_dpo_unsloth_full_and_lora_configs():
     assert full.image.endswith("/unsloth:latest")
     # full 은 _base 의 DPO full lr(5e-7) 을 그대로
     assert float(full.section("hp")["learning_rate"]) == 5.0e-7
-    assert full.run_name() == "dpo-Qwen3-8B-Base-ultrafeedback-unsloth-full"
+    assert full.run_name() == "dpo-Qwen3-4B-Base-ultrafeedback-unsloth-full"
 
     lora = RunConfig.from_file(DPO_UNSLOTH_LORA)
     assert lora.tuning == "lora"
@@ -322,7 +322,7 @@ def test_grpo_unsloth_full_and_lora_configs():
     assert full.tuning == "full"
     assert full.section("scale")["gpus"] == 1  # Unsloth 단일 GPU 전용
     assert full.section("reward")["name"] == "gsm8k"
-    assert full.run_name() == "grpo-Qwen3-8B-Base-gsm8k-unsloth-full"
+    assert full.run_name() == "grpo-Qwen3-4B-Base-gsm8k-unsloth-full"
 
     lora = RunConfig.from_file(GRPO_UNSLOTH_LORA)
     assert lora.tuning == "lora"
@@ -337,21 +337,21 @@ def test_grpo_verl_full_and_lora_configs():
     assert full.tuning == "full"
     assert full.image.endswith("/verl:latest")
     # _base 공통 축 상속 (모델/데이터/reward = TRL·Unsloth GRPO 와 동일, 통제비교)
-    assert full.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert full.section("model")["name"] == "Qwen/Qwen3-4B-Base"
     assert full.section("dataset")["source"] == "gsm8k"
     assert full.section("reward")["name"] == "gsm8k"
     assert full.section("hp")["num_generations"] == 8
     # verl 고유 knob (vllm rollout)
     assert full.section("verl")["rollout_tp"] == 1
     assert full.section("scale")["gpus"] == 8
-    assert full.run_name() == "grpo-Qwen3-8B-Base-gsm8k-verl-full"
+    assert full.run_name() == "grpo-Qwen3-4B-Base-gsm8k-verl-full"
 
     lora = RunConfig.from_file(GRPO_VERL_LORA)
     assert lora.tuning == "lora"
     assert lora.section("scale")["gpus"] == 1
     # lora run 이 _base GRPO lr 을 override (trl/unsloth GRPO lora 와 동일 눈금 1e-5)
     assert float(lora.section("hp")["learning_rate"]) == 1.0e-5
-    assert lora.run_name() == "grpo-Qwen3-8B-Base-gsm8k-verl-lora"
+    assert lora.run_name() == "grpo-Qwen3-4B-Base-gsm8k-verl-lora"
 
 
 def test_grpo_slime_full_only_config():
@@ -361,15 +361,15 @@ def test_grpo_slime_full_only_config():
     assert cfg.tuning == "full"  # slime 은 full RL 전용(base slime LoRA 없음 → lora config 없음)
     assert cfg.image.endswith("/slime:latest")
     # _base 공통 축 상속 (모델/데이터/reward = 다른 GRPO 와 동일, 통제비교)
-    assert cfg.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert cfg.section("model")["name"] == "Qwen/Qwen3-4B-Base"
     assert cfg.section("dataset")["source"] == "gsm8k"
     assert cfg.section("reward")["name"] == "gsm8k"
     assert cfg.section("hp")["num_generations"] == 8
     # slime 고유 knob (SGLang+Megatron)
-    assert cfg.section("slime")["model_script"] == "qwen3-8B"
+    assert cfg.section("slime")["model_script"] == "qwen3-4B"
     assert cfg.section("slime")["tensor_model_parallel_size"] == 2
     assert cfg.section("scale")["gpus"] == 8
-    assert cfg.run_name() == "grpo-Qwen3-8B-Base-gsm8k-slime-full"
+    assert cfg.run_name() == "grpo-Qwen3-4B-Base-gsm8k-slime-full"
 
 
 def test_grpo_megatron_lm_full_only_config():
@@ -379,15 +379,15 @@ def test_grpo_megatron_lm_full_only_config():
     assert cfg.tuning == "full"  # examples/rl 에 LoRA 없음 → full 전용(lora config 없음)
     assert cfg.image.endswith("/megatron-lm:latest")
     # _base 공통 축 상속 (모델/데이터/reward = 다른 GRPO 와 동일, 통제비교)
-    assert cfg.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert cfg.section("model")["name"] == "Qwen/Qwen3-4B-Base"
     assert cfg.section("dataset")["source"] == "gsm8k"
     assert cfg.section("reward")["name"] == "gsm8k"
     assert cfg.section("hp")["num_generations"] == 8
     # Megatron 고유 knob (examples/rl train_rl)
-    assert cfg.section("megatron")["model_script"] == "qwen3_8b"
-    assert cfg.section("megatron")["tensor_model_parallel_size"] == 8
-    assert cfg.section("scale")["gpus"] == 8
-    assert cfg.run_name() == "grpo-Qwen3-8B-Base-gsm8k-megatron-lm-full"
+    assert cfg.section("megatron")["model_script"] == "qwen3_4b"
+    assert cfg.section("megatron")["tensor_model_parallel_size"] == 2
+    assert cfg.section("scale")["gpus"] == 2
+    assert cfg.run_name() == "grpo-Qwen3-4B-Base-gsm8k-megatron-lm-full"
 
 
 def test_grpo_torchtitan_full_only_config():
@@ -398,12 +398,12 @@ def test_grpo_torchtitan_full_only_config():
     # ⚠️ 별도 cu130 이미지(torchtitan-rl) — SFT/사전학습 torchtitan 이미지(cu124)와 다름
     assert cfg.image.endswith("/torchtitan-rl:latest")
     # _base 공통 축 상속 (모델/데이터/reward = 다른 GRPO 와 동일, 통제비교)
-    assert cfg.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert cfg.section("model")["name"] == "Qwen/Qwen3-4B-Base"
     assert cfg.section("dataset")["source"] == "gsm8k"
     assert cfg.section("reward")["name"] == "gsm8k"
     assert cfg.section("hp")["num_generations"] == 8
     assert cfg.section("scale")["gpus"] == 8
-    assert cfg.run_name() == "grpo-Qwen3-8B-Base-gsm8k-torchtitan-full"
+    assert cfg.run_name() == "grpo-Qwen3-4B-Base-gsm8k-torchtitan-full"
 
 
 def test_online_dpo_trl_full_and_lora_configs():
@@ -420,12 +420,12 @@ def test_online_dpo_trl_full_and_lora_configs():
     assert full.section("hp")["beta"] == 0.1
     assert full.section("hp")["max_completion_length"] == 512
     # run_name 의 ds 슬러그 = dataset.source(=ultrafeedback_prompt). method 로 offline 과 구분.
-    assert full.run_name() == "online_dpo-Qwen3-8B-Base-ultrafeedback_prompt-trl-full"
+    assert full.run_name() == "online_dpo-Qwen3-4B-Base-ultrafeedback_prompt-trl-full"
 
     lora = RunConfig.from_file(ONLINE_DPO_TRL_LORA)
     assert lora.tuning == "lora"
     assert float(lora.section("hp")["learning_rate"]) == 5.0e-6  # lora 는 full 보다 큰 lr
-    assert lora.run_name() == "online_dpo-Qwen3-8B-Base-ultrafeedback_prompt-trl-lora"
+    assert lora.run_name() == "online_dpo-Qwen3-4B-Base-ultrafeedback_prompt-trl-lora"
 
 
 def test_ppo_verl_full_and_lora_configs():
@@ -435,7 +435,7 @@ def test_ppo_verl_full_and_lora_configs():
     assert full.tuning == "full"
     assert full.image.endswith("/verl:latest")
     # _base 공통 축 상속 (모델/데이터/reward = GRPO 와 동일, 통제비교: advantage 추정만 다름)
-    assert full.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert full.section("model")["name"] == "Qwen/Qwen3-4B-Base"
     assert full.section("dataset")["source"] == "gsm8k"
     assert full.section("reward")["name"] == "gsm8k"
     # PPO 고유 knob: critic lr + GAE(gamma/lam). 그룹(num_generations) 없음 — critic 으로 GAE.
@@ -446,14 +446,14 @@ def test_ppo_verl_full_and_lora_configs():
     # verl 고유 knob (vllm rollout)
     assert full.section("verl")["rollout_tp"] == 1
     assert full.section("scale")["gpus"] == 8
-    assert full.run_name() == "ppo-Qwen3-8B-Base-gsm8k-verl-full"
+    assert full.run_name() == "ppo-Qwen3-4B-Base-gsm8k-verl-full"
 
     lora = RunConfig.from_file(PPO_VERL_LORA)
     assert lora.tuning == "lora"
     assert lora.section("scale")["gpus"] == 1
     # lora run 이 _base PPO actor lr 을 override (GRPO verl lora 와 동일 눈금 1e-5)
     assert float(lora.section("hp")["learning_rate"]) == 1.0e-5
-    assert lora.run_name() == "ppo-Qwen3-8B-Base-gsm8k-verl-lora"
+    assert lora.run_name() == "ppo-Qwen3-4B-Base-gsm8k-verl-lora"
 
 
 def test_ppo_slime_full_only_config():
@@ -463,18 +463,18 @@ def test_ppo_slime_full_only_config():
     assert cfg.tuning == "full"  # slime 은 full RL 전용(base slime LoRA 없음 → lora config 없음)
     assert cfg.image.endswith("/slime:latest")
     # _base 공통 축 상속 (모델/데이터/reward = verl PPO·GRPO 와 동일, 통제비교)
-    assert cfg.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert cfg.section("model")["name"] == "Qwen/Qwen3-4B-Base"
     assert cfg.section("dataset")["source"] == "gsm8k"
     assert cfg.section("reward")["name"] == "gsm8k"
     # PPO 고유 knob: critic lr + GAE. 그룹(num_generations) 없음 — critic 으로 GAE.
     assert float(cfg.section("hp")["critic_learning_rate"]) == 1.0e-5
     assert "num_generations" not in cfg.section("hp")
     # slime 고유 knob (SGLang+Megatron + PPO critic)
-    assert cfg.section("slime")["model_script"] == "qwen3-8B"
+    assert cfg.section("slime")["model_script"] == "qwen3-4B"
     assert cfg.section("slime")["num_critic_only_steps"] == 1
     assert cfg.section("slime")["tensor_model_parallel_size"] == 2
     assert cfg.section("scale")["gpus"] == 8
-    assert cfg.run_name() == "ppo-Qwen3-8B-Base-gsm8k-slime-full"
+    assert cfg.run_name() == "ppo-Qwen3-4B-Base-gsm8k-slime-full"
 
 
 def test_ppo_format_reuses_grpo_formats():
@@ -503,30 +503,30 @@ def test_nemo_rl_all_methods_configs():
     assert sft_full.method == "sft"
     assert sft_full.tuning == "full"
     assert sft_full.image.endswith("/nemo-rl:latest")
-    assert sft_full.section("model")["name"] == "Qwen/Qwen3-8B-Base"
+    assert sft_full.section("model")["name"] == "Qwen/Qwen3-4B-Base"
     assert sft_full.section("nemo")["base_config"] == "sft.yaml"
-    assert sft_full.run_name() == "sft-Qwen3-8B-Base-traceinversion-nemo-rl-full"
+    assert sft_full.run_name() == "sft-Qwen3-4B-Base-traceinversion-nemo-rl-full"
     assert RunConfig.from_file(NEMO_SFT_LORA).tuning == "lora"
 
     dpo_full = RunConfig.from_file(NEMO_DPO_FULL)
     assert dpo_full.method == "dpo"
     assert dpo_full.section("dataset")["source"] == "ultrafeedback"
     assert dpo_full.section("nemo")["base_config"] == "dpo.yaml"
-    assert dpo_full.run_name() == "dpo-Qwen3-8B-Base-ultrafeedback-nemo-rl-full"
+    assert dpo_full.run_name() == "dpo-Qwen3-4B-Base-ultrafeedback-nemo-rl-full"
     assert float(RunConfig.from_file(NEMO_DPO_LORA).section("hp")["learning_rate"]) == 5.0e-6
 
     grpo_full = RunConfig.from_file(NEMO_GRPO_FULL)
     assert grpo_full.method == "grpo"
     assert grpo_full.section("reward")["name"] == "gsm8k"  # 커스텀 env 가 공유 코어로 채점
     assert grpo_full.section("nemo")["base_config"] == "grpo_math_8B.yaml"
-    assert grpo_full.run_name() == "grpo-Qwen3-8B-Base-gsm8k-nemo-rl-full"
+    assert grpo_full.run_name() == "grpo-Qwen3-4B-Base-gsm8k-nemo-rl-full"
     assert float(RunConfig.from_file(NEMO_GRPO_LORA).section("hp")["learning_rate"]) == 1.0e-5
 
     ppo_full = RunConfig.from_file(NEMO_PPO_FULL)
     assert ppo_full.method == "ppo"
     assert ppo_full.tuning == "full"  # NeMo PPO 는 full 전용(lora.md: LoRA 는 SFT/GRPO/DPO 만)
     assert ppo_full.section("nemo")["base_config"] == "ppo_math_1B_megatron.yaml"
-    assert ppo_full.run_name() == "ppo-Qwen3-8B-Base-gsm8k-nemo-rl-full"
+    assert ppo_full.run_name() == "ppo-Qwen3-4B-Base-gsm8k-nemo-rl-full"
 
 
 def test_dispatch_namespaced_by_method():

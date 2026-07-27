@@ -10,7 +10,7 @@ data=공유 from_gsm8k(다른 GRPO 경로와 같은 채점/데이터 = 가로비
 module 을 `<FQN>.config_registry` 로 import 하므로(소스 확인) torchtitan 소스트리에 bake 불필요 —
 megatron_rl·nemo_rl_env 와 같은 컨테이너 전용 reward 모듈 패턴이다.
 
-런치 = `python -m torchtitan.experiments.rl.train --module <FQN> --config rl_grpo_qwen3_8b_gsm8k
+런치 = `python -m torchtitan.experiments.rl.train --module <FQN> --config rl_grpo_qwen3_4b_gsm8k
 --hf_assets_path=<assets>`. torchrun 이 아니라 Monarch 가 trainer/generator mesh 를 띄운다(README).
 HP(lr·group_size 등)는 baked config 함수가 _base grpo 눈금으로 박는다 — nested RLTrainer.Config 의
 CLI override 경로 미확인이라(추정 금지) host 는 README 확인된 --hf_assets_path 만 넘긴다.
@@ -33,7 +33,7 @@ from ..config import RunConfig
 
 # manager.py fully-qualified 분기로 넘길 우리 task 모듈 + config 함수.
 _MODULE = "training_framework_comparison_tutorial.torchtitan_rl.gsm8k"
-_CONFIG = "rl_grpo_qwen3_8b_gsm8k"
+_CONFIG = "rl_grpo_qwen3_4b_gsm8k"
 
 
 def _prepare_hf_assets(cfg: RunConfig, work: Path) -> str:

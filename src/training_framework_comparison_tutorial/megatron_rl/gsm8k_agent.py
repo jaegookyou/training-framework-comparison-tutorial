@@ -41,7 +41,7 @@ class TfctGSM8KAgent(GSM8KAgent):
     def __init__(
         self,
         answer_format: str = "boxed",
-        hf_model: str = "Qwen/Qwen3-8B-Base",
+        hf_model: str = "Qwen/Qwen3-4B-Base",
         chat_template: str | None = "reasoning_chatml",
         **kwargs: Any,
     ):

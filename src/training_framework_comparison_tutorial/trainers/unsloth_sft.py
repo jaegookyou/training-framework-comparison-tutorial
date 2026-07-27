@@ -1,7 +1,7 @@
 """Unsloth SFT 학습 경로 (full|lora·단일 GPU).
 
 Unsloth 는 단일 GPU 효율에 특화 → 통제비교에서 1 GPU 슬롯을 담당한다. LoRA 가 본령이지만
-full FT 도 지원한다(`full_finetuning=True`, QLoRA 대비 ~4x VRAM — 7~8B full 은 48GB+ 단일
+full FT 도 지원한다(`full_finetuning=True`, QLoRA 대비 ~4x VRAM — 4B full 은 단일 GPU 여유
 GPU 에 올라간다). 멀티GPU(FSDP/DDP)는 다른 경로(trl/verl/megatron)에 맡기고 여기선 단일 GPU 만.
 
 unsloth 는 transformers/trl 보다 먼저 임포트돼야 자기 최적화 패치가 걸린다 →
@@ -58,7 +58,7 @@ def train(cfg: RunConfig) -> None:
 
     full = cfg.tuning == "full"
 
-    # bf16 (QLoRA 아님 → load_in_4bit=False). LoRA: 8B/16k 가 A100 40GB 에 올라가고 4bit 오차
+    # bf16 (QLoRA 아님 → load_in_4bit=False). LoRA: 4B/16k 가 단일 GPU 에 여유 올라가고 4bit 오차
     # 없이 reasoning-distill 충실도를 지킨다(TRL LoRA 와 정합). full: full_finetuning=True 로
     # 전체 파라미터 학습(QLoRA 대비 ~4x VRAM → 단일 GPU 라도 큰 VRAM 필요, sky 참고).
     model, tokenizer = FastLanguageModel.from_pretrained(

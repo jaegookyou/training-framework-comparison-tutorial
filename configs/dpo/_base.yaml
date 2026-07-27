@@ -6,7 +6,7 @@ method: dpo
 tuning: full
 
 model:
-  name: Qwen/Qwen3-8B-Base     # SFT 트랙과 동일 base (통제비교: 모델 고정). 수직 파이프라인이면 SFT 산출 ckpt 로 교체.
+  name: Qwen/Qwen3-4B-Base     # SFT 트랙과 동일 base (통제비교: 모델 고정). 수직 파이프라인이면 SFT 산출 ckpt 로 교체.
   max_seq_len: 2048            # 선호쌍 일반 chat → 16k reasoning 불필요. DPO max_length.
   chat_template: reasoning_chatml  # base → 캐논 ChatML (SFT 와 동일 template 으로 통제). DPO 는 generation 마커 미사용.
 

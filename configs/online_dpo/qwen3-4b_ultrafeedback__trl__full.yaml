@@ -4,7 +4,7 @@ framework: trl
 tuning: full
 image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/trl:latest
 
-# 8B full online DPO 는 정책+ref+reward model(8B×3) + rollout 생성까지 → 멀티GPU 샤딩 필수.
+# 4B full online DPO 는 4B 정책+ref + 8B reward model + rollout 생성까지 → 멀티GPU 샤딩 필수.
 # 실제 프로비저닝은 sky/online_dpo.trl.sky.yaml 에서 처리.
 scale:
   nodes: 1

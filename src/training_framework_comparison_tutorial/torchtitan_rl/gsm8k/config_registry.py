@@ -1,9 +1,9 @@
 """config 진입점 (torchtitan RL gsm8k).
 
-manager.py 가 `--module <우리 FQN> --config rl_grpo_qwen3_8b_gsm8k` 를 fully-qualified 분기로 받아
+manager.py 가 `--module <우리 FQN> --config rl_grpo_qwen3_4b_gsm8k` 를 fully-qualified 분기로 받아
 이 파일의 함수를 호출한다(`<FQN>.config_registry`).
 
-alphabet_sort config_registry 미러 — model_spec "8B"(LMHeadCastConverter: RL logprob/KL 은 lm_head
+alphabet_sort config_registry 미러 — model_spec "4B"(LMHeadCastConverter: RL logprob/KL 은 lm_head
 fp32 필요) + Gsm8kRollouter + GRPOLoss. 통제 HP(lr·group_size·max_tokens·seq_len)는 _base.yaml grpo
 와 같은 눈금으로 여기 박는다: nested RLTrainer.Config 의 CLI override 경로가 미확인이라(추정 금지)
 host 는 README 확인된 --hf_assets_path 만 넘기고 나머지는 config 함수가 단일 출처가 된다.
@@ -32,18 +32,18 @@ from torchtitan.models.qwen3 import model_registry
 from training_framework_comparison_tutorial.torchtitan_rl.gsm8k.rollouter import Gsm8kRollouter
 
 
-def rl_grpo_qwen3_8b_gsm8k() -> RLTrainer.Config:
-    """GRPO config for Qwen3-8B on gsm8k (8 GPUs: 4 gen + 4 train). reward = 공유 gsm8k_score.
+def rl_grpo_qwen3_4b_gsm8k() -> RLTrainer.Config:
+    """GRPO config for Qwen3-4B on gsm8k (4 GPUs: 2 gen + 2 train). reward = 공유 gsm8k_score.
 
     HP 눈금 = _base.yaml grpo (lr 1e-6 · group_size 8 = num_generations · seq_len 1536 ·
-    temperature 1.0 · max_completion 1024). 8B 라 train/gen mesh 둘 다 TP4.
+    temperature 1.0 · max_completion 1024). 4B 라 train/gen mesh 둘 다 TP2(8B=TP4 에서 축소).
     """
     return RLTrainer.Config(
         model_spec=model_registry(
-            "8B", attn_backend="varlen", converters=[LMHeadCastConverter.Config()]
+            "4B", attn_backend="varlen", converters=[LMHeadCastConverter.Config()]
         ),
-        # host 트레이너가 --hf_assets_path 로 실경로(캐논 template 구운 Qwen3-8B-Base) override.
-        hf_assets_path="torchtitan/experiments/rl/example_checkpoint/Qwen3-8B-Base",
+        # host 트레이너가 --hf_assets_path 로 실경로(캐논 template 구운 Qwen3-4B-Base) override.
+        hf_assets_path="torchtitan/experiments/rl/example_checkpoint/Qwen3-4B-Base",
         num_steps=10,
         num_groups_per_rollout_batch=5,
         num_validation_samples=20,
@@ -66,7 +66,7 @@ def rl_grpo_qwen3_8b_gsm8k() -> RLTrainer.Config:
             training=TrainingConfig(),
             parallelism=ParallelismConfig(
                 data_parallel_shard_degree=1,
-                tensor_parallel_degree=4,  # 8B train mesh TP4
+                tensor_parallel_degree=2,  # 4B train mesh TP2
                 disable_loss_parallel=True,
             ),
             checkpoint=CheckpointManager.Config(
@@ -81,7 +81,7 @@ def rl_grpo_qwen3_8b_gsm8k() -> RLTrainer.Config:
             model_dtype="bfloat16",
             parallelism=InferenceParallelismConfig(
                 data_parallel_degree=1,
-                tensor_parallel_degree=4,  # 8B gen mesh TP4
+                tensor_parallel_degree=2,  # 4B gen mesh TP2
             ),
             checkpoint=CheckpointManager.Config(enable=False),
             sampling=SamplingConfig(

@@ -4,7 +4,7 @@
 trainer 로직을 재구현하지 않고, 기존 standalone 단계 config 들을 순서대로 돌리며 단계 사이에
 **model.name(다음 입력) ← 이전 단계 산출 HF 경로** 만 이어준다(단계 간 인터페이스 = HF 체크포인트).
 
-  pretrain(continual 8B) → out/hf ─┐
+  pretrain(continual 4B) → out/hf ─┐
                                     ├→ SFT  model.name=앞 out → out ─┐
                                     │                                  ├→ RL model.name=앞 out
 선언적 spec(pipelines/*.yaml)이 단계 config 리스트를 나열하고, 러너는:

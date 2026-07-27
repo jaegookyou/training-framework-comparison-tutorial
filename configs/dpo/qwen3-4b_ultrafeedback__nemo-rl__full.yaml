@@ -11,4 +11,4 @@ nemo:
 
 scale:
   nodes: 1
-  gpus: 8                       # 8B full DPO = 정책+ref 샤딩 → 멀티GPU
+  gpus: 8                       # 4B full DPO = 정책+ref 샤딩 → 멀티GPU

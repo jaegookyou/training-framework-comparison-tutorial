@@ -70,10 +70,49 @@ RUN echo '' >> /opt/Megatron-LM/examples/post_training/modelopt/finetune.py \
     && echo 'SFTDataset.hf_dataset_to_conversation["TraceInversion"] = lambda data: data["messages"]' \
         >> /opt/Megatron-LM/examples/post_training/modelopt/finetune.py
 
-# baked 패치 ② conf 가 TOKENIZER_MODEL=HF_MODEL_CKPT 로 덮어써, 우리 캐논 chat template 을 구운
-# 토크나이저 디렉토리를 못 가리킨다. 미리 세팅된 TOKENIZER_MODEL 을 존중하도록 한 줄만 완화.
-RUN sed -i 's|TOKENIZER_MODEL=${HF_MODEL_CKPT}|TOKENIZER_MODEL=${TOKENIZER_MODEL:-${HF_MODEL_CKPT}}|' \
-        /opt/Megatron-LM/examples/post_training/modelopt/conf/Qwen/Qwen3-8B.sh
+# baked 패치 ② modelopt conf 에 Qwen3-4B.sh 를 새로 bake — upstream modelopt conf/Qwen 은 4B 를
+# 제공하지 않는다(0.6B/8B/30B-A3B/235B 만). arch 치수는 examples/rl/model_configs/qwen3_4b.sh 미러
+# (hidden 2560·ffn 9728, 8B=4096/12288 과 다름), **Qwen3-4B 는 tied embeddings 라 --untie 를 빼는 것이
+# 8B conf 와의 결정적 차이**. TOKENIZER_MODEL 은 미리세팅 존중(캐논 template 구운 디렉토리)하도록 처음부터
+# 완화형으로 쓴다. --make-vocab-size-divisible-by 1187 은 sibling 8B conf 관례 그대로(export 시 151936 복원).
+RUN cat > /opt/Megatron-LM/examples/post_training/modelopt/conf/Qwen/Qwen3-4B.sh <<'CONF'
+#!/bin/bash
+
+if [ -z ${HF_MODEL_CKPT} ]; then
+    HF_MODEL_CKPT=Qwen/Qwen3-4B
+    TOKENIZER_MODEL=Qwen/Qwen3-4B
+else
+    TOKENIZER_MODEL=${TOKENIZER_MODEL:-${HF_MODEL_CKPT}}
+fi
+
+MODEL_ARGS=" \
+    --save-interval 100000 \
+    --micro-batch-size 1 \
+    --bf16 \
+    --no-masked-softmax-fusion \
+    --disable-bias-linear \
+    --position-embedding-type rope \
+    --no-rope-fusion \
+    --normalization RMSNorm \
+    --swiglu \
+    --num-layers 36 \
+    --hidden-size 2560 \
+    --ffn-hidden-size 9728 \
+    --num-attention-heads 32 \
+    --group-query-attention \
+    --num-query-groups 8 \
+    --kv-channels 128 \
+    --qk-layernorm \
+    --seq-length 4096 \
+    --max-position-embeddings 40960 \
+    --tokenizer-type HuggingFaceTokenizer \
+    --make-vocab-size-divisible-by 1187 \
+    --use-mcore-models \
+    --rotary-percent 1.0 \
+    --rotary-base 1000000 \
+    --no-bias-swiglu-fusion \
+"
+CONF
 
 # RL(examples/rl, 네이티브 GRPO) 추가 deps. Megatron-LM 은 한 프레임워크 = 한 이미지지만 두
 # 사후학습 진입점(SFT=post_training/modelopt, GRPO=examples/rl)을 함께 담는다. examples/rl README

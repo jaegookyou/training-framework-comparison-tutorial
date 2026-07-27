@@ -15,8 +15,8 @@ from ..config import RunConfig
 def apply_multigpu_fsdp(args, tuning: str) -> None:
     """torchrun 멀티프로세스 런치일 때 full FT 에 FSDP full-shard 를 켠다(TRL-family 공유).
 
-    HF Trainer 는 torchrun env(WORLD_SIZE>1)를 자동 감지해 분산 학습한다. 단 8B full 은 DDP(모델
-    복제)로는 GPU 당 OOM → **FSDP 샤딩**이 필수다. LoRA 는 base(8B bf16 ≈ 16GB)가 GPU 당 들어가
+    HF Trainer 는 torchrun env(WORLD_SIZE>1)를 자동 감지해 분산 학습한다. 단 4B full 은 DDP(모델
+    복제)로는 GPU 당 OOM → **FSDP 샤딩**이 필수다. LoRA 는 base(4B bf16 ≈ 8GB)가 GPU 당 들어가
     DDP 로 충분하므로 건드리지 않는다. 단일 프로세스(WORLD_SIZE=1)면 FSDP 불필요 → no-op.
 
     `full_shard auto_wrap` 의 래핑 단위는 모델 config 의 `_no_split_modules`(Qwen3 는

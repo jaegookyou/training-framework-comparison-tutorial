@@ -4,12 +4,12 @@ Qwen3 를 wikitext 로 이어학습한 뒤, 산출 DCP 체크포인트를 **HF �
 (`out/<run_name>/hf`). 이 HF ckpt 가 파이프라인의 다음 단계(SFT) 입력이 된다 — 단계 간 인터페이스 =
 HF 체크포인트라는 설계 원칙.
 
-**continued-pretrain 전용**(`model.init_from`=Qwen3-8B-Base 필수): 8B 가중치를 시드로 이어학습.
-사전·사후를 같은 8B 로 통일(8B from-scratch 는 데이터 부족으로 무의미 → 이어학습이 의미 있는 통일).
+**continued-pretrain 전용**(`model.init_from`=Qwen3-4B-Base 필수): 4B 가중치를 시드로 이어학습.
+사전·사후를 같은 4B 로 통일(4B from-scratch 는 데이터 부족으로 무의미 → 이어학습이 의미 있는 통일).
 시드는 baked config 의 initial_load_in_hf=True 가 hf_assets_path 의 HF 가중치에서 로드
 (_prepare_assets 참고). from-scratch 경로는 제거됐다(init_from 없으면 에러).
 
-스케일 knob: `model.size`(→ 8B) · `model.init_from`(시드) · `dataset` · `hp.steps` ·
+스케일 knob: `model.size`(→ 4B) · `model.init_from`(시드) · `dataset` · `hp.steps` ·
 `scale.gpus`(FSDP 자동). 코드는 그대로, config 만 바꾸면 스케일된다.
 
 torchtitan 은 torchrun -m torchtitan.train 런치 모델이라(인프로세스 아님), 무거운 deps 는
@@ -35,9 +35,9 @@ def _prepare_assets(cfg: RunConfig, work: Path) -> str:
     """hf_assets 디렉토리(가중치+토크나이저 전체 스냅샷)를 만들고 경로를 돌려준다.
 
     torchtitan 은 hf_assets_path 의 토크나이저로 텍스트를 토크나이즈한다(vocab 151936 정합 → SFT/RL
-    이 같은 토크나이저를 이어 씀). continued-pretrain 전용이라 init_from(=Qwen3-8B-Base) 스냅샷을
+    이 같은 토크나이저를 이어 씀). continued-pretrain 전용이라 init_from(=Qwen3-4B-Base) 스냅샷을
     받아둔다 — baked config 의 initial_load_in_hf=True 가 이 디렉토리의 HF 가중치를 시드로 읽어
-    이어학습한다(8B from-scratch 는 데이터 부족으로 무의미 → 가중치를 이어받아야 의미 있음).
+    이어학습한다(4B from-scratch 는 데이터 부족으로 무의미 → 가중치를 이어받아야 의미 있음).
     """
     from huggingface_hub import snapshot_download
 
@@ -46,7 +46,7 @@ def _prepare_assets(cfg: RunConfig, work: Path) -> str:
     if not init_from:
         raise SystemExit(
             "torchtitan 사전학습은 continued-pretrain 전용이다(from-scratch 제거). "
-            "model.init_from 에 시드 모델(예: Qwen/Qwen3-8B-Base)을 지정해야 한다."
+            "model.init_from 에 시드 모델(예: Qwen/Qwen3-4B-Base)을 지정해야 한다."
         )
     assets = work / "hf_assets"
     # 가중치+토크나이저 전체 — initial_load_in_hf 가 여기서 시드 가중치를 로드한다.

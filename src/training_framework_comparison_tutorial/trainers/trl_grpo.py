@@ -4,7 +4,7 @@ DPO 와 패러다임이 다르다 — 데이터엔 정답만 있고, 학습 중 
 reward(adapters.rewards)로 채점해 group-normalized advantage 로 정책을 민다. 그래서 추가로
 reward_funcs 가 필요하고, rollout 생성 비용이 크다.
 
-generation 가속: GRPOConfig.use_vllm=True 면 vllm 로 빠르게 rollout 한다(현실적 8B GRPO 엔 사실상
+generation 가속: GRPOConfig.use_vllm=True 면 vllm 로 빠르게 rollout 한다(현실적 GRPO 엔 사실상
 필수). 다만 현재 trl 이미지엔 vllm 핀이 없다 → 실사용 전 docker/trl.Dockerfile 에 vllm 추가 필요.
 배선/스모크는 use_vllm=false(transformers generate)로 돈다.
 

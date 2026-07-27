@@ -8,7 +8,7 @@ verl 백엔드/래퍼가 아니라 **Megatron-LM repo 의 examples/rl** (train_r
 구동(examples/rl README 미러): bash 오케스트레이션.
   1. env config(YAML)을 떨군다 — 우리 TfctGSM8KAgent(gsm8k + 캐논 template + 공유 reward)를
      점경로로 가리킨다. reward·프롬프트가 다른 프레임워크와 동일 = 통제 변수.
-  2. HF Qwen3-8B-Base → Megatron mcore(torch_dist) 체크포인트로 변환(없으면).
+  2. HF Qwen3-4B-Base → Megatron mcore(torch_dist) 체크포인트로 변환(없으면).
   3. `examples/rl/model_configs/<model_script>.sh` 를 source 해 arch args(MODEL_OPTIONS/
      COMMON_OPTIONS/ENV_DEPENDENT)를 채우고, env(TP/PP/CHECKPOINT/ENV_CONFIG/GRPO_*)로 조정한 뒤
      `torchrun train_rl.py <static flags> $COMMON_OPTIONS $MODEL_OPTIONS $ENV_DEPENDENT` 로 띄운다.
@@ -21,7 +21,7 @@ slime 과 같은 채점 코어). 기본 GSM8KAgent 의 math_verify 채점이 아
 
 ⚠️ GPU 검증 대기:
   - **HF→mcore 변환**(최대 블로커): core_v0.17.1 의 tools/checkpoint/convert.py(llama_mistral
-    로더)는 --model-size 가 qwen2.5 까지만(qwen3 없음). qwen3_8b.sh 헤더가 "MegatronBridge
+    로더)는 --model-size 가 qwen2.5 까지만(qwen3 없음). qwen3_4b.sh 헤더가 "MegatronBridge
     run_config 기반"이라 적혀 있듯 Qwen3 mcore 는 **Megatron-Bridge import** 로 만드는 게 정석.
     → megatron.mcore_checkpoint 로 미리 변환한 ckpt 경로를 넘기면 변환을 건너뛴다(권장 탈출구).
     경로 미지정 시 문서화된 convert.py 를 그대로 호출하되 model_size 는 GPU 에서 확정.
@@ -123,7 +123,7 @@ def train(cfg: RunConfig) -> None:
     # RL 은 train-samples 를 상한(ceiling)으로만 쓰고 실제 종료는 exit-interval 이 건다(README).
     train_samples = mg.get("train_samples", 48828125)
 
-    # qwen3_8b.sh 가 읽는 env(arch args 를 source 가 채움 — 추정 금지, repo 제공).
+    # qwen3_4b.sh 가 읽는 env(arch args 를 source 가 채움 — 추정 금지, repo 제공).
     model_env = {
         **os.environ,
         "TP": str(tp),

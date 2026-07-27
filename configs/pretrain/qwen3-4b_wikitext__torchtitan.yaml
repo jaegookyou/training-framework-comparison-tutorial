@@ -1,0 +1,26 @@
+extends: _base.yaml
+
+framework: torchtitan
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/torchtitan:latest
+
+# Continued-pretrain: 사전·사후를 같은 Qwen3-4B 로 통일. Qwen3-4B-Base
+# 가중치를 시드로 이어학습한다(4B from-scratch 는 데이터 부족으로 무의미). 산출 out/hf 가 SFT/RL 의
+# model.name 이 되는 수직 파이프라인 — 한 4B 가 PT→SFT→RL 전 과정을 통과한다.
+model:
+  size: 4b                          # model_sizes.SIZES → torchtitan flavor "4B" + pretrain_qwen3_4b_wikitext
+  init_from: Qwen/Qwen3-4B-Base     # 시드 가중치(initial_load_in_hf=True 가 hf_assets 에서 로드). 사후학습 base 와 동일
+  tokenizer: Qwen/Qwen3-4B-Base     # 동일 토크나이저(통제·파이프라인 정합)
+  max_seq_len: 2048
+
+# continued-pretrain 은 from-scratch 보다 훨씬 작은 lr(이미 학습된 가중치를 망치지 않게).
+hp:
+  learning_rate: 2.0e-5             # _base 의 3e-4(from-scratch)를 override
+  per_device_batch_size: 1          # 4B → 토큰 길이 부담
+  steps: 500
+  warmup_ratio: 0.02
+  bf16: true
+
+# 4B continued-pretrain = full+옵티마이저라 단일 GPU tight → 멀티GPU(FSDP 자동). 8B=4GPU 에서 2GPU 로 축소.
+scale:
+  nodes: 1
+  gpus: 2

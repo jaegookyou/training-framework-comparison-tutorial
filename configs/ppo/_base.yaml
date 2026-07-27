@@ -7,7 +7,7 @@ method: ppo
 tuning: full
 
 model:
-  name: Qwen/Qwen3-8B-Base     # SFT/DPO/GRPO 와 동일 base (통제비교: 모델 고정). 파이프라인이면 앞 단계 ckpt.
+  name: Qwen/Qwen3-4B-Base     # SFT/DPO/GRPO 와 동일 base (통제비교: 모델 고정). 파이프라인이면 앞 단계 ckpt.
   max_seq_len: 1536            # gsm8k 짧은 프롬프트 + reasoning 응답. prompt+completion 상한 가늠용.
   chat_template: reasoning_chatml  # base → 캐논 ChatML. add_generation_prompt 로 rollout 프롬프트 큐 정합.
 

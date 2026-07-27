@@ -2,7 +2,7 @@
 #   docker build -f docker/torchtitan.Dockerfile -t ghcr.io/jaegookyou/training-framework-comparison-tutorial/torchtitan:latest .
 #
 # 한 이미지가 torchtitan 의 두 트랙을 담당한다(1프레임워크 1이미지):
-#   · SFT (ChatDataset, sft_qwen3_8b_traceinversion)        — 통제비교 SFT 트랙
+#   · SFT (ChatDataset, sft_qwen3_4b_traceinversion)        — 통제비교 SFT 트랙
 #   · 사전학습 (HuggingFaceTextDataLoader, pretrain_qwen3_*) — 수직 파이프라인 1단계
 # 둘 다 nightly 전용 기능이라 torchtitan 을 커밋 SHA 로 박고, 빌드 성공 이미지를 *불변 태그로 박제*해
 # 재현(휠 증발 대비 = 환경 영구 재현):
@@ -67,11 +67,13 @@ DATASETS["wikitext"] = DatasetConfig(
 reg = TT / "models" / "qwen3" / "config_registry.py"
 reg.write_text(reg.read_text() + '''
 
-# tfct: Qwen3-8B SFT on reasoning-distill (TraceInversion) — sft_qwen3_8b_math 의 dataloader 만 교체.
-def sft_qwen3_8b_traceinversion() -> Trainer.Config:
+# tfct: Qwen3-4B SFT on reasoning-distill (TraceInversion) — sft_qwen3_8b_math(upstream 은 8b flavor
+# 만 제공) 의 dataloader 를 교체하고 model_spec 을 "4B" flavor 로 재생성(8B→4B 전환, 표준 dense).
+def sft_qwen3_4b_traceinversion() -> Trainer.Config:
     from training_framework_comparison_tutorial.adapters import from_traceinversion
 
     cfg = sft_qwen3_8b_math()
+    cfg.model_spec = model_registry("4B", attn_backend="varlen")
     cfg.dataloader = ChatDataLoader.Config(
         dataset_path="Jackrong/Claude-opus-4.7-TraceInversion-5000x",
         load_dataset_kwargs={"split": "train"},
@@ -82,34 +84,34 @@ def sft_qwen3_8b_traceinversion() -> Trainer.Config:
 
 # tfct: 위 SFT 의 LoRA 변형 — 네이티브 LoRAConverter 로 model_spec 재생성(Linear→LoRALinear, base
 # frozen). converter 는 model_registry 빌드 시점에 적용되므로(ModelSpec 에 저장 안 됨) 같은 flavor
-# ("8B", attn_backend "varlen" = sft_qwen3_8b_math 와 동일)로 model_spec 을 다시 만든다. rank/alpha 는
+# ("4B", attn_backend "varlen")로 model_spec 을 다시 만든다. rank/alpha 는
 # host trainer 가 env(TFCT_LORA_*)로 넘긴다(config 함수는 인자 못 받음). target_modules=None = 전 Linear.
-def sft_qwen3_8b_traceinversion_lora() -> Trainer.Config:
+def sft_qwen3_4b_traceinversion_lora() -> Trainer.Config:
     import os
 
     from torchtitan.components.lora import LoRAConverter
 
-    cfg = sft_qwen3_8b_traceinversion()
+    cfg = sft_qwen3_4b_traceinversion()
     rank = int(os.environ.get("TFCT_LORA_RANK", "16"))
     alpha = float(os.environ.get("TFCT_LORA_ALPHA", "32"))
     cfg.model_spec = model_registry(
-        "8B",
+        "4B",
         attn_backend="varlen",
         converters=[LoRAConverter.Config(rank=rank, alpha=alpha)],
     )
     return cfg
 
 
-# tfct: continued-pretrain — Qwen3-8B-Base 가중치를 시드로 wikitext 이어학습(from-scratch 아님).
-# 사전·사후를 같은 8B 로 통일하는 수직 파이프라인용(8B from-scratch 는 250만 토큰엔 무의미 → 이어학습).
+# tfct: continued-pretrain — Qwen3-4B-Base 가중치를 시드로 wikitext 이어학습(from-scratch 아님).
+# 사전·사후를 같은 4B 로 통일하는 수직 파이프라인용(4B from-scratch 는 250만 토큰엔 무의미 → 이어학습).
 # 시드 메커니즘 = initial_load_in_hf=True + initial_load_path 미지정 → hf_assets_path(=호스트가 받은
-# Qwen3-8B-Base 스냅샷)에서 HF 가중치 로드(initial_load_model_only=True 기본이라 옵티마이저는 fresh =
+# Qwen3-4B-Base 스냅샷)에서 HF 가중치 로드(initial_load_model_only=True 기본이라 옵티마이저는 fresh =
 # resume 아닌 이어학습). sft_qwen3_8b_math 와 동일 패턴. qwen3_0_6b skeleton(native, text loader)에
-# 8B flavor·8B assets·HF 시드 checkpoint 만 갈아끼운다.
-def pretrain_qwen3_8b_wikitext() -> Trainer.Config:
+# 4B flavor·4B assets·HF 시드 checkpoint 만 갈아끼운다.
+def pretrain_qwen3_4b_wikitext() -> Trainer.Config:
     cfg = qwen3_0_6b()
-    cfg.model_spec = model_registry("8B")
-    cfg.hf_assets_path = "./assets/hf/Qwen3-8B-Base"   # 호스트가 --hf_assets_path 로 실경로 override
+    cfg.model_spec = model_registry("4B")
+    cfg.hf_assets_path = "./assets/hf/Qwen3-4B-Base"   # 호스트가 --hf_assets_path 로 실경로 override
     cfg.dataloader = HuggingFaceTextDataLoader.Config(dataset="wikitext")
     cfg.checkpoint = CheckpointManager.Config(
         enable=True,

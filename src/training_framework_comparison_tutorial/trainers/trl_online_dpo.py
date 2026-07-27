@@ -16,7 +16,7 @@ Unsloth 는 online DPO 네이티브 경로가 없어(PatchOnlineDPO 부재) 이 
 
 torch/trl/transformers/datasets 는 docker/trl.Dockerfile(trl 1.6) 안에만 → 지연 임포트.
 
-⚠️ GPU 검증 대기: 정책+ref+RM 3개 모델 메모리(full 이면 8B×3 → 멀티GPU 필수)·생성 길이/EOS·
+⚠️ GPU 검증 대기: 정책+ref+RM 3개 모델 메모리(full 이면 4B 정책·ref + 8B RM → 멀티GPU)·생성 길이/EOS·
 RM 토크나이저 정합·OnlineDPOConfig max_length>max_new_tokens 제약.
 """
 
@@ -98,7 +98,7 @@ def train(cfg: RunConfig) -> None:
     )
 
     # 멀티노드/멀티GPU(torchrun) 런치면 full FT 에 FSDP 샤딩(단일 프로세스면 no-op).
-    # ⚠️ online DPO = 정책+ref+RM 3모델 + 루프 내 생성 → full 은 사실상 MN 필수(8B×3). GPU 검증 대기.
+    # ⚠️ online DPO = 정책+ref+RM 3모델 + 루프 내 생성 → full 은 MN 필수(4B×2+8B RM). GPU 검증.
     apply_multigpu_fsdp(args, cfg.tuning)
 
     trainer = OnlineDPOTrainer(

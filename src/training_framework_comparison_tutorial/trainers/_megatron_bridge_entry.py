@@ -2,7 +2,7 @@
 
 호스트 프로세스(megatron_bridge_sft.py / megatron_lm_pretrain.py 의 continued 분기)는 megatron 을
 import 하지 않는다 — 무거운 deps 는 이 모듈이 torchrun rank 별로 import 한다. stage 들:
-  --stage convert  : AutoBridge.import_ckpt 로 HF(Qwen3-8B[-Base]) → Megatron-core 체크포인트.
+  --stage convert  : AutoBridge.import_ckpt 로 HF(Qwen3-4B[-Base]) → Megatron-core 체크포인트.
   --stage finetune : qwen3 SFT/PEFT 레시피를 우리 RunConfig 로 override 한 뒤 finetune().
   --stage export   : 학습 결과 Megatron-core 체크포인트 → HF(파이프라인 다음 단계 입력).
 
@@ -57,8 +57,8 @@ def _build_finetune_config(cfg: RunConfig, megatron_path: str, tokenizer_dir: st
     """RunConfig → Megatron-Bridge ConfigContainer (full=SFT 레시피 / lora=PEFT 레시피)."""
     from megatron.bridge.data.builders.hf_dataset import HFDatasetConfig
     from megatron.bridge.recipes.qwen.qwen3 import (
-        qwen3_8b_peft_config,
-        qwen3_8b_sft_config,
+        qwen3_4b_peft_config,
+        qwen3_4b_sft_config,
     )
 
     model_cfg = cfg.section("model")
@@ -70,14 +70,14 @@ def _build_finetune_config(cfg: RunConfig, megatron_path: str, tokenizer_dir: st
     debug = cfg.section("debug")
 
     if cfg.tuning == "lora":
-        config = qwen3_8b_peft_config("lora")
+        config = qwen3_4b_peft_config("lora")
         config.peft.dim = lora.get("r", 16)
         config.peft.alpha = lora.get("alpha", 32)
         config.peft.dropout = lora.get("dropout", 0.0)
     else:
-        config = qwen3_8b_sft_config()
+        config = qwen3_4b_sft_config()
 
-    # base 가중치 = convert 산출 mcore 체크포인트. 레시피는 arch(Qwen3-8B=Base 동형)만 제공.
+    # base 가중치 = convert 산출 mcore 체크포인트. 레시피는 arch(Qwen3-4B=Base 동형)만 제공.
     config.checkpoint.pretrained_checkpoint = megatron_path
 
     # 토크나이저 = 캐논 chat template 을 구운 디렉토리(없으면 모델 자체). chat SFT 의 마스킹이

@@ -15,7 +15,7 @@
 #
 # _dist 관점에선 SNSG·SNMG 가 같은 경로(nodes=1 → --standalone). GPU 개수만 다르다.
 # knob 소비: nodes/gpus→_dist.resolve=torchtitan_sft.py:73, max_steps→steps=torchtitan_sft.py:80-82.
-extends: qwen3-8b_traceinversion__torchtitan__lora.yaml
+extends: qwen3-4b_traceinversion__torchtitan__lora.yaml
 
 scale:
   nodes: 1                      # 단노드
