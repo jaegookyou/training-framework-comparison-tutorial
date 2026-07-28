@@ -38,6 +38,8 @@ if [ -n "$_my_ip" ]; then
   fi
   if [ -z "$_nic" ] && command -v python3 >/dev/null 2>&1; then
     # stdlib 만으로 IP→ifname (SIOCGIFADDR). 학습 이미지엔 python3 가 반드시 있다.
+    # (서빙 repo 는 같은 문제를 psutil 로 풀었다 — `psutil.net_if_addrs()`. 결론은 같고, 여기선
+    #  이미지에 psutil 이 있다고 가정하지 않으려고 stdlib 만 쓴다.)
     _nic="$(TFCT_MY_IP="$_my_ip" python3 - <<'PYEOF' 2>/dev/null || true
 import fcntl, os, socket, struct
 target = os.environ["TFCT_MY_IP"]
@@ -76,5 +78,12 @@ else
   : "${NCCL_IB_DISABLE:=1}"
   export NCCL_IB_DISABLE
 fi
+
+# vLLM 엔진 준비 타임아웃 — RL 계열(verl/slime rollout)이 vLLM 을 띄운다. 기본 600s 는 **최초 모델
+# 다운로드**를 못 버틴다(서빙 repo 실측: 37GB 받다 API 서버가 먼저 죽음. 캐시 후 가중치 로딩은 12초 →
+# 600s 가 전부 다운로드에 쓰였다). 우리는 노드마다 4B 를 새로 받으므로 같은 벽에 걸린다.
+# 교훈의 일반형: **최초 실행과 재실행은 비용 구조가 다르다** → 타임아웃은 최초 기준으로 잡는다.
+: "${VLLM_ENGINE_READY_TIMEOUT_S:=3600}"
+export VLLM_ENGINE_READY_TIMEOUT_S
 
 echo "[netenv] NIC=${GLOO_SOCKET_IFNAME:-<미설정>} IP=${VLLM_HOST_IP:-<미설정>} IB_DISABLE=${NCCL_IB_DISABLE:-0}"

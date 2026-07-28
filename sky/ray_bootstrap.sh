@@ -67,18 +67,35 @@ _ray_env_marker="/tmp/tfct_ray_env.$RAY_PORT"
 # 지문의 의미(같은 설정으로 뜬 ray 인가)를 흐리고, 노드 간 비교를 불가능하게 만든다.
 _ray_env_fingerprint="${GLOO_SOCKET_IFNAME:-}|${NCCL_SOCKET_IFNAME:-}|${NCCL_IB_DISABLE:-}"
 
+#
+# ⚠️ **재사용은 기본 꺼져 있다**(2026-07-28 위키 원본 재확인 후 정정): 서빙 repo 가 07-27 에
+#    **"클러스터 재사용 = cross-session `ActorHandleNotFoundError` → fresh 클러스터만(reuse 금지)"**
+#    을 실측으로 남겼다 → [[multi-node-gpu-provisioning]]. 지문이 맞아도 이전 세션의 액터 핸들이
+#    남아 깨지는 경로가 있으므로, **문서화된 안전 기본값(fresh)** 을 따른다.
+#    디버그 루프에서 down/launch 왕복이 아까울 때만 `TFCT_RAY_REUSE=1` 로 켠다(지문까지 맞아야 함).
 _reuse_ray=0
 if ray status --address="$RAY_ADDRESS" >/dev/null 2>&1; then
-  if [ -f "$_ray_env_marker" ] && [ "$(cat "$_ray_env_marker")" == "$_ray_env_fingerprint" ]; then
+  if [ "${TFCT_RAY_REUSE:-0}" == "1" ] \
+     && [ -f "$_ray_env_marker" ] && [ "$(cat "$_ray_env_marker")" == "$_ray_env_fingerprint" ]; then
     _reuse_ray=1
-    echo "기존 ray 재사용 — collective env 지문 일치: $_ray_env_fingerprint"
+    echo "기존 ray 재사용(TFCT_RAY_REUSE=1) — collective env 지문 일치: $_ray_env_fingerprint"
+    echo "  ⚠️ 문서화된 기본은 fresh 다(cross-session ActorHandleNotFoundError). 디버그 전용으로만 쓴다."
   else
-    echo "ERROR: $RAY_ADDRESS 에 ray 가 살아 있는데 **collective env 지문이 다르다**." >&2
-    echo "  기대: $_ray_env_fingerprint" >&2
-    echo "  실제: $( [ -f "$_ray_env_marker" ] && cat "$_ray_env_marker" || echo '<지문 없음 — 이 스크립트가 안 띄운 ray>')" >&2
-    echo "  살아 있는 raylet 은 이전 env 를 들고 있어 이번 설정이 액터에 안 먹는다" >&2
-    echo "  (Gloo/NCCL 이 엉뚱한 인터페이스를 잡아 무증상 행이 될 수 있다)." >&2
-    echo "  조치: sky down <cluster> 후 sky launch 로 새로 띄운다." >&2
+    _seen="$( [ -f "$_ray_env_marker" ] && cat "$_ray_env_marker" || echo '<지문 없음 — 이 스크립트가 안 띄운 ray>')"
+    echo "ERROR: $RAY_ADDRESS 에 이전 job 의 ray 가 살아 있다." >&2
+    # 왜 막혔는지를 정확히 말한다 — "지문 불일치"와 "재사용 꺼짐"은 조치가 다르다.
+    if [ "$_seen" != "$_ray_env_fingerprint" ]; then
+      echo "  원인: **collective env 지문 불일치**" >&2
+      echo "    기대: $_ray_env_fingerprint" >&2
+      echo "    실제: $_seen" >&2
+      echo "  살아 있는 raylet 은 이전 env 를 들고 있어 이번 설정이 액터에 안 먹는다" >&2
+      echo "  (Gloo/NCCL 이 엉뚱한 인터페이스를 잡아 무증상 행이 될 수 있다)." >&2
+    else
+      echo "  원인: 지문은 같지만 **재사용이 꺼져 있다**(기본값)." >&2
+      echo "  문서화된 안전 기본이 fresh 다 — cross-session ActorHandleNotFoundError 사례." >&2
+    fi
+    echo "  조치: sky down <cluster> 후 sky launch 로 새로 띄운다(문서화된 안전 경로)." >&2
+    echo "        디버그 중이고 설정이 같다고 확신하면 --env TFCT_RAY_REUSE=1 로 재사용할 수 있다." >&2
     exit 1
   fi
 fi
