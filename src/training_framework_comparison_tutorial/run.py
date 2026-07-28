@@ -68,7 +68,7 @@ TRAINERS: dict[str, dict[str, str]] = {
 }
 
 
-def dispatch(cfg: RunConfig) -> None:
+def dispatch(cfg: RunConfig, prepare_only: bool = False) -> None:
     """RunConfig → (method, framework) 에 맞는 trainer 모듈로 dispatch 해 train() 호출.
 
     단독 실행(main)과 파이프라인 러너(pipeline)가 공유하는 단일 진입 — 단계 하나를 돌리는 의미는
@@ -89,15 +89,53 @@ def dispatch(cfg: RunConfig) -> None:
     # W&B 식별자(project/name/group/tags)를 env 로 주입 — 8 프레임워크가 wandb 를 부르는 방식이
     # 제각각이라 여기(공통 통로) 한 곳이 유일하게 안 어긋나는 자리다. 상세 근거는 _wandb.
     _wandb.apply_env(cfg)
-    importlib.import_module(module_name).train(cfg)
+    module = importlib.import_module(module_name)
+    if prepare_only:
+        _run_prepare(module, module_name, cfg)
+        return
+    module.train(cfg)
+
+
+def _run_prepare(module, module_name: str, cfg: RunConfig) -> None:
+    """이 노드에 필요한 **노드-로컬 산출물**만 만들고 학습은 하지 않는다.
+
+    왜 필요한가(2026-07-28 verl GRPO 2노드 런에서 실측): **ray 메커니즘만** 드라이버가 head 에서만
+    돌고 워커는 `sleep infinity` 로 대기한다 → 드라이버가 만든 파일이 워커엔 없다. 그런데 우리는
+    캐논 chat template 을 구운 토크나이저를 **파일 경로로** 넘긴다(jinja 를 CLI 로 넘기면 hydra/
+    OmegaConf 파서가 깨져서 택한 우회) → 워커에서
+      `HFValidationError: Repo id must be in the form 'repo_name' ...: '/workspace/out/tokenizer'`
+    로 죽는다(경로가 없으니 HF 가 hub id 로 해석).
+
+    **torchrun 계열은 이 문제가 없다** — 모든 노드가 train() 을 돌아 각자 굽는다(verl SFT 가
+    2노드에서 그냥 통과한 이유). 그래서 이 진입점은 ray 계열만 쓴다.
+
+    공유 FS 대신 노드별 재생성을 택한 이유: 구운 토크나이저는 **(모델, chat_template)의 결정적
+    함수**라 노드마다 만들어도 같은 결과다. 공유 스토리지 의존(자격증명·마운트)을 안 늘리는 게 싸다.
+    (megatron 의 분산 체크포인트 export/resume 은 성격이 다르다 — 그건 여전히 공유 FS 필요.)
+    """
+    prepare = getattr(module, "prepare", None)
+    if prepare is None:
+        # 준비할 게 없는 트레이너도 정상이다(모델을 hub id 로 넘기는 경로 등) — 조용히 넘어가지 말고
+        # 명시한다. "왜 아무 일도 안 했지?"를 로그에서 바로 답할 수 있게.
+        print(f"[prepare] {module_name}: 노드-로컬 준비물 없음 — 넘어간다")
+        return
+    print(f"[prepare] {module_name}: 노드-로컬 준비물 생성")
+    prepare(cfg)
+    print(f"[prepare] {module_name}: 완료")
 
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="tfct-run")
     parser.add_argument("--config", required=True, help="run config YAML 경로")
+    parser.add_argument(
+        "--prepare-only",
+        action="store_true",
+        help="학습하지 않고 이 노드에 필요한 산출물(캐논 template 구운 토크나이저 등)만 만든다. "
+             "ray 계열 멀티노드의 워커 노드에서 쓴다(sky/ray_bootstrap.sh).",
+    )
     args = parser.parse_args(argv)
 
-    dispatch(RunConfig.from_file(args.config))
+    dispatch(RunConfig.from_file(args.config), prepare_only=args.prepare_only)
 
 
 if __name__ == "__main__":

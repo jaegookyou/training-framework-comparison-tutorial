@@ -154,3 +154,14 @@ def train(cfg: RunConfig) -> None:
     # GPU end-to-end 에서 최종 검증(GRPO 경로와 동일한 단서).
     cmd = [sys.executable, "-m", "verl.trainer.main_ppo", *overrides]
     subprocess.run(cmd, check=True)
+
+
+def prepare(cfg: RunConfig) -> None:
+    """워커 노드용 준비 — 캐논 template 을 구운 토크나이저를 이 노드에 만든다.
+
+    ray 계열은 드라이버가 head 에서만 도는데 `model.tokenizer_path` 로 **파일 경로**를 넘기므로
+    워커 노드에도 실물이 있어야 한다(없으면 HF 가 hub id 로 해석해 HFValidationError).
+    데이터(parquet)는 드라이버만 읽으므로 여기서 안 만든다 — 노드마다 필요한 것만 만든다.
+    호출: `tfct-run --config <cfg> --prepare-only` (sky/ray_bootstrap.sh 의 워커 분기).
+    """
+    _prepare_tokenizer_dir(cfg, Path(cfg.section("output").get("local_dir", "out")))

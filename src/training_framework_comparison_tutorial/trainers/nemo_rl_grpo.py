@@ -49,3 +49,12 @@ def train(cfg: RunConfig) -> None:
 
     base = nm.get("base_config", "grpo_math_8B.yaml")
     nemo.run("run_grpo.py", base, overrides, env_name=_ENV_NAME)
+
+
+def prepare(cfg: RunConfig) -> None:
+    """워커 노드용 준비 — 캐논 template 을 구운 토크나이저를 이 노드에 만든다.
+
+    `policy.tokenizer.name` 으로 **파일 경로**를 넘기므로 ray 워커에도 실물이 필요하다.
+    호출: `tfct-run --config <cfg> --prepare-only` (sky/ray_bootstrap.sh 의 워커 분기).
+    """
+    nemo.bake_tokenizer(cfg, Path(cfg.section("output").get("local_dir", "out")))
