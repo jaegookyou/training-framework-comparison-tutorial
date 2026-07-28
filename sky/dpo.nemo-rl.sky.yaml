@@ -10,7 +10,7 @@
 #   sky launch -c tfct-dpo-nemo sky/dpo.nemo-rl.sky.yaml --env WANDB_API_KEY --env HF_TOKEN
 #   # full (A100×8):
 #   sky launch -c tfct-dpo-nemo sky/dpo.nemo-rl.sky.yaml --gpus A100:8 \
-#     --env CONFIG=configs/dpo/qwen3-8b_ultrafeedback__nemo-rl__full.yaml --env WANDB_API_KEY --env HF_TOKEN
+#     --env CONFIG=configs/dpo/qwen3-4b_ultrafeedback__nemo-rl__full.yaml --env WANDB_API_KEY --env HF_TOKEN
 #   sky down tfct-dpo-nemo
 
 name: tfct-dpo-nemo
@@ -23,7 +23,7 @@ resources:
 workdir: .
 
 envs:
-  CONFIG: configs/dpo/qwen3-8b_ultrafeedback__nemo-rl__lora.yaml
+  CONFIG: configs/dpo/qwen3-4b_ultrafeedback__nemo-rl__lora.yaml
   WANDB_API_KEY: ""
   HF_TOKEN: ""
 

@@ -9,7 +9,7 @@
 #   sky launch -c tfct-unsloth sky/sft.unsloth.sky.yaml --env WANDB_API_KEY --env HF_TOKEN
 #   # full FT (단일 GPU but ~4x VRAM → A100:80GB 권장):
 #   sky launch -c tfct-unsloth sky/sft.unsloth.sky.yaml --gpus A100-80GB:1 \
-#     --env CONFIG=configs/sft/qwen3-8b_traceinversion__unsloth__full.yaml \
+#     --env CONFIG=configs/sft/qwen3-4b_traceinversion__unsloth__full.yaml \
 #     --env WANDB_API_KEY --env HF_TOKEN
 #   sky logs tfct-unsloth             # 로그 스트리밍
 #   sky down tfct-unsloth             # 끝나면 파기 (idle 과금 방지)
@@ -26,7 +26,7 @@ resources:
 workdir: .                                             # 이 repo 를 통째로 박스로 업로드 (코드는 런타임에)
 
 envs:
-  CONFIG: configs/sft/qwen3-8b_traceinversion__unsloth__lora.yaml
+  CONFIG: configs/sft/qwen3-4b_traceinversion__unsloth__lora.yaml
   WANDB_API_KEY: ""                                    # `--env WANDB_API_KEY` 로 주입
   HF_TOKEN: ""                                         # `--env HF_TOKEN` 로 주입 (HF Hub push 시)
 

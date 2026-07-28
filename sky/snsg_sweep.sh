@@ -7,7 +7,7 @@
 #
 # 사전조건:
 #   - sky check vast 통과(또는 --cloud 로 지정한 클라우드) + 크레딧 충전
-#   - export WANDB_API_KEY=...  HF_TOKEN=...   (W&B 로깅 · HF Qwen3-8B 다운로드)
+#   - export WANDB_API_KEY=...  HF_TOKEN=...   (W&B 로깅 · HF Qwen3-4B 다운로드)
 #
 # 사용:
 #   export WANDB_API_KEY=...  HF_TOKEN=...
@@ -19,7 +19,7 @@
 #    을 확인한 뒤 전체를 도는 게 안전하다(첫 런이 제일 값진 발견).
 
 set -u
-GPU="${1:-L40S:1}"       # 48GB — 8B LoRA 전부 커버(online_dpo=정책+RM 2모델 포함)
+GPU="${1:-L40S:1}"       # 48GB — 4B LoRA 전부 커버(online_dpo=정책+RM 2모델 포함)
 CLOUD="${2:-vast}"
 IDLE=15                  # idle 분 후 자동 파기(안전망)
 

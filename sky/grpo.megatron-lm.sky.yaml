@@ -5,7 +5,7 @@
 # 런치는 우리 entrypoint(tfct-run)가 RunConfig 를 env+torchrun 으로 번역해 띄운다 → 이 run 블록은
 # 다른 sky 와 동일하게 `tfct-run --config $CONFIG` 한 줄.
 #
-# megatron-lm GRPO 는 full 전용(examples/rl 에 LoRA 없음). 8B full RL = TP 샤딩 → 멀티GPU.
+# megatron-lm GRPO 는 full 전용(examples/rl 에 LoRA 없음). 4B full RL = TP 샤딩 → 멀티GPU.
 #
 # 사용:
 #   export WANDB_API_KEY=...  HF_TOKEN=...
@@ -23,14 +23,14 @@
 name: tfct-grpo-mlm
 
 resources:
-  accelerators: A100:8                                 # 8B full RL = 멀티GPU(단일 GPU 불가). 노드에 맞춰 조정
+  accelerators: A100:8                                 # 4B full RL = 멀티GPU(단일 GPU 불가). 노드에 맞춰 조정
   use_spot: true                                       # 스팟; 끊기면 SkyPilot 이 자동 복구
   image_id: docker:ghcr.io/jaegookyou/training-framework-comparison-tutorial/megatron-lm:latest  # SFT 와 동일 megatron-lm 이미지(RL deps 포함)
 
 workdir: .                                             # 이 repo 를 통째로 박스로 업로드 (코드는 런타임에)
 
 envs:
-  CONFIG: configs/grpo/qwen3-8b_gsm8k__megatron-lm__full.yaml
+  CONFIG: configs/grpo/qwen3-4b_gsm8k__megatron-lm__full.yaml
   WANDB_API_KEY: ""                                    # `--env WANDB_API_KEY` 로 주입
   HF_TOKEN: ""                                         # `--env HF_TOKEN` 로 주입 (HF Hub push 시)
 

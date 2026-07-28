@@ -11,7 +11,7 @@
 #     --env WANDB_API_KEY --env HF_TOKEN
 #   # LoRA (단일 GPU):
 #   sky launch -c tfct-megatron-bridge sky/sft.megatron-bridge.sky.yaml --gpus A100:1 \
-#     --env CONFIG=configs/sft/qwen3-8b_traceinversion__megatron-bridge__lora.yaml \
+#     --env CONFIG=configs/sft/qwen3-4b_traceinversion__megatron-bridge__lora.yaml \
 #     --env WANDB_API_KEY --env HF_TOKEN
 #   sky logs tfct-megatron-bridge
 #   sky down tfct-megatron-bridge
@@ -32,7 +32,7 @@ resources:
 workdir: .                                             # 이 repo 를 통째로 박스로 업로드 (코드는 런타임에)
 
 envs:
-  CONFIG: configs/sft/qwen3-8b_traceinversion__megatron-bridge__full.yaml
+  CONFIG: configs/sft/qwen3-4b_traceinversion__megatron-bridge__full.yaml
   WANDB_API_KEY: ""                                    # `--env WANDB_API_KEY` 로 주입
   HF_TOKEN: ""                                         # `--env HF_TOKEN` 로 주입 (HF 가중치 다운로드/push 시)
 

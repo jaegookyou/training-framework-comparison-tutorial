@@ -20,7 +20,7 @@ resources:
 workdir: .
 
 envs:
-  CONFIG: configs/ppo/qwen3-8b_gsm8k__nemo-rl__full.yaml
+  CONFIG: configs/ppo/qwen3-4b_gsm8k__nemo-rl__full.yaml
   WANDB_API_KEY: ""
   HF_TOKEN: ""
 

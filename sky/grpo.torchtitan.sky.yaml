@@ -1,7 +1,7 @@
 # tfct GRPO 런 (torchtitan, full·experimental) — SkyPilot task. RL 가로비교의 torchtitan 데이터포인트.
 #
 # torchtitan experiments/rl(Monarch actors + vLLM rollout). entrypoint(tfct-run)가 RunConfig 를 읽어
-# `python -m torchtitan.experiments.rl.train --module <우리 gsm8k> --config rl_grpo_qwen3_8b_gsm8k
+# `python -m torchtitan.experiments.rl.train --module <우리 gsm8k> --config rl_grpo_qwen3_4b_gsm8k
 # --hf_assets_path=...` 를 띄운다(torchrun 아님 — Monarch 가 trainer/generator mesh 분할).
 # full 전용(experiments/rl LoRA RL 없음). reward = 공유 gsm8k_score.
 #
@@ -24,9 +24,9 @@ resources:
 workdir: .
 
 envs:
-  CONFIG: configs/grpo/qwen3-8b_gsm8k__torchtitan__full.yaml
+  CONFIG: configs/grpo/qwen3-4b_gsm8k__torchtitan__full.yaml
   WANDB_API_KEY: ""
-  HF_TOKEN: ""                                         # Qwen3-8B-Base 가중치/토크나이저 다운로드
+  HF_TOKEN: ""                                         # Qwen3-4B-Base 가중치/토크나이저 다운로드
 
 setup: |
   pip install -e .
