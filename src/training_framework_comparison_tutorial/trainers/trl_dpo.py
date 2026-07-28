@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from ..adapters import get_format, get_source, resolve_chat_template
 from ..config import RunConfig
-from .trl_sft import _lora_config, apply_multigpu_fsdp  # TRL-family 공유 헬퍼
+from .trl_sft import _lora_config, multigpu_fsdp_kwargs  # TRL-family 공유 헬퍼
 
 
 def train(cfg: RunConfig) -> None:
@@ -65,14 +65,13 @@ def train(cfg: RunConfig) -> None:
         max_steps=debug.get("max_steps", -1),
         # HF 기본 500 이면 5 step 스모크는 W&B 에 한 점도 안 찍힌다(빈 차트=판정 불가).
         logging_steps=cfg.log_every_n_steps(),
+        # 멀티노드/멀티GPU(torchrun) 런치면 full FT 에 FSDP 샤딩(단일 프로세스·LoRA 면 빈 dict).
+        **multigpu_fsdp_kwargs(cfg.tuning),
         report_to="wandb",
         run_name=cfg.run_name(),
         push_to_hub=bool(out.get("hf_repo")),
         hub_model_id=out.get("hf_repo"),
     )
-
-    # 멀티노드/멀티GPU(torchrun) 런치면 full FT 에 FSDP 샤딩(단일 프로세스면 no-op).
-    apply_multigpu_fsdp(args, cfg.tuning)
 
     trainer = DPOTrainer(
         model=model_cfg["name"],
