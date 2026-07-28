@@ -21,9 +21,12 @@ resources:
 workdir: .
 
 setup: |
-  pip install -e . >/dev/null 2>&1 || true   # 진단만 하므로 설치 실패해도 계속(모듈은 소스로 실행)
+  pip install -e .              # tfct-preflight 콘솔 스크립트를 깐다(실패하면 진단 자체가 무의미 → 안 숨긴다)
 
 run: |
   nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv || true
-  # 우리 패키지 진입점으로 실행 = **컨테이너 안 파이썬**임이 보장된다(생짜 python3 는 밖에서 돌 수 있다).
-  PYTHONPATH=src python3 -m training_framework_comparison_tutorial.trainers._preflight
+  # ⚠️ **콘솔 스크립트로 실행한다.** 생짜 `python3 -m ...` 은 컨테이너 안에서도 torch 없는 인터프리터를
+  # 잡을 수 있다(2026-07-28 실측: torchtitan 이미지에서 `torch 없음` 오판 — 07-01 megatron-bridge 의
+  # python3 불일치와 같은 계열). 콘솔 스크립트는 설치한 pip 의 인터프리터가 shebang 에 박혀 있어
+  # tfct-run(학습 경로)과 **같은 환경**임이 보장된다.
+  tfct-preflight

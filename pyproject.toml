@@ -25,6 +25,11 @@ trl = ["torch", "transformers", "trl", "datasets", "accelerate"]
 [project.scripts]
 tfct-run = "training_framework_comparison_tutorial.run:main"
 tfct-pipeline = "training_framework_comparison_tutorial.pipeline:main"
+# 이미지 진단(어떤 이미지가 이 GPU 에서 도는가). **콘솔 스크립트로 두는 게 핵심** —
+# 생짜 `python3` 는 컨테이너 안에서도 torch 없는 인터프리터일 수 있다(2026-07-28 실측,
+# 07-01 megatron-bridge 의 python3 불일치와 같은 계열). 콘솔 스크립트는 설치한 pip 의
+# 인터프리터를 shebang 으로 박으므로 tfct-run 과 같은 환경이 보장된다.
+tfct-preflight = "training_framework_comparison_tutorial.trainers._preflight:report"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/training_framework_comparison_tutorial"]
