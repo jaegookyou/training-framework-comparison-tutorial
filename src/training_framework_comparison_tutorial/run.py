@@ -84,8 +84,11 @@ def dispatch(cfg: RunConfig, prepare_only: bool = False) -> None:
         )
     # 멀티노드 미배선 조합에 nodes>1 을 주면 여기서 정직하게 죽인다(거짓말 knob 방지).
     # 배선된 trainer 는 내부에서 _dist.resolve 로 실제 프로비저닝까지 재확인한다.
-    from .trainers import _dist, _wandb
+    from .trainers import _dist, _preflight, _wandb
     _dist.guard_wired(cfg.method, cfg.framework, cfg.section("scale"))
+    # 이미지 안 torch 가 이 GPU 를 돌릴 수 있나(수 ms). 못 하면 원인을 적어 즉시 죽는다 —
+    # 안 그러면 한참 뒤 collective 에서 원인 불명 에러가 난다(07-28 실측). 근거는 _preflight.
+    _preflight.check_gpu_arch()
     # W&B 식별자(project/name/group/tags)를 env 로 주입 — 8 프레임워크가 wandb 를 부르는 방식이
     # 제각각이라 여기(공통 통로) 한 곳이 유일하게 안 어긋나는 자리다. 상세 근거는 _wandb.
     _wandb.apply_env(cfg)
