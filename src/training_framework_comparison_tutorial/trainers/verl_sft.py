@@ -104,6 +104,16 @@ def train(cfg: RunConfig) -> None:
         # flash-attn 미설치 이미지 기준(docker/verl.Dockerfile 참고) → sdpa 어텐션.
         # flash-attn 을 깐 GPU 빌드에서 true 로 올리면 remove-padding 최적화가 켜진다.
         "model.use_remove_padding=false",
+        # ⚠️ verl 은 attention 구현 기본값을 **flash_attention_2 로 하드코딩**한다
+        # (verl/workers/config/model.py:185 `override_config.get("attn_implementation",
+        # "flash_attention_2")`). 우리 이미지엔 flash-attn 이 없어(nvcc 회피 설계) 그대로 두면
+        # 모델 로딩 직후 ImportError 로 죽는다 — 2026-07-28 2노드 런에서 실측.
+        # sdpa 로 통일하는 게 통제비교상으로도 옳다: trl 은 transformers 기본(sdpa)로 도는데
+        # verl 만 FA2 면 **attention 커널이 프레임워크 축에 섞여** 처리량 비교가 오염된다.
+        # attention 구현은 프레임워크 축이 아니라 환경 축이므로 전 프레임워크 동일하게 간다.
+        # hydra: override_config 는 스키마상 빈 dict 라 **새 키 추가는 `+` 접두사**가 필요하다
+        # (없으면 "Key 'attn_implementation' is not in struct" — 2026-07-28 실측).
+        "+model.override_config.attn_implementation=sdpa",
         f"optim.lr={float(hp['learning_rate'])}",
         f"trainer.default_local_dir={out_dir / 'ckpt'}",
         f"trainer.project_name={_wandb.project(cfg)}",

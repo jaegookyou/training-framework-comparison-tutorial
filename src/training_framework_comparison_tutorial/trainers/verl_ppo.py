@@ -121,6 +121,14 @@ def train(cfg: RunConfig) -> None:
         "trainer.val_before_train=false",
         "trainer.test_freq=-1",   # 주기적 평가 생략(val=train 재사용이라 의미 없음)
     ]
+    # ⚠️ verl 은 attention 구현 기본값을 **flash_attention_2 로 하드코딩**한다
+    # (verl/workers/config/model.py:185). 우리 이미지엔 flash-attn 이 없어(nvcc 회피 설계) 그대로
+    # 두면 모델 로딩 직후 ImportError — 2026-07-28 2노드 런에서 실측. PPO 는 actor·critic 둘 다
+    # 같은 hf_model 스키마라 둘 다 내려야 한다. sdpa 통일은 통제비교상으로도 옳다(attention 커널은
+    # 프레임워크 축이 아니라 환경 축 — verl 만 FA2 면 처리량 비교가 오염된다).
+    for role in ("actor_rollout_ref.model", "critic.model"):
+        # hydra: override_config 는 빈 dict → 새 키 추가는 `+` 접두사 필요(2026-07-28 실측).
+        overrides.append(f"+{role}.override_config.attn_implementation=sdpa")
     if lora_rank > 0:
         # actor·critic 둘 다 어댑터만 학습(같은 hf_model 스키마의 lora_rank/alpha/target_modules).
         for role in ("actor_rollout_ref.model", "critic.model"):
