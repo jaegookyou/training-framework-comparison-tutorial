@@ -32,6 +32,7 @@ from pathlib import Path
 
 from ..adapters import get_format, get_source, resolve_chat_template
 from ..config import RunConfig
+from . import _wandb
 
 # 우리 reward 를 slime --custom-rm-path 로 넘길 모듈 경로(함수 slime_rm).
 _RM_PATH = "training_framework_comparison_tutorial.adapters.rewards.slime_rm"
@@ -90,7 +91,6 @@ def train(cfg: RunConfig) -> None:
     out = cfg.section("output")
     scale = cfg.section("scale")
     sl = cfg.section("slime")
-    wandb_cfg = cfg.section("wandb")
     debug = cfg.section("debug")
 
     slime_dir = os.environ.get("SLIME_DIR", "/root/slime")
@@ -172,7 +172,7 @@ def train(cfg: RunConfig) -> None:
         "--attention-backend", "flash",
         # WANDB
         "--use-wandb",
-        "--wandb-project", wandb_cfg.get("project", "tfct-grpo"),
+        "--wandb-project", _wandb.project(cfg),
         "--wandb-group", cfg.run_name(),
     ]
 

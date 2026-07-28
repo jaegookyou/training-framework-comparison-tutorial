@@ -34,6 +34,7 @@ from pathlib import Path
 from ..config import RunConfig
 
 # 데이터·reward 가 GRPO 와 동일 = JSONL 준비 헬퍼·reward 진입점 재사용.
+from . import _wandb
 from .slime_grpo import _RM_PATH, _prepare_jsonl
 
 
@@ -72,7 +73,6 @@ def train(cfg: RunConfig) -> None:
     out = cfg.section("output")
     scale = cfg.section("scale")
     sl = cfg.section("slime")
-    wandb_cfg = cfg.section("wandb")
     debug = cfg.section("debug")
 
     slime_dir = os.environ.get("SLIME_DIR", "/root/slime")
@@ -162,7 +162,7 @@ def train(cfg: RunConfig) -> None:
         "--attention-backend", "flash",
         # WANDB
         "--use-wandb",
-        "--wandb-project", wandb_cfg.get("project", "tfct-ppo"),
+        "--wandb-project", _wandb.project(cfg),
         "--wandb-group", cfg.run_name(),
     ]
 

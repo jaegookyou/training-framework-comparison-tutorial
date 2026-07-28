@@ -36,7 +36,7 @@ from pathlib import Path
 
 from ..config import RunConfig
 from ..model_sizes import megatron_arch_args
-from . import _dist
+from . import _dist, _wandb
 
 _BRIDGE_ENTRY = "training_framework_comparison_tutorial.trainers._megatron_bridge_entry"
 
@@ -97,7 +97,6 @@ def train(cfg: RunConfig) -> None:
     out = cfg.section("output")
     scale = cfg.section("scale")
     mg = cfg.section("megatron")
-    wandb_cfg = cfg.section("wandb")
 
     repo = os.environ.get("MEGATRON_LM_DIR", "/opt/Megatron-LM")
     init_from = model_cfg.get("init_from")  # continued-pretrain(4B 시드 이어학습) — 필수
@@ -187,10 +186,10 @@ def train(cfg: RunConfig) -> None:
         "--load", str(dcp_dir),
         "--ckpt-format", "torch_dist",
         "--save-interval", str(mg.get("save_interval", 1000)),
-        "--log-interval", str(mg.get("log_interval", 10)),
+        "--log-interval", str(cfg.log_every_n_steps()),
         "--eval-interval", str(mg.get("save_interval", 1000)),
         "--eval-iters", "0",
-        "--wandb-project", wandb_cfg.get("project", "tfct-pretrain"),
+        "--wandb-project", _wandb.project(cfg),
         "--wandb-exp-name", cfg.run_name(),
     ]
 

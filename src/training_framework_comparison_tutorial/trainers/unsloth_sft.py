@@ -101,6 +101,8 @@ def train(cfg: RunConfig) -> None:
         # full 은 get_peft_model 의 unsloth gradient ckpt 를 못 받으므로 여기서 켠다(메모리 절약).
         gradient_checkpointing=full,
         max_steps=debug.get("max_steps", -1),
+        # HF 기본 500 이면 5 step 스모크는 W&B 에 한 점도 안 찍힌다(빈 차트=판정 불가).
+        logging_steps=cfg.log_every_n_steps(),
         report_to="wandb",
         run_name=cfg.run_name(),
         push_to_hub=bool(out.get("hf_repo")),

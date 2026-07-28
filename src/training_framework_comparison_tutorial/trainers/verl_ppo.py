@@ -35,6 +35,7 @@ from ..adapters import rewards as rewards_mod
 from ..config import RunConfig
 
 # 데이터·reward·rollout 이 GRPO 와 동일 = 준비 헬퍼 재사용.
+from . import _wandb
 from .verl_grpo import _prepare_parquet, _prepare_tokenizer_dir
 
 
@@ -111,7 +112,7 @@ def train(cfg: RunConfig) -> None:
         f"custom_reward_function.path={reward_path}",
         "custom_reward_function.name=compute_score",
         f"trainer.default_local_dir={out_dir / 'ckpt'}",
-        f"trainer.project_name={cfg.section('wandb').get('project', 'tfct-ppo')}",
+        f"trainer.project_name={_wandb.project(cfg)}",
         f"trainer.experiment_name={cfg.run_name()}",
         f"trainer.total_epochs={hp.get('epochs', 1)}",
         "trainer.logger=[console,wandb]",

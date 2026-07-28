@@ -27,6 +27,7 @@ from pathlib import Path
 from ..adapters import get_format, get_source, resolve_chat_template
 from ..adapters import rewards as rewards_mod
 from ..config import RunConfig
+from . import _wandb
 
 
 def _prepare_parquet(cfg: RunConfig, out_dir: Path) -> str:
@@ -131,7 +132,7 @@ def train(cfg: RunConfig) -> None:
         f"custom_reward_function.path={reward_path}",
         "custom_reward_function.name=compute_score",
         f"trainer.default_local_dir={out_dir / 'ckpt'}",
-        f"trainer.project_name={cfg.section('wandb').get('project', 'tfct-grpo')}",
+        f"trainer.project_name={_wandb.project(cfg)}",
         f"trainer.experiment_name={cfg.run_name()}",
         f"trainer.total_epochs={hp.get('epochs', 1)}",
         "trainer.logger=[console,wandb]",

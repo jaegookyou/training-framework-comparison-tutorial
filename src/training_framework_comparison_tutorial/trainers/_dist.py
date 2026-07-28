@@ -103,36 +103,43 @@ def resolve(scale: dict[str, Any]) -> Topology:
 # ③ HF Trainer torchrun 런처(sky/hf_torchrun_launch.sh): trl SFT·DPO·GRPO·online_dpo(full=FSDP).
 # 미배선으로 남는 멀티노드: **unsloth**(단일 GPU 전용 설계 = 영구) · **torchtitan GRPO**
 # (experiments/rl 은 torchrun/ray 가 아니라 Monarch actor mesh = 우리 메커니즘 밖, experimental).
-MULTINODE_WIRED: frozenset[tuple[str, str]] = frozenset({
+#
+# 값 = 그 조합이 쓰는 **메커니즘 이름**. 배선을 검증할 때 정보는 조합이 아니라 메커니즘에 있다
+# (20조합을 다 태울 필요 없이 메커니즘 4개만 덮으면 배선이 검증된다) → W&B 태그로도 내보내
+# 실행 결과를 메커니즘 단위로 묶어 본다(_wandb.tags).
+MULTINODE_MECHANISM: dict[tuple[str, str], str] = {
     # ① torchrun 랑데부
-    ("sft", "torchtitan"),
-    ("pretrain", "torchtitan"),
-    ("sft", "verl"),
+    ("sft", "torchtitan"): "torchrun",
+    ("pretrain", "torchtitan"): "torchrun",
+    ("sft", "verl"): "torchrun",
     # ② ray 클러스터 부트스트랩(sky/ray_bootstrap.sh)
-    ("grpo", "verl"),
-    ("ppo", "verl"),
-    ("sft", "slime"),
-    ("grpo", "slime"),
-    ("ppo", "slime"),
-    ("sft", "nemo-rl"),
-    ("dpo", "nemo-rl"),
-    ("grpo", "nemo-rl"),
-    ("ppo", "nemo-rl"),
+    ("grpo", "verl"): "ray",
+    ("ppo", "verl"): "ray",
+    ("sft", "slime"): "ray",
+    ("grpo", "slime"): "ray",
+    ("ppo", "slime"): "ray",
+    ("sft", "nemo-rl"): "ray",
+    ("dpo", "nemo-rl"): "ray",
+    ("grpo", "nemo-rl"): "ray",
+    ("ppo", "nemo-rl"): "ray",
     # ③ HF Trainer torchrun 런처(hf_torchrun_launch.sh, full=FSDP): trl SFT·DPO·GRPO·online_dpo.
     #    넷 다 Trainer(model=문자열) 동일 구조 → 같은 런처. RL(grpo/online_dpo)은 루프 내 생성이
     #    있어 SFT 보다 복잡하나 하드 블로커 아님(TRL FSDP 지원, use_vllm 기본 false=HF generate).
-    ("sft", "trl"),
-    ("dpo", "trl"),
-    ("grpo", "trl"),
-    ("online_dpo", "trl"),
+    ("sft", "trl"): "hf-torchrun",
+    ("dpo", "trl"): "hf-torchrun",
+    ("grpo", "trl"): "hf-torchrun",
+    ("online_dpo", "trl"): "hf-torchrun",
     # ④ megatron(다단계): convert=노드별 로컬 / train=torchrun 랑데부 / export=head 전용.
     #    megatron_lm_sft 는 arguments.sh 의 LAUNCH_SCRIPT override 훅으로 랑데부 주입.
     #    ⚠️ export·resume 은 torch_dist 분산 ckpt 라 멀티노드에선 공유 FS 필요(스모크=train 검증).
-    ("pretrain", "megatron-lm"),
-    ("sft", "megatron-lm"),
-    ("sft", "megatron-bridge"),
-    ("grpo", "megatron-lm"),
-})
+    ("pretrain", "megatron-lm"): "megatron",
+    ("sft", "megatron-lm"): "megatron",
+    ("sft", "megatron-bridge"): "megatron",
+    ("grpo", "megatron-lm"): "megatron",
+}
+
+# 가드가 쓰는 화이트리스트. 메커니즘 맵에서 **파생**시켜 두 곳이 어긋날 수 없게 한다.
+MULTINODE_WIRED: frozenset[tuple[str, str]] = frozenset(MULTINODE_MECHANISM)
 
 
 def guard_wired(method: str, framework: str, scale: dict[str, Any]) -> None:

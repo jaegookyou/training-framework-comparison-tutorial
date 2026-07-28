@@ -51,6 +51,10 @@ output:
 
 wandb:
   project: tfct-grpo            # GRPO run 들을 한 화면에 겹쳐 보기 위한 공통 프로젝트
+  # 로깅 간격(log_every_n_steps)은 **여기 두지 않는다** — config.py 가 스모크면 1, 실측이면 10 을
+  # 파생시킨다. _base 에 박으면 스모크 config 가 extends 로 그 값을 물려받아 5 step 런의 차트가
+  # 다시 비어버린다(정확히 이 버그를 고치려고 만든 knob). 특정 run 만 다르게 하려면 그 config 에서
+  # `wandb.log_every_n_steps: N` 으로 덮는다.
 
 # 로컬/CI 스모크용. max_steps>0 이면 몇 step 만 돌고 끝.
 debug:

@@ -37,7 +37,7 @@ import subprocess
 from pathlib import Path
 
 from ..config import RunConfig
-from . import _dist
+from . import _dist, _wandb
 
 # env config 가 가리킬 우리 커스텀 에이전트(통제 변수 reward·프롬프트).
 _AGENT_TYPE = "training_framework_comparison_tutorial.megatron_rl.gsm8k_agent.TfctGSM8KAgent"
@@ -81,7 +81,6 @@ def train(cfg: RunConfig) -> None:
     out = cfg.section("output")
     scale = cfg.section("scale")
     mg = cfg.section("megatron")
-    wandb_cfg = cfg.section("wandb")
     debug = cfg.section("debug")
 
     repo = os.environ.get("MEGATRON_LM_DIR", "/opt/Megatron-LM")
@@ -157,13 +156,13 @@ def train(cfg: RunConfig) -> None:
         "--save-interval", str(save_interval),
         "--eval-interval", str(mg.get("eval_interval", 20)),
         "--rl-prompts-per-eval", str(mg.get("rl_prompts_per_eval", 32)),
-        "--log-interval", "10",
+        "--log-interval", str(cfg.log_every_n_steps()),
         "--distributed-timeout-minutes", "60",
         "--seed", str(mg.get("seed", 42)),
         "--data-cache-path", str(data_cache),
         "--save", str(ckpt_dir),
         "--load", str(ckpt_dir),
-        "--wandb-project", wandb_cfg.get("project", "tfct-grpo"),
+        "--wandb-project", _wandb.project(cfg),
         "--wandb-exp-name", cfg.run_name(),
         "--lr", str(float(hp["learning_rate"])),
     ]

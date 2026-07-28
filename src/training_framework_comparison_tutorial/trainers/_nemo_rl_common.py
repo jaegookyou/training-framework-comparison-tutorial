@@ -23,6 +23,7 @@ from pathlib import Path
 
 from ..adapters import resolve_chat_template
 from ..config import RunConfig
+from . import _wandb
 
 
 def bake_tokenizer(cfg: RunConfig, out_dir: Path) -> str | None:
@@ -60,6 +61,12 @@ def common_overrides(cfg: RunConfig, out_dir: Path, tok_dir: str | None) -> list
         f"policy.train_micro_batch_size={micro}",
         f"policy.train_global_batch_size={gbs}",
         f"logger.log_dir={out_dir / 'logs'}",
+        # W&B — NeMo-RL 은 wandb 를 config 로만 켠다(env 로 안 켜진다: utils/logger.py 는
+        # logger.wandb_enabled 가 false 면 WandbLogger 자체를 안 만든다). 키 이름은 v0.5.0
+        # examples/configs/sft.yaml 실물 확인(wandb_enabled · wandb.project · wandb.name).
+        "logger.wandb_enabled=true",
+        f"logger.wandb.project={_wandb.project(cfg)}",
+        f"logger.wandb.name={cfg.run_name()}",
         f"checkpointing.checkpoint_dir={out_dir / 'ckpt'}",
         # lr — NeMo optimizer config 경로(⚠️ 정확 키 GPU 검증). 통제 변수라 명시 override.
         f"policy.optimizer.kwargs.lr={float(hp['learning_rate'])}",

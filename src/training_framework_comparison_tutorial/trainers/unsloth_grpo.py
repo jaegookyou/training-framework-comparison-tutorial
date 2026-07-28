@@ -101,6 +101,8 @@ def train(cfg: RunConfig) -> None:
         temperature=hp.get("temperature", 1.0),
         use_vllm=use_vllm,
         max_steps=debug.get("max_steps", -1),
+        # HF 기본 500 이면 5 step 스모크는 W&B 에 한 점도 안 찍힌다(빈 차트=판정 불가).
+        logging_steps=cfg.log_every_n_steps(),
         report_to="wandb",
         run_name=cfg.run_name(),
         push_to_hub=bool(out.get("hf_repo")),

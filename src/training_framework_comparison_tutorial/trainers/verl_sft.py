@@ -19,7 +19,7 @@ from pathlib import Path
 
 from ..adapters import get_format, get_source, resolve_chat_template
 from ..config import RunConfig
-from . import _dist
+from . import _dist, _wandb
 
 
 def _prepare_parquet(cfg: RunConfig, out_dir: Path) -> str:
@@ -106,7 +106,7 @@ def train(cfg: RunConfig) -> None:
         "model.use_remove_padding=false",
         f"optim.lr={float(hp['learning_rate'])}",
         f"trainer.default_local_dir={out_dir / 'ckpt'}",
-        f"trainer.project_name={cfg.section('wandb').get('project', 'tfct-sft')}",
+        f"trainer.project_name={_wandb.project(cfg)}",
         f"trainer.experiment_name={cfg.run_name()}",
         f"trainer.total_epochs={hp.get('epochs', 1)}",
         "trainer.logger=[console,wandb]",

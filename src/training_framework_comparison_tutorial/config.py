@@ -73,4 +73,27 @@ class RunConfig:
         # tuning(full|lora) 축은 사후학습에만. 사전학습은 정의상 full-param.
         if self.method != "pretrain":
             parts.append(self.tuning)
+        # 노드 수는 이름에 박는다 — 같은 config 를 SNSG 로도 MNMG 로도 돌리는데(scale 만 다름)
+        # 이름이 같으면 W&B 목록에서 둘을 구분할 수 없다. 단노드는 접미사 없음(기존 이름 보존).
+        nodes = int(self.section("scale").get("nodes", 1))
+        if nodes > 1:
+            parts.append(f"mn{nodes}")
         return "-".join(parts)
+
+    def is_smoke(self) -> bool:
+        """이 run 이 스모크인가. 정의는 이미 하나뿐이다 — `debug.max_steps>0`(몇 step 만 돌고 끝).
+
+        스모크 여부에 딸린 정책(W&B 격리 프로젝트·촘촘한 로깅)을 config 마다 손으로 켜면 새 스모크를
+        추가할 때 빠뜨린다 → 정의 한 곳에서 파생시킨다.
+        """
+        return int(self.section("debug").get("max_steps", -1) or -1) > 0
+
+    def log_every_n_steps(self) -> int:
+        """로깅 간격(step). 프레임워크마다 이름이 다른 knob 의 **단일 출처**.
+
+        기본을 프레임워크 기본값에 맡기면 눈금이 제각각이 된다(HF Trainer 500 · torchtitan 10 ·
+        megatron 10) → 같은 x 축으로 겹쳐 보려면 우리가 정해야 한다. 스모크는 1: 5 step 런에
+        간격 10 이면 W&B 에 스칼라가 한 점도 안 찍혀 빈 차트가 된다(= 판정 불가).
+        """
+        default = 1 if self.is_smoke() else 10
+        return int(self.section("wandb").get("log_every_n_steps", default))

@@ -91,6 +91,9 @@ def train(cfg: RunConfig) -> None:
         f"--training.steps={steps}",
         f"--optimizer.lr={float(hp['learning_rate'])}",
         "--metrics.enable_wandb=true",
+        # log_freq 기본 10 → 5 step 스모크면 step 1 만 찍힌다(metrics.py:363 `step==1 or
+        # step%log_freq==0`). 간격은 전 프레임워크 공통 출처(cfg.log_every_n_steps).
+        f"--metrics.log_freq={cfg.log_every_n_steps()}",
         f"--job.dump_folder={out_dir / 'ckpt'}",
     ]
 
