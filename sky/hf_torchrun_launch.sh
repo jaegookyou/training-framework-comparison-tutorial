@@ -35,6 +35,10 @@ if [ "$NUM_NODES" -le 1 ]; then
 fi
 
 # 멀티노드: static 랑데부(_dist.torchrun_args 와 동형 — SkyPilot NODE_IPS 첫 줄 = head).
+# collective(NCCL/Gloo) 네트워킹 고정 — 이 경로는 2026-07-28 에 그냥 통과했지만, NCCL 이 조용히
+# docker0 을 고르면 **무증상 행**이 되는 종류라 성공 경험이 안전을 보장하지 않는다.
+# shellcheck source=/dev/null
+source "$(dirname "$0")/_netenv.sh"
 HEAD_IP="$(echo "$SKYPILOT_NODE_IPS" | head -n1)"
 exec torchrun \
   --nnodes="$NUM_NODES" \

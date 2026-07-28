@@ -136,7 +136,11 @@ def train(cfg: RunConfig) -> None:
         f"actor_rollout_ref.rollout.temperature={hp.get('temperature', 1.0)}",
         f"actor_rollout_ref.rollout.tensor_model_parallel_size={verl.get('rollout_tp', 1)}",
         f"actor_rollout_ref.rollout.gpu_memory_utilization={gpu_mem_util}",
+        # verl 은 ref·rollout **각각** log_prob 배치를 요구한다(둘 중 하나라도 없으면 기동 시
+        # ValueError). rollout 은 생성 후 log_prob 재계산 단계라 ref 와 별개 knob — 같은
+        # micro 를 줘 눈금을 통일한다. 2026-07-28 2노드 런에서 실측(ref 만 주고 있었음).
         f"actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu={micro}",
+        f"actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu={micro}",
         # rule-based reward → 신경망 RM 끔. 채점은 custom_reward_function 으로.
         "reward_model.enable=false",
         f"custom_reward_function.path={reward_path}",

@@ -33,6 +33,34 @@ HEAD_IP="$(echo "$SKYPILOT_NODE_IPS" | head -n1)"
 RAY_PORT=6385                                 # SkyPilot 내부 ray(6379)와 충돌 회피용 별도 포트
 export RAY_ADDRESS="$HEAD_IP:$RAY_PORT"       # 프레임워크 ray.init 이 우리 클러스터에 붙게
 
+# collective(NCCL/Gloo) 네트워킹 고정 — Gloo 의 127.0.1.1 함정 등. 근거는 _netenv.sh 주석.
+# shellcheck source=/dev/null
+source "$(dirname "$0")/_netenv.sh"
+
+# 앞선 job 의 ray 가 노드에 살아 있으면 `ray start` 가 죽는다:
+#   ConnectionError: Ray is trying to start at <ip>:6385, but is already running at <ip>:6385.
+# 클러스터를 유지한 채 job 만 여러 번 돌리는 게 정상 사용 패턴이라(스윕·수정 후 재실행) 반드시 밟는다.
+#
+# ⛔ **`ray stop` 으로 풀면 안 된다** (2026-07-28 실측으로 확인): `ray stop` 은 **포트 스코프가 없어**
+#    그 노드의 ray 프로세스를 전부 죽인다 → 위 주석대로 SkyPilot 도 자기 ray 를 돌리므로 **SkyPilot 의
+#    job 제어면까지 같이 죽는다**. 실제로 클러스터가 INIT 로 빠져 sky queue/logs/down 이 전부 막히고
+#    (노드는 살아서 과금 중) 드라이버는 `Failed to connect to GCS ... terminated by ray stop` 으로
+#    죽었다. 복구에 `sky start` 가 필요했다.
+# ⛔ **재사용으로도 풀면 안 된다** (2026-07-28, 재사용을 넣었다가 되돌림): 살아 있는 ray 를 그냥
+#    쓰면 액터를 낳는 **raylet 이 이전 job 의 env 를 그대로 들고 있다**. 그래서 이 스크립트가
+#    새로 export 한 GLOO_SOCKET_IFNAME/NCCL_SOCKET_IFNAME 이 액터에 **안 먹고**, 워커가 다시
+#    127.0.1.1 로 붙으려다 죽었다(부트스트랩 셸의 env 는 드라이버에만 적용된다).
+#    같은 이유로 upstream 지식도 "ray 는 fresh 클러스터만" 이다 → [[multi-node-gpu-provisioning]].
+# ✅ 그래서 **정직하게 죽고 fresh 를 요구한다**. 조용히 이전 env 로 도는 것보다, 무엇을 해야 하는지
+#    말해주고 멈추는 게 싸다(무증상 행/오염된 런이 훨씬 비싸다).
+if ray status --address="$RAY_ADDRESS" >/dev/null 2>&1; then
+  echo "ERROR: $RAY_ADDRESS 에 이전 job 의 ray 가 남아 있다." >&2
+  echo "  ray 계열은 **fresh 클러스터**에서만 돌린다 — 남은 raylet 은 이전 env(NIC 고정 등)를" >&2
+  echo "  들고 있어 이번 job 의 설정이 액터에 안 먹는다(조용히 틀리게 도는 대신 여기서 멈춘다)." >&2
+  echo "  조치: sky down <cluster> 후 sky launch 로 새로 띄운다." >&2
+  exit 1
+fi
+
 if [ "${SKYPILOT_NODE_RANK}" == "0" ]; then
   ray start --head --port="$RAY_PORT" --disable-usage-stats
   # 모든 워커가 조인할 때까지 대기(최대 5분). 드라이버가 자원을 못 찾고 실패/행 거는 걸 방지.
@@ -45,6 +73,12 @@ if [ "${SKYPILOT_NODE_RANK}" == "0" ]; then
   exec bash -c "$DRIVER"
 else
   sleep 15                                    # head 의 --head 기동을 먼저 기다린다
-  ray start --address="$HEAD_IP:$RAY_PORT" --disable-usage-stats
+  # 재사용 경로면 이 노드는 이미 그 클러스터에 조인돼 있다 → 다시 join 하면 "already running" 으로
+  # 죽는다. 조인 상태만 유지하면 되므로 건너뛴다.
+  if [ "$REUSE_RAY" == "0" ]; then
+    ray start --address="$HEAD_IP:$RAY_PORT" --disable-usage-stats
+  else
+    echo "기존 ray 클러스터에 이미 조인됨 — join 생략"
+  fi
   sleep infinity                              # 노드를 ray 자원으로 유지(SkyPilot 이 job 종료 시 파기)
 fi
