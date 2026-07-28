@@ -1,0 +1,21 @@
+# 멀티노드 GPU 스모크(MNMG) — torchtitan **continued-pretrain** 을 2노드로. 검증 대상 = 메커니즘 ①
+# torchrun 랑데부의 **사전학습 경로**. SFT 와 트레이너가 달라(시드 로딩 initial_load_in_hf ·
+# HF export) 따로 태운다 — 수직 파이프라인 1단계라 여기가 깨지면 뒤 단계가 전부 막힌다.
+#
+# ⚠️ 사후 export(out/hf)는 분산 ckpt 라 멀티노드에선 공유 FS 필요(megatron 스모크와 동일 제약).
+#    판정 범위는 **시드 로딩 + train 랑데부 + step 상승**까지.
+#
+# 대여/실행:
+#   sky launch -c tfct-tt-pt-mn sky/pretrain.torchtitan.sky.yaml --num-nodes 2 --gpus RTX6000:1 \
+#     --cloud nebius --env CONFIG=configs/pretrain/_smoke_torchtitan_multinode_gpu.yaml \
+#     --env WANDB_API_KEY --env HF_TOKEN
+#   sky down tfct-tt-pt-mn
+# knob 소비: max_steps→--training.steps=torchtitan_pretrain.py:77-80.
+extends: qwen3-4b_wikitext__torchtitan.yaml
+
+scale:
+  nodes: 2
+  gpus: 1
+
+debug:
+  max_steps: 5                  # 5 step — 시드(Qwen3-4B-Base) 로딩·랑데부·FSDP·wandb 만 확인

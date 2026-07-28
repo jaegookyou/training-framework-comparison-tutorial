@@ -11,3 +11,8 @@ extends: qwen3-4b_traceinversion__megatron-lm__full.yaml
 
 megatron:
   train_samples: 256            # 15000→256 (~60x 축소). global_batch 배수 정합은 GPU 검증 시 확인
+
+debug:
+  smoke: true                   # max_steps 를 안 먹는 프레임워크라 **의도**를 명시한다(안 먹는 knob 을
+                                # 적으면 거짓말 knob). 이게 있어야 W&B 가 tfct-smoke 로 격리되고
+                                # 로깅 간격이 1 이 된다 — 없으면 실측 프로젝트를 오염시킨다.

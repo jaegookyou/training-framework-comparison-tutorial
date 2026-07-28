@@ -1,0 +1,26 @@
+# 멀티노드 GPU 스모크(MNMG) — trl full SFT 를 **2노드**로. 검증 대상 = 메커니즘 ③ **hf-torchrun**
+# (sky/hf_torchrun_launch.sh 가 tfct-run 을 torchrun 으로 감싸고, HF Trainer 가 분산 env 를 자동
+# 감지 → full 이면 trl_sft.apply_multigpu_fsdp 가 FSDP 샤딩).
+#
+# **lora 가 아니라 full 을 태우는 이유**: LoRA 경로는 FSDP 를 안 켠다(DDP) → 랑데부만 보고 샤딩은
+# 못 본다. 이 메커니즘에서 깨질 여지가 큰 쪽은 FSDP + 캐논 template 정합이므로 full 로 본다.
+#
+# 대여/실행 (노드당 2장 = 노드 내 샤딩 + 노드 간 네트워크, 실무 보편 토폴로지):
+#   sky launch -c tfct-trl-mn sky/sft.trl.sky.yaml --num-nodes 2 --gpus RTX6000:1 --cloud nebius \
+#     --env CONFIG=configs/sft/_smoke_trl_multinode_gpu.yaml --env WANDB_API_KEY --env HF_TOKEN
+#   sky down tfct-trl-mn        # 반드시 — idle 과금 방지
+#
+# ⚠️ scale.gpus 는 `--gpus <T>:N` 의 N 과, scale.nodes 는 `--num-nodes` 와 **반드시 같아야** 한다
+#    (어긋나면 trainers/_dist.py:resolve 가 즉시 SystemExit).
+# 판정 = W&B 에서 step 이 2~3 오르면 성공(loss 값은 무의미 — 배선 검증이다).
+extends: qwen3-4b_traceinversion__trl__full.yaml
+
+dataset:
+  subsample: 64                 # 한 줌만 (어댑터·template 경로는 실제로 태움)
+
+scale:
+  nodes: 2
+  gpus: 1
+
+debug:
+  max_steps: 5                  # 5 step — 랑데부·FSDP 샤딩·wandb 정합만 확인

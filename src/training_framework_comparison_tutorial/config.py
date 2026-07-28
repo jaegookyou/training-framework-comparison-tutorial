@@ -81,12 +81,20 @@ class RunConfig:
         return "-".join(parts)
 
     def is_smoke(self) -> bool:
-        """이 run 이 스모크인가. 정의는 이미 하나뿐이다 — `debug.max_steps>0`(몇 step 만 돌고 끝).
+        """이 run 이 스모크인가(= 축소해서 배선만 보는 run).
 
         스모크 여부에 딸린 정책(W&B 격리 프로젝트·촘촘한 로깅)을 config 마다 손으로 켜면 새 스모크를
-        추가할 때 빠뜨린다 → 정의 한 곳에서 파생시킨다.
+        추가할 때 빠뜨린다 → 여기 한 곳에서 파생시킨다.
+
+        판정이 둘인 이유: 보통은 축소 레버 `debug.max_steps>0` 자체가 스모크의 정의다. 그런데
+        **megatron-lm 은 그 레버를 소비하지 않는다**(축소 레버가 `megatron.train_samples` 뿐).
+        거기에 안 먹는 max_steps 를 적어 넣는 건 거짓말 knob 이므로(repo 원칙), 대신 `debug.smoke`
+        로 **의도를 명시**하게 한다.
         """
-        return int(self.section("debug").get("max_steps", -1) or -1) > 0
+        debug = self.section("debug")
+        if debug.get("smoke") is True:
+            return True
+        return int(debug.get("max_steps", -1) or -1) > 0
 
     def log_every_n_steps(self) -> int:
         """로깅 간격(step). 프레임워크마다 이름이 다른 knob 의 **단일 출처**.

@@ -1,0 +1,17 @@
+# 멀티노드 GPU 스모크(MNMG) — verl LoRA GRPO 를 **2노드**로. 검증 대상 = 메커니즘 ② **ray 부트스트랩**
+# (sky/ray_bootstrap.sh 가 head 에서 `ray start --head`, worker 가 조인 → head 에서만 드라이버).
+# 최대 미검증 지점: ray.init 이 우리 클러스터(포트 6385)에 붙는지 · rollout 데이터 로컬리티.
+#
+# SNSG 스모크(_smoke_verl_gpu)를 상속해 **스모크 레버(subsample·max_steps)를 한 곳에 유지**하고
+# 여기서는 스케일만 올린다 — 두 티어가 같은 축소본을 태워야 결과 차이가 노드 수 때문임이 분명해진다.
+#
+# 대여/실행:
+#   sky launch -c tfct-verl-grpo-mn sky/grpo.verl.sky.yaml --num-nodes 2 --gpus RTX6000:1 \
+#     --cloud nebius --env CONFIG=configs/grpo/_smoke_verl_multinode_gpu.yaml \
+#     --env WANDB_API_KEY --env HF_TOKEN
+#   sky down tfct-verl-grpo-mn
+extends: _smoke_verl_gpu.yaml
+
+scale:
+  nodes: 2
+  gpus: 1

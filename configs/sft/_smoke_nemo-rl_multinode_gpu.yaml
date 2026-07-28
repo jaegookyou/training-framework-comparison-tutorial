@@ -1,0 +1,16 @@
+# 멀티노드 GPU 스모크(MNMG) — NeMo-RL LoRA SFT 를 **2노드**로. 검증 대상 = 메커니즘 ② **ray**의
+# NeMo 변형. verl 과 같은 부트스트랩을 쓰지만 **uv venv 안의 ray 경로**가 따로 미검증이라 별도로 본다
+# (NGC 이미지가 uv run 기반 — ray 실행 파일이 venv 안에 있다).
+# cluster.num_nodes override 는 _nemo_rl_common.common_overrides 가 scale 에서 만든다.
+#
+# 대여/실행:
+#   sky launch -c tfct-nemo-mn sky/sft.nemo-rl.sky.yaml --num-nodes 2 --gpus RTX6000:1 \
+#     --cloud nebius --env CONFIG=configs/sft/_smoke_nemo-rl_multinode_gpu.yaml \
+#     --env WANDB_API_KEY --env HF_TOKEN
+#   sky down tfct-nemo-mn
+# ⚠️ 큰 이미지(NGC) — 첫 pull 10~20분. 판정 전에 죽었다고 오해하지 말 것.
+extends: _smoke_nemo-rl_gpu.yaml
+
+scale:
+  nodes: 2
+  gpus: 1

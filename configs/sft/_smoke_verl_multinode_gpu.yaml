@@ -1,0 +1,20 @@
+# 멀티노드 GPU 스모크(MNMG) — verl full SFT 를 **2노드**로. 검증 대상 = 메커니즘 ① **torchrun 랑데부**
+# (_dist.torchrun_args 의 static 랑데부로 verl.trainer.sft_trainer 를 노드 간에 묶는다).
+# verl 의 RL(ray) 과 달리 SFT 는 단일 torchrun + FSDP → 같은 프레임워크 안에서 두 메커니즘이 갈린다.
+#
+# 대여/실행:
+#   sky launch -c tfct-verl-mn sky/sft.verl.sky.yaml --num-nodes 2 --gpus RTX6000:1 --cloud nebius \
+#     --env CONFIG=configs/sft/_smoke_verl_multinode_gpu.yaml --env WANDB_API_KEY --env HF_TOKEN
+#   sky down tfct-verl-mn
+# knob 소비: subsample=verl_sft.py / max_steps→trainer.total_training_steps=verl_sft.py:126-128.
+extends: qwen3-4b_traceinversion__verl__full.yaml
+
+dataset:
+  subsample: 64
+
+scale:
+  nodes: 2
+  gpus: 1
+
+debug:
+  max_steps: 5

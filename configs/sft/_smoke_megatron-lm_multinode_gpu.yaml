@@ -1,0 +1,27 @@
+# 멀티노드 GPU 스모크(MNMG) — 순수 Megatron-LM full SFT 를 **2노드**로. 검증 대상 = 메커니즘 ④
+# **megatron 다단계**: convert=노드별 로컬(--standalone) / train=랑데부(arguments.sh 의
+# LAUNCH_SCRIPT override 훅) / export=head 전용.
+#
+# ⚠️ **export 는 공유 FS 가 없으면 실패한다** — torch_dist 분산 ckpt 는 rank 별 shard 라 head 혼자
+#    모으지 못한다(sky file_mounts/NFS 필요). 이 스모크의 판정 범위는 **train 랑데부까지**이고,
+#    export 단계 실패는 여기서는 예상된 결과다(공유 FS 세팅은 별건).
+# ⚠️ megatron-lm 은 debug.max_steps 를 소비하지 않는다 — 레버는 megatron.train_samples 뿐
+#    (부모 SNSG 스모크에서 256 으로 축소). global_batch 배수 정합은 GPU 에서 실배치 확인 후 조정.
+# **TP=1 로 내린다**: 부모 config 는 TP=2(노드 안 샤딩 전제)인데 노드당 1장이면 TP 가 **노드 경계를
+# 넘어** 이더넷 위에서 돈다(레이어마다 all-reduce = 병리적으로 느리고, 행 걸리면 원인 분리도 안 됨).
+# 여기서 보려는 것은 노드 간 **DP** 랑데부이므로 TP=1 × DP=2 = world 2 가 질문에 정확히 대응한다.
+# (TP×PP×DP 는 nodes×gpus 와 맞아야 한다 — megatron_lm_sft 가 dp=world/(tp×pp)로 계산.)
+#
+# 대여/실행:
+#   sky launch -c tfct-mlm-mn sky/sft.megatron-lm.sky.yaml --num-nodes 2 --gpus RTX6000:1 \
+#     --cloud nebius --env CONFIG=configs/sft/_smoke_megatron-lm_multinode_gpu.yaml \
+#     --env WANDB_API_KEY --env HF_TOKEN
+#   sky down tfct-mlm-mn
+extends: _smoke_megatron-lm_gpu.yaml
+
+megatron:
+  tensor_model_parallel_size: 1   # 노드당 1장 → TP 는 노드를 넘으면 안 된다(위 주석). DP=2 로 간다.
+
+scale:
+  nodes: 2
+  gpus: 1
