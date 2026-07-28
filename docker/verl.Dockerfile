@@ -13,7 +13,22 @@
 # =false 로 sdpa 어텐션을 쓰므로 없이도 돈다. remove-padding 최적화가 필요하면 devel 베이스 +
 # 매칭 flash-attn 휠로 별도 빌드(GPU 빌드 시 최종 검증 대상 — unsloth 이미지와 같은 단서).
 #
+#
+# ⚠️ **torch 2.9.0 = Blackwell(sm_120) 하한**(2026-07-28 GPU 실측 후 2.6.0 에서 상향).
+# 우리가 빌리는 GPU 는 Nebius **RTX PRO 6000 Blackwell Server Edition(sm_120, 96GB, driver 580)**
+# 인데 torch 2.6.0 은 cu12.4 빌드라 그 아키텍처 커널이 없다 → 2노드 런이 NCCL barrier 에서
+# `CUDA error: no kernel image is available for execution on the device` 로 죽었다.
+# PyPI 실물 확인: torch 2.6.0=cu12.4/nccl 2.21.5 · **torch 2.8.0·2.9.0=cu12.8/nccl 2.27.x** ·
+# torch 2.12.0=cu13(trl 이미지가 같은 GPU 에서 2노드 통과 = Blackwell 지원 실증).
+# 왜 여태 몰랐나: 07-01 이미지는 Dockerfile 이 `"vllm"` 을 **핀 없이** 깔아 최신 vllm 이 torch 를
+# 끌어올렸다. `torch==2.6.0` 핀은 커밋돼 있었지만 **오늘 처음 빌드**됐고, 그제서야 드러났다.
+# 교훈: **핀은 빌드돼야 검증된 것이다** — 커밋된 핀과 이미지 안 실물은 다를 수 있다.
+#
 # vllm: GRPO(trainers/verl_grpo.py)는 rollout.name=vllm 이 기본이라 vllm 이 필요하다(SFT 엔 불필요).
+# **vllm==0.12.0** = verl 0.8.0 의 [vllm] extra 상한(`>=0.8.5,<=0.12.0`)이자 torch 2.9.0 을 정확히
+# 핀하는 판 → Blackwell 요구(torch>=2.8)와 verl 허용범위를 동시에 만족하는 **유일한 조합**이다.
+# (0.8.5.post1 은 torch 2.6.0 고정이라 하드웨어와 불가, 0.11.0 은 torch 2.8.0 이지만 상한이 0.12.0
+#  이므로 더 최신인 0.12.0 을 택한다.)
 # vllm==0.8.5.post1: torch==2.6.0(=base cu124 정합) · ray>=2.43,!=2.44.* · py<3.13(base 3.12).
 #
 # ⚠️ **transformers 는 4.57.6 이다(5.12.1 에서 내림, 2026-07-28 GPU 실측 후 정정).**
@@ -32,11 +47,11 @@
 ARG BASE_IMAGE=ghcr.io/jaegookyou/training-framework-comparison-tutorial/base:latest
 FROM ${BASE_IMAGE}
 
-RUN pip install "torch==2.6.0" \
+RUN pip install "torch==2.9.0" \
     && pip install \
         "verl==0.8.0" \
         "transformers==4.57.6" \
-        "vllm==0.8.5.post1"  # torch==2.6.0 핀(=base cu124). transformers 는 위 주석의 4.x 근거 참조
+        "vllm==0.12.0"  # torch==2.9.0(cu12.8=Blackwell) 핀 · transformers<5 명시 → 4.57.6 과 정합
 
 # repo 연결: 이 LABEL 이 패키지를 GitHub repo 의 Packages 에 붙이고 visibility 를 상속시킨다.
 LABEL org.opencontainers.image.source=https://github.com/jaegookyou/training-framework-comparison-tutorial

@@ -14,7 +14,19 @@
 # ⚠️ base(cu12 *runtime*) 가 아니라 cu12 *devel*(nvcc 포함) 에서 출발한다 — megatron-bridge 와 동일:
 #   transformer-engine[core,pytorch] 는 core(transformer_engine_cu12)만 prebuilt 고 pytorch 바인딩
 #   (transformer_engine_torch)은 sdist 라 nvcc 소스 빌드가 필요하다(runtime 베이스에서 'Could neither find
-#   NVCC' 로 실패). 그래서 base 이미지 레이어(python3.12 + hf/wandb + repo)를 여기서 재구성한다(FROM base 불가).
+#   NVCC' 로 실패). 그래서 base 이미지 레이어(python3.12 + hf/wandb + repo)를 여기서 재구성한다(#
+# ⚠️ **torch 2.9.0 = Blackwell(sm_120) 하한**(2026-07-28 GPU 실측 후 2.6.0 에서 상향).
+# 우리가 빌리는 GPU 는 Nebius **RTX PRO 6000 Blackwell Server Edition(sm_120, 96GB, driver 580)**
+# 인데 torch 2.6.0 은 cu12.4 빌드라 그 아키텍처 커널이 없다 → 2노드 런이 NCCL barrier 에서
+# `CUDA error: no kernel image is available for execution on the device` 로 죽었다.
+# PyPI 실물 확인: torch 2.6.0=cu12.4/nccl 2.21.5 · **torch 2.8.0·2.9.0=cu12.8/nccl 2.27.x** ·
+# torch 2.12.0=cu13(trl 이미지가 같은 GPU 에서 2노드 통과 = Blackwell 지원 실증).
+# 왜 여태 몰랐나: 07-01 이미지는 Dockerfile 이 `"vllm"` 을 **핀 없이** 깔아 최신 vllm 이 torch 를
+# 끌어올렸다. `torch==2.6.0` 핀은 커밋돼 있었지만 **오늘 처음 빌드**됐고, 그제서야 드러났다.
+# 교훈: **핀은 빌드돼야 검증된 것이다** — 커밋된 핀과 이미지 안 실물은 다를 수 있다.
+# megatron-core 0.17.1 은 `torch>=2.6.0`(상한 없음) → 2.9.0 가능. transformers 5.3.0 은 그대로
+# ([mlm] extra 가 `transformers<=5.3.0`).
+FROM base 불가).
 ARG CUDA_IMAGE=nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
 FROM ${CUDA_IMAGE}
 
@@ -39,7 +51,7 @@ RUN pip install --upgrade pip huggingface_hub wandb
 #   python3-blinker 1.4(distutils) 를 flask-restful→Flask 가 업그레이드하려다 'Cannot uninstall'
 #   실패 → pip 로 새 blinker 를 강제 설치해 시스템 것을 shadow(python3.12 site-packages 우선).
 ENV MAX_JOBS=4
-RUN pip install "torch==2.6.0" "ninja" "packaging" "setuptools" "wheel" \
+RUN pip install "torch==2.9.0" "ninja" "packaging" "setuptools" "wheel" \
     && pip install "transformer-engine[core,pytorch]==2.16.0" \
     && pip install --ignore-installed blinker \
     && pip install \
