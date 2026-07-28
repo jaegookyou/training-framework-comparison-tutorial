@@ -65,7 +65,43 @@ def check_gpu_arch() -> None:
 
     name = torch.cuda.get_device_name()
     sm = f"sm_{capability[0]}{capability[1]}"
-    raise SystemExit(
+    raise SystemExit(_incompatible_message(name, sm, arch_list, torch))
+
+
+def report() -> int:
+    """이 이미지가 이 GPU 에서 도는지 **보고만** 한다(죽이지 않음).
+
+    `python -m ..._preflight` 진입점.
+
+    왜 별도 진입점인가: 이미지마다 torch 출처가 다르다 — 우리가 핀하는 것(trl·verl·unsloth·megatron)
+    도 있고 **upstream 이미지에서 그냥 오는 것**(slime=slimerl/slime, nemo-rl=NGC)도 있다. 후자는
+    "핀을 읽어서" 알 수 없고 **띄워봐야 안다**(2026-07-28 교훈의 연장). 학습을 12분 태우며 하나씩
+    발견하는 대신, 이미지당 수 분짜리 최소 런으로 한 번에 확정하려고 둔다.
+    """
+    try:
+        import torch
+    except ImportError:
+        print("[preflight] torch 없음 — 이 이미지에서 torch import 실패")
+        return 2
+    print(f"[preflight] torch      : {torch.__version__} (cuda {torch.version.cuda})")
+    if not torch.cuda.is_available():
+        print("[preflight] CUDA 사용 불가 — GPU 가 안 보인다")
+        return 2
+    capability = torch.cuda.get_device_capability()
+    arch_list = list(torch.cuda.get_arch_list())
+    name = torch.cuda.get_device_name()
+    sm = f"sm_{capability[0]}{capability[1]}"
+    print(f"[preflight] GPU        : {name} ({sm})")
+    print(f"[preflight] torch arch : {arch_list}")
+    if arch_supported(capability, arch_list):
+        print(f"[preflight] 판정       : OK — {sm} 실행 가능")
+        return 0
+    print(f"[preflight] 판정       : NG — {sm} 커널 없음(이 이미지로는 이 GPU 에서 학습 불가)")
+    return 1
+
+
+def _incompatible_message(name: str, sm: str, arch_list: list[str], torch) -> str:
+    return (
         f"\n[preflight] 이 이미지의 torch 는 이 GPU 에서 커널을 실행할 수 없다.\n"
         f"  GPU        : {name} ({sm})\n"
         f"  torch      : {torch.__version__} (cuda {torch.version.cuda})\n"
@@ -77,3 +113,7 @@ def check_gpu_arch() -> None:
         f"        지원되는 GPU 로 대여를 바꾼다.\n"
         f"  참고: 커밋된 핀과 **이미지 실물이 다를 수 있다** — 위 torch 버전이 진실이다.\n"
     )
+
+
+if __name__ == "__main__":                       # `python -m ..._preflight` = 이미지 진단 모드
+    raise SystemExit(report())
