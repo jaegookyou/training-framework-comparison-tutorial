@@ -13,6 +13,15 @@
 # 무조건 제약은 xformers>=0.0.27.post2(느슨)이라 vllm 의 post2 가 이를 만족 → 양립(PyPI 확인, 추정 아님).
 # bitsandbytes(>=0.45.5)도 plain unsloth 무조건 dep 라 별도 명시 불필요.
 #
+# ⚠️ **transformers 는 4.57.6 이다(5.5.0 에서 내림, 2026-07-28 verl 이미지와 같은 이유로 선제 정정).**
+# vllm 0.8.5.post1 은 transformers v5 에서 제거된 `all_special_tokens_extended` 를 호출한다
+# (verl 이미지가 2노드 GRPO 에서 실측으로 밟음). unsloth GRPO 도 fast_inference=vllm 이라 같은 벽이다
+# → **실측 전에 막는다.** 제약 교집합(PyPI 실물 확인, 2026-07-28):
+#   unsloth 2026.6.7 / unsloth_zoo 2026.6.5: >=4.51.3,<=5.5.0 (4.52.0-3·4.53.0·4.54.0·4.55.0-1·
+#     4.57.0·4.57.4·4.57.5·5.0.0·5.1.0 제외) · trl 0.24.0: >=4.56.1 · vllm 0.8.5.post1: >=4.51.1
+#   → 4.57.6 이 세 제약을 모두 만족(어느 제외 목록에도 없음). verl 이미지와 같은 버전으로 맞춰
+#     환경 축 변동을 줄인다.
+#
 # vllm 은 GRPO(trainers/unsloth_grpo.py)의 fast_inference rollout 에 필요(SFT/DPO 엔 불필요).
 # vllm 휠은 특정 torch 에 박혀 빌드되므로 torch 2.6.0 과 맞는 0.8.5.post1 로 핀(=verl 이미지와 동일본):
 # torch==2.6.0 핀 + cp38-abi3 prebuilt 휠(manylinux) → nvcc 소스빌드 불필요. unsloth 2026.6.7·
@@ -24,7 +33,7 @@ RUN pip install "torch==2.6.0" "torchvision" \
     && pip install \
         "unsloth==2026.6.7" \
         "unsloth_zoo==2026.6.5" \
-        "transformers==5.5.0" \
+        "transformers==4.57.6" \
         "trl==0.24.0" \
         "peft==0.19.1" \
         "datasets==4.3.0" \
