@@ -214,13 +214,22 @@ def train(cfg: RunConfig) -> None:
         f"ray start --head --node-ip-address 127.0.0.1 --num-gpus {gpus} "
         "--disable-usage-stats --dashboard-port=8265\n"
     )
+    # 멀티노드(ray_bootstrap 클러스터 재사용) 시: raylet 이 조인해도 dashboard job-agent 가 늦게
+    # 떠, 즉시 `ray job submit` 하면 "No available agent to submit job, please try again later" 로
+    # 죽는다(2026-07-29 실측 — convert 까지 다 되고 여기서 정지). job API 가 응답할 때까지 기다린 뒤
+    # submit 한다(단노드는 자체 `ray start --head` 가 준비될 때까지 블록하므로 대기 불필요).
+    job_wait = "" if not os.environ.get("RAY_ADDRESS") else (
+        'for _i in $(seq 1 40); do '
+        'ray job list --address="http://127.0.0.1:8265" >/dev/null 2>&1 && break; '
+        'echo "ray job-agent 대기 ($_i)"; sleep 5; done\n'
+    )
     script = f"""set -ex
 source {shlex.quote(str(model_script))}
 if [ ! -d {ref} ]; then
   PYTHONPATH={mega} python3 {convert_py} \
     "${{MODEL_ARGS[@]}}" --hf-checkpoint {hf} --save {ref}
 fi
-{ray_start}ray job submit --address="http://127.0.0.1:8265" \
+{ray_start}{job_wait}ray job submit --address="http://127.0.0.1:8265" \
   --runtime-env-json={shlex.quote(rt_env)} \
   -- python3 {train_py} "${{MODEL_ARGS[@]}}" {extra}
 """
