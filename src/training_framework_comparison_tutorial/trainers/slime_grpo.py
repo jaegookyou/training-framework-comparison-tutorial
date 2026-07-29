@@ -188,15 +188,20 @@ def train(cfg: RunConfig) -> None:
     hf = shlex.quote(model_cfg["name"])
     ref = shlex.quote(str(torch_dist))
     mega = shlex.quote(megatron_dir)
+    # 멀티노드면 ray_bootstrap.sh 가 이미 2노드 ray 를 형성(RAY_ADDRESS export) → 재사용한다.
+    # 별도 `ray start --head 127.0.0.1`(단노드)을 또 띄우면 워커가 없어 --actor-num-nodes>1 job 이
+    # "No available agent"로 죽는다(slime_sft.py 상세, 2026-07-29 실측). 단노드만 자체 head.
+    ray_start = "" if os.environ.get("RAY_ADDRESS") else (
+        f"ray start --head --node-ip-address 127.0.0.1 --num-gpus {gpus} "
+        "--disable-usage-stats --dashboard-port=8265\n"
+    )
     script = f"""set -ex
 source {shlex.quote(str(model_script))}
 if [ ! -d {ref} ]; then
   PYTHONPATH={mega} python3 {convert_py} \
     "${{MODEL_ARGS[@]}}" --hf-checkpoint {hf} --save {ref}
 fi
-ray start --head --node-ip-address 127.0.0.1 --num-gpus {gpus} \
-  --disable-usage-stats --dashboard-port=8265
-ray job submit --address="http://127.0.0.1:8265" \
+{ray_start}ray job submit --address="http://127.0.0.1:8265" \
   --runtime-env-json={shlex.quote(rt_env)} \
   -- python3 {train_py} "${{MODEL_ARGS[@]}}" {extra}
 """

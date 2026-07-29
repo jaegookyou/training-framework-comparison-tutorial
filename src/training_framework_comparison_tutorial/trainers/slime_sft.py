@@ -204,15 +204,23 @@ def train(cfg: RunConfig) -> None:
     hf = shlex.quote(hf_checkpoint)
     ref = shlex.quote(str(torch_dist))
     mega = shlex.quote(megatron_dir)
+    # ray_bootstrap.sh(멀티노드)가 이미 head+worker 로 2노드 ray 클러스터를 형성하고 RAY_ADDRESS 를
+    # export 한다 → 이 env 가 있으면 그 클러스터를 재사용한다. 별도로 `ray start --head 127.0.0.1`
+    # (단노드 localhost)을 또 띄우면 워커가 없어 `--actor-num-nodes>1` job 이 "No available agent to
+    # submit job" 으로 죽는다(2026-07-29 2노드 실측). 단노드는 ray_bootstrap 이 ray 를 안 띄우므로
+    # (NUM_NODES<=1 분기) 여기서 자체 head 를 띄운다. submit 은 head(=이 노드) 대시보드
+    # 127.0.0.1:8265 로 — 재사용 클러스터의 대시보드가 head 에 있다.
+    ray_start = "" if os.environ.get("RAY_ADDRESS") else (
+        f"ray start --head --node-ip-address 127.0.0.1 --num-gpus {gpus} "
+        "--disable-usage-stats --dashboard-port=8265\n"
+    )
     script = f"""set -ex
 source {shlex.quote(str(model_script))}
 if [ ! -d {ref} ]; then
   PYTHONPATH={mega} python3 {convert_py} \
     "${{MODEL_ARGS[@]}}" --hf-checkpoint {hf} --save {ref}
 fi
-ray start --head --node-ip-address 127.0.0.1 --num-gpus {gpus} \
-  --disable-usage-stats --dashboard-port=8265
-ray job submit --address="http://127.0.0.1:8265" \
+{ray_start}ray job submit --address="http://127.0.0.1:8265" \
   --runtime-env-json={shlex.quote(rt_env)} \
   -- python3 {train_py} "${{MODEL_ARGS[@]}}" {extra}
 """
