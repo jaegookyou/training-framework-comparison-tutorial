@@ -26,6 +26,14 @@
 ARG BASE_IMAGE=ghcr.io/jaegookyou/training-framework-comparison-tutorial/base:latest
 FROM ${BASE_IMAGE}
 
+# sglang 시스템 라이브러리(sglang 공식 Dockerfile 기준): sgl-kernel 의 common_ops.so 가 libnuma.so.1
+# 을 링크하고, sglang 멀티노드 통신이 libibverbs 를 쓴다. 없으면 sgl-kernel import 가
+# "libnuma.so.1: cannot open" → "No module named 'common_ops'" 로 죽는다(2026-07-29 실측).
+# 기본 verl 이미지엔 vLLM 스택이 이런 시스템 의존을 안 걸어 base(cu12.4 runtime)에 없다.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libnuma1 numactl libibverbs1 \
+    && rm -rf /var/lib/apt/lists/*
+
 # torch 2.9.1 = sglang 0.5.8 하드핀. cu130 인덱스에서 설치(flash-attn cu13torch2.9 휠용).
 RUN pip install --index-url https://download.pytorch.org/whl/cu130 \
         "torch==2.9.1" "torchvision" "torchaudio==2.9.1"
