@@ -1,0 +1,32 @@
+# 멀티노드 GPU 스모크(MNMG) — megatron-lm continued-pretrain 4B 를 **2노드**로. 검증 대상 = 메커니즘 ④
+# **megatron 다단계의 pretrain 짝**: convert=노드별 로컬(AutoBridge import, --standalone) / train=torchrun
+# 랑데부(node_rank·master_addr, _dist.torchrun_args) / export=head 전용. SFT megatron 스모크와 트레이너가
+# 다르다(pretrain_gpt.py --pretrained-checkpoint+--finetune) → 수직 파이프라인 1단계라 따로 태운다.
+#
+# ⚠️ **export 는 공유 FS 가 없으면 불완전하다** — torch_dist 분산 ckpt 는 rank 별 shard 라 head 혼자
+#    다 못 모은다(sky file_mounts/NFS 필요, Nebius storage 는 sky check 상 비활성). 이 스모크의 판정
+#    범위는 **시드 로딩 + train 랑데부 + step 상승**까지이고, export 단계 실패는 예상된 결과다(별건).
+# ⚠️ pretrain trainer 는 debug.max_steps 를 소비한다(train-iters override) — 여기선 그게 레버다.
+# **TP=1 로 내린다**: 부모 config 는 TP=2(노드 안 샤딩 전제)인데 Nebius 는 노드당 1 또는 8장뿐이라 노드당
+#    1장이면 TP=2 가 노드 경계를 넘어 이더넷 위에서 돈다(레이어마다 all-reduce = 병리적). 여기서 보려는
+#    건 노드 간 **DP** 랑데부이므로 TP=1 × DP=2(=world 2) 가 질문에 정확히 대응한다(4B 는 96GB 1장에 든다).
+#
+# 대여/실행:
+#   set -a; source .env; set +a           # WANDB_API_KEY
+#   sky launch -c tfct-pt-mlm-mn sky/pretrain.megatron-lm.sky.yaml --num-nodes 2 --gpus RTX6000:1 \
+#     --infra nebius -y --down --env CONFIG=configs/pretrain/_smoke_megatron-lm_multinode_gpu.yaml \
+#     --env WANDB_API_KEY
+#   sky down tfct-pt-mlm-mn
+# 통과하면 TP=2(8장 노드 또는 PP=2 크로스노드)·steps=500·공유 FS export 풀런으로 승격.
+extends: qwen3-4b_wikitext__megatron-lm.yaml
+
+megatron:
+  tensor_model_parallel_size: 1   # 노드당 1장 → TP 는 노드를 넘으면 안 된다(위 주석). DP=2 로 간다.
+                                  # pipeline_model_parallel_size=1·preprocess_workers 는 부모에서 상속.
+
+scale:
+  nodes: 2
+  gpus: 1
+
+debug:
+  max_steps: 5                    # 5 step — convert·preprocess·랑데부·pretrain 루프·wandb 확인(export 는 공유FS 대기)

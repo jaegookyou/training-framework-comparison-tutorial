@@ -34,4 +34,9 @@ setup: |
   pip install -e .
 
 run: |
+  source sky/_netenv.sh              # 멀티노드 collective(NCCL/Gloo) IFNAME 고정 — Nebius 127.0.1.1
+                                     # Gloo 함정. Megatron 은 tfct-run 이 직접 torchrun 을 띄우는 경로라
+                                     # 런처 스크립트(ray_bootstrap/hf_torchrun)를 안 거쳐 netenv 를
+                                     # 여기서 source 한다. 단노드면 no-op(SKYPILOT_NODE_IPS 없음).
+                                     # export 된 env 를 tfct-run→torchrun 서브프로세스가 상속한다.
   tfct-run --config $CONFIG

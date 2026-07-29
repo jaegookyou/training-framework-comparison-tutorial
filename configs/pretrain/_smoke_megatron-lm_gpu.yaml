@@ -1,0 +1,28 @@
+# 단일노드·단일GPU GPU 스모크(SNSG) — megatron-lm continued-pretrain 4B 를 1장으로 end-to-end.
+# 검증 대상 = megatron pretrain 다단계 파이프라인 전체: convert(AutoBridge import: Qwen3-4B-Base→mcore)
+# → preprocess(tools/preprocess_data.py 인덱싱) → pretrain_gpt.py 학습 루프 → export(AutoBridge → out/hf).
+# 메커니즘 ④ megatron 의 **pretrain 짝** 첫 GPU 검증(SFT megatron 스모크와 트레이너가 다르다).
+#
+# ⚠️ pretrain trainer 는 SFT 와 달리 debug.max_steps 를 소비한다(megatron_lm_pretrain.py: max_steps>0 이면
+#    train-iters override). 그래서 여기선 max_steps 가 진짜 레버다(SFT megatron 은 train_samples 뿐).
+# TP=1: 4B full(params+grad+Adam ~64GB)은 96GB(RTX PRO 6000 Blackwell) 1장에 든다. Nebius 는 노드당
+#    1 또는 8장뿐이라 부모 config 의 TP=2(2장)를 단일노드로 못 빌린다 → 먼저 1장으로 파이프라인을
+#    증명하고 TP/멀티노드는 이후 단계. world=1 은 TP=2 로 안 나눠지므로 TP=1 필수.
+#
+# 대여/실행:
+#   sky launch -c tfct-pt-mlm sky/pretrain.megatron-lm.sky.yaml --gpus RTX6000:1 --infra nebius \
+#     --env CONFIG=configs/pretrain/_smoke_megatron-lm_gpu.yaml --env WANDB_API_KEY --down
+#   sky down tfct-pt-mlm
+# 통과하면 TP=2(8장 노드 또는 2노드 PP)·steps=500 풀런으로 승격.
+extends: qwen3-4b_wikitext__megatron-lm.yaml
+
+megatron:
+  tensor_model_parallel_size: 1   # 단일 GPU → TP=1(world=1). pipeline_model_parallel_size=1·
+                                  # preprocess_workers 는 부모에서 deep-merge 상속.
+
+scale:
+  nodes: 1
+  gpus: 1
+
+debug:
+  max_steps: 5                    # 5 step — convert·preprocess·pretrain 루프·export·wandb 만 확인
