@@ -18,6 +18,7 @@ dataset:
   source: wikitext               # 이미지 baked DATASETS["wikitext"] (Salesforce/wikitext)
   hf_path: Salesforce/wikitext
   hf_name: wikitext-2-raw-v1     # ~13.5MB 초소형. 스케일 시 wikitext-103-raw-v1
+  split: train                   # megatron_lm_pretrain._prepare_indexed_data 가 소비(raw text 이어학습)
 
 # 고정 HP. continued 라 lr 이 작다(이미 학습된 가중치를 망치지 않게); 각 config 가 override.
 hp:
