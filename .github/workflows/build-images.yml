@@ -56,7 +56,7 @@ jobs:
           only = [x.strip() for x in os.environ["ONLY"].split(",") if x.strip()]
           heavy = os.environ["HEAVY"] == "true"
           frameworks = ["verl", "trl", "unsloth", "torchtitan", "megatron-lm"]
-          standalone = ["megatron-bridge", "nemo-rl", "slime", "torchtitan-rl"]
+          standalone = ["megatron-bridge", "nemo-rl", "slime", "torchtitan-rl", "verl-sglang"]
           if only:
               base = "base" in only
               frameworks = [x for x in frameworks if x in only]

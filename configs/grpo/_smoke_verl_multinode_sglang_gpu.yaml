@@ -1,0 +1,20 @@
+# 멀티노드 GPU 스모크(MNMG) — verl GRPO 를 **sglang rollout** 로 2노드.
+#
+# 목적: vLLM 0.11 async 엔진의 weight-sync 크래시(2026-07-29 6회 iteration 규명, verl_grpo.py NOTE)를
+# **다른 추론 엔진(sglang)** 으로 우회해 GRPO 5스텝 완주를 증명한다. sglang 은 verl _ROLLOUT_REGISTRY
+# 에 등록된 정식 백엔드(("sglang","async"))고 vLLM 과 무관한 코드경로다.
+#
+# ⚠️ 전용 이미지 필요: sglang 0.5.8 이 torch 2.9.1 을 하드핀해 기본 verl 이미지(torch 2.8+vllm)와
+# 공존 불가 → docker/verl-sglang.Dockerfile(torch 2.9.1+cu130, sglang[srt] 0.5.8, flash-attn cu13).
+# 런치 시 이미지 오버라이드:
+#   sky launch -c tfct-verl-sglang sky/grpo.verl.sky.yaml --num-nodes 2 --gpus RTX6000:1 --cloud nebius \
+#     --image-id docker:ghcr.io/jaegookyou/training-framework-comparison-tutorial/verl-sglang:latest \
+#     --env CONFIG=configs/grpo/_smoke_verl_multinode_sglang_gpu.yaml --env-file .env -i 1 --down -y
+#
+# lora 스모크 상속 + rollout_backend 만 sglang(+ 문서용 image 필드).
+extends: _smoke_verl_multinode_gpu.yaml
+
+image: ghcr.io/jaegookyou/training-framework-comparison-tutorial/verl-sglang:latest
+
+verl:
+  rollout_backend: sglang       # vLLM 우회 — verl 1급 백엔드, 다른 추론 엔진
