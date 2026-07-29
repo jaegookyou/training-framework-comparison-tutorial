@@ -31,10 +31,15 @@ RUN pip install --index-url https://download.pytorch.org/whl/cu130 \
         "torch==2.9.1" "torchvision" "torchaudio==2.9.1"
 
 # verl + sglang 스택. torch 는 위에서 2.9.1+cu130 으로 이미 만족 → 재설치 안 됨(local 버전이 ==2.9.1 충족).
+# cachetools: verl/workers/rollout/llm_server.py 가 `from cachetools import LRUCache` 하는데 verl 이
+# **미선언**(base·extra 어디에도 없음, 2026-07-29 확인) — 기본 verl 이미지에선 vLLM 이 transitive 로
+# 채워줬으나 sglang 이미지엔 vLLM 이 없어 빠진다. llm_server 는 rollout 백엔드 무관하게 import 되므로
+# 이게 없으면 main_ppo import 가 통째로 죽는다(첫 sglang GPU 런에서 실측).
 RUN pip install \
         "verl==0.8.0" \
         "transformers==4.57.1" \
-        "sglang[srt]==0.5.8"
+        "sglang[srt]==0.5.8" \
+        "cachetools"
 
 # flash-attn: verl actor log-prob 하드 의존. torch 2.9 → cu13torch2.9 prebuilt 휠(abi TRUE 뿐).
 RUN ABI=$(python -c "import torch; print('TRUE' if torch._C._GLIBCXX_USE_CXX11_ABI else 'FALSE')") \
