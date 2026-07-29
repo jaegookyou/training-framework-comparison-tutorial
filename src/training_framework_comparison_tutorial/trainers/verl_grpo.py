@@ -101,6 +101,15 @@ def train(cfg: RunConfig) -> None:
 
     gpu_mem_util = verl.get("gpu_memory_utilization", 0.6)  # vllm KV 캐시 점유 비율
 
+    # rollout 추론 백엔드. ⚠️ verl 0.8.0 의 _ROLLOUT_REGISTRY(base.py)에 실제로 등록된 조합은
+    # **("vllm","async")·("sglang","async")·("trtllm","async") 셋뿐**이다(2026-07-29 실측).
+    # rollout.yaml 주석의 "hf" 는 미끼 — HFRollout 클래스는 있으나 새 server-rollout 레지스트리에
+    # 안 배선돼 `rollout.name=hf` 는 "Rollout hf with mode async not found" 로 죽는다(hf 실측 확인).
+    # 즉 config 로 쓸 수 있는 건 vllm|sglang|trtllm 이고 셋 다 이미지에 그 엔진이 있어야 한다
+    # (현재 이미지엔 vllm 만). vllm 은 Blackwell 에서 weight-sync 3회차에 하드크래시(하단 NOTE)라,
+    # 우회하려면 sglang 을 이미지에 추가하는 재빌드가 필요하다 — 이 knob 은 그때 쓸 준비다.
+    rollout_backend = verl.get("rollout_backend", "vllm")
+
     # tuning=lora 면 lora_rank>0. full 이면 0(전체 파라미터). verl 은 model.lora_rank 로 분기.
     lora_rank = lora.get("r", 16) if cfg.tuning == "lora" else 0
 
@@ -130,17 +139,48 @@ def train(cfg: RunConfig) -> None:
         "actor_rollout_ref.actor.use_kl_loss=true",   # GRPO 는 reward 대신 loss 에 KL
         f"actor_rollout_ref.actor.kl_loss_coef={hp.get('beta', 0.04)}",
         "actor_rollout_ref.actor.kl_loss_type=low_var_kl",
-        # rollout = vllm(verl 기본, 이미지에 vllm 추가됨). n = 그룹 크기 G(advantage 정규화 단위).
-        "actor_rollout_ref.rollout.name=vllm",
+        # rollout 백엔드(vllm|hf|sglang). n = 그룹 크기 G(advantage 정규화 단위).
+        f"actor_rollout_ref.rollout.name={rollout_backend}",
         f"actor_rollout_ref.rollout.n={hp.get('num_generations', 8)}",
         f"actor_rollout_ref.rollout.temperature={hp.get('temperature', 1.0)}",
         f"actor_rollout_ref.rollout.tensor_model_parallel_size={verl.get('rollout_tp', 1)}",
         f"actor_rollout_ref.rollout.gpu_memory_utilization={gpu_mem_util}",
+        # ── vLLM CUDA graph 끔(enforce_eager) — colocate 학습 안정성 ──
+        # verl 은 매 스텝 갱신된 actor weight 를 vLLM 엔진에 sync 한다(on-policy). vLLM 기본은
+        # enforce_eager=false 라 CUDA graph 를 캡처하는데, verl rollout.yaml 이 직접 명시하듯
+        # "cudagraph in inference engine **can not be offloaded during update policy**" — 캡처된
+        # 그래프가 옛 weight 텐서를 참조한 채 weight sync 가 일어나면 illegal memory access 로
+        # 엔진코어가 traceback 없이 하드 크래시한다. 2026-07-29 2노드 런에서 실측: step 1·2 는
+        # 통과하고 step 2→3(두 번째 weight sync) 전환에서 "EngineCore died unexpectedly"(양 노드
+        # 동시, dmesg OOM 무흔적 = OS-OOM 아님, Python traceback 없음 = SIGKILL/SIGSEGV).
+        # actor param/optimizer offload(위)를 켜도 안 나았다 = actor VRAM 경합이 아니라 graph 문제.
+        # eager 는 rollout 이 조금 느리지만 안정성이 우선이고, attention·offload 와 같은 환경 축이라
+        # 전 프레임워크 통제비교에 영향 없다(생성 결과는 동일, 커널 실행 방식만 다름).
+        "actor_rollout_ref.rollout.enforce_eager=true",
+        # NOTE(2026-07-29): rollout mode=sync 로 async 서버 weight-sync 크래시를 우회하려 했으나
+        # verl 0.8.0 은 sync 모드를 제거했다("Rollout mode 'sync' has been removed" ValueError).
+        # async(=AsyncLLM+vLLMHttpServer)가 유일 경로다. 이 경로의 on-policy weight sync 3회차
+        # 하드크래시(EngineCore SIGKILL, LoRA·full 둘 다, 메모리·cudagraph 배제됨)는 config 로
+        # 못 피한다 = vLLM 0.11 async weight-update 의 upstream 이슈. 남은 레버 = vLLM 버전 교체.
         # verl 은 ref·rollout **각각** log_prob 배치를 요구한다(둘 중 하나라도 없으면 기동 시
         # ValueError). rollout 은 생성 후 log_prob 재계산 단계라 ref 와 별개 knob — 같은
         # micro 를 줘 눈금을 통일한다. 2026-07-28 2노드 런에서 실측(ref 만 주고 있었음).
         f"actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu={micro}",
         f"actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu={micro}",
+        # ── colocate 메모리: actor·ref 파라미터를 rollout 동안 CPU 로 오프로드 ──
+        # 단일 GPU 에 vLLM rollout + actor + ref 가 코로케이트된다. verl 기본은
+        # param_offload=false·optimizer_offload=false(engine/fsdp.yaml) 라, rollout 단계에서
+        # vLLM 이 KV 풀(gpu_memory_utilization×VRAM ≈ 0.6×96=57GB)을 다시 잡을 때 actor 가
+        # GPU 를 안 비켜 충돌 → vLLM 엔진코어가 OOM-kill 당한다. 2026-07-29 2노드 런에서 실측:
+        # step 1 은 actor reserved 38GB 로 아슬하게 버텼고(38+57=95<96) step 2 에서 48GB 로
+        # 성장하자(48+57=105>96) "EngineCore_DP0 died unexpectedly"(traceback 없는 SIGKILL,
+        # 양 노드 동시). free_cache_engine 는 기본 True(학습 중 KV 해제)지만 그것만으론 부족했다
+        # — rollout 재점유 시점엔 actor 가 GPU 에 남아 있기 때문. 파라미터·옵티마이저를 CPU 로
+        # 내려야 vLLM 이 재점유할 공간이 난다(ref.yaml 도 7B+ 는 offload 권장이라 명시).
+        # 이 키들은 fsdp_config(../engine@fsdp_config:fsdp) 실존 필드라 `+` 접두사 불필요.
+        "actor_rollout_ref.actor.fsdp_config.param_offload=true",
+        "actor_rollout_ref.actor.fsdp_config.optimizer_offload=true",
+        "actor_rollout_ref.ref.fsdp_config.param_offload=true",
         # rule-based reward → 신경망 RM 끔. 채점은 custom_reward_function 으로.
         "reward_model.enable=false",
         f"custom_reward_function.path={reward_path}",

@@ -1,0 +1,20 @@
+# 멀티노드 GPU 스모크(MNMG) — verl **full** GRPO 를 2노드로.
+#
+# 목적: LoRA GRPO 가 step 2→3 weight-sync 에서 vLLM 엔진코어를 로그 없이 하드크래시시키는(2026-07-29
+# 실측, iter0~2: offload·enforce_eager 로도 안 나음, 메모리/cudagraph 는 실험으로 배제) 원인이
+# **vLLM 의 dev-only LoRA dynamic load/unload 경로**인지 격리한다. full 은 runtime LoRA 업데이트 대신
+# **full weight sync** 를 쓰므로 그 경로를 안 탄다 → full 이 5스텝 완주하면 범인이 LoRA-rollout sync 로
+# 확정되고, GRPO 가로비교의 verl 셀은 full 로 그린이 된다(LoRA-GRPO 는 upstream 한계로 문서화).
+#
+# lora 스모크(_smoke_verl_gpu)와 같은 축소 레버(subsample·max_steps)를 쓰되 tuning=full 만 다르다.
+extends: qwen3-4b_gsm8k__verl__full.yaml
+
+dataset:
+  subsample: 64                 # gsm8k 한 줌 (프롬프트·정답추출·reward 경로는 실제로 태움)
+
+debug:
+  max_steps: 5                  # 5 step — weight-sync 3회차(=크래시 지점)를 지나는지가 판정
+
+scale:
+  nodes: 2
+  gpus: 1                       # 노드당 1장(멀티노드가 묻는 건 노드 경계; full 4B 는 offload 로 96GB 에 적재)

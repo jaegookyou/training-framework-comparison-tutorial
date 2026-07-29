@@ -100,6 +100,11 @@ def train(cfg: RunConfig) -> None:
         f"actor_rollout_ref.rollout.temperature={hp.get('temperature', 1.0)}",
         f"actor_rollout_ref.rollout.tensor_model_parallel_size={verl.get('rollout_tp', 1)}",
         f"actor_rollout_ref.rollout.gpu_memory_utilization={gpu_mem_util}",
+        # vLLM CUDA graph 끔 — colocate on-policy 학습에서 weight sync 와 캡처된 그래프가 충돌해
+        # 엔진코어가 하드 크래시한다(verl_grpo.py 상세 참고, 2026-07-29 실측). 환경 축.
+        "actor_rollout_ref.rollout.enforce_eager=true",
+        # NOTE(2026-07-29): verl 0.8.0 은 rollout sync 모드를 제거(async 유일). async weight-sync
+        # 3회차 크래시는 config 로 못 피함 = vLLM 0.11 upstream 이슈(verl_grpo.py 상세).
         # verl 은 ref·rollout **각각** log_prob 배치를 요구한다(둘 중 하나라도 없으면 기동 시
         # ValueError). rollout 은 생성 후 log_prob 재계산 단계라 ref 와 별개 knob — 같은
         # micro 를 줘 눈금을 통일한다. 2026-07-28 2노드 런에서 실측(ref 만 주고 있었음).
@@ -111,6 +116,17 @@ def train(cfg: RunConfig) -> None:
         f"critic.optim.lr={critic_lr}",
         f"critic.ppo_mini_batch_size={mini_bs}",
         f"critic.ppo_micro_batch_size_per_gpu={micro}",
+        # ── colocate 메모리: actor·ref·critic 을 rollout/유휴 동안 CPU 로 오프로드 ──
+        # PPO 는 GRPO(actor+ref+vLLM)에 critic(또 하나의 풀 모델)까지 한 GPU 에 얹혀 메모리가 더
+        # 빡세다. verl 기본 param_offload=false 라 rollout 시 vLLM KV 풀 재점유와 충돌해 엔진코어가
+        # OOM-kill 된다(GRPO 가 2026-07-29 2노드 런에서 step 2 뒤 실측 — verl_grpo.py 참고).
+        # ⚠️ 키 경로 주의: actor·ref 는 `fsdp_config`(../engine@fsdp_config), **critic 은 `fsdp`**
+        # (../engine@fsdp) 로 마운트된다(verl 0.8.0 실물 확인). 둘 다 실존 struct 라 `+` 불필요.
+        "actor_rollout_ref.actor.fsdp_config.param_offload=true",
+        "actor_rollout_ref.actor.fsdp_config.optimizer_offload=true",
+        "actor_rollout_ref.ref.fsdp_config.param_offload=true",
+        "critic.fsdp.param_offload=true",
+        "critic.fsdp.optimizer_offload=true",
         # rule-based reward → 신경망 RM 끔. 채점은 GRPO 와 같은 custom_reward_function.
         "reward_model.enable=false",
         f"custom_reward_function.path={reward_path}",
