@@ -46,7 +46,12 @@ def _export(cfg: RunConfig, megatron_path: str, hf_path: str) -> None:
     """
     from megatron.bridge import AutoBridge
 
-    AutoBridge.export_ckpt(
+    # NeMo 26.06 megatron.bridge: export_ckpt 는 **인스턴스 메서드**(import_ckpt 만 @classmethod).
+    # 시드 HF(source)로 bridge 인스턴스를 만든 뒤 학습된 mcore→HF export. (bridge 0.4.2 는
+    # classmethod 였는데 NeMo 공식 base 피벗으로 최신 bridge 가 오며 시그니처가 바뀜 — GPU export
+    # 단계에서 `missing 1 required positional argument: 'self'` 로 드러남, 2026-07-30.)
+    bridge = AutoBridge.from_hf_pretrained(_hf_source(cfg))
+    bridge.export_ckpt(
         megatron_path=megatron_path,
         hf_path=hf_path,
         source_path=_hf_source(cfg),
