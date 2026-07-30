@@ -23,7 +23,6 @@ SKY = ROOT / "sky"
 NEEDS_PREPARE = {
     ("grpo", "verl"),
     ("ppo", "verl"),
-    ("sft", "slime"),
 }
 
 

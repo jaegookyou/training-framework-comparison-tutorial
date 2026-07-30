@@ -22,14 +22,16 @@ TRAINERS: dict[str, dict[str, str]] = {
         # --pretrained-checkpoint+--finetune 로 이어학습, export 도 AutoBridge(bridge 이미지).
         "megatron-lm": f"{_PKG}.megatron_lm_pretrain",
     },
+    # SFT 가로비교 = trl·unsloth·verl·megatron-lm 로 좁힘(2026-07-30). 제거:
+    #  - megatron-bridge: 변환 라이브러리라 SFT recipe 만이 프레임워크 역할 → 제거 후엔
+    #    megatron-lm pretrain 의 변환 도구(이미지+entry)로만 남음.
+    #  - slime: 멀티GPU 전용(SFT 는 RL 프레임워크 부산물) · torchtitan: SFT 이미지 sm_120 NG.
+    #    (slime·torchtitan 은 다른 method(RL·pretrain)엔 그대로 있다.)
     "sft": {
         "trl": f"{_PKG}.trl_sft",
         "unsloth": f"{_PKG}.unsloth_sft",
         "verl": f"{_PKG}.verl_sft",
         "megatron-lm": f"{_PKG}.megatron_lm_sft",
-        "megatron-bridge": f"{_PKG}.megatron_bridge_sft",
-        "torchtitan": f"{_PKG}.torchtitan_sft",
-        "slime": f"{_PKG}.slime_sft",  # rollout 추상 재활용(sft_rollout): RL 프레임워크 SFT
     },
     # 사후학습 RL 트랙. DPO(offline preference)와 GRPO(online RL)는 패러다임이 달라
     # 별 method 로 둔다(통제비교 = 프레임워크 고정, 방법만 비교). 기준점 = TRL.

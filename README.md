@@ -1,6 +1,6 @@
 # training-framework-comparison-tutorial
 
-**7개 프레임워크**(**TRL · Unsloth · verl · slime · Megatron-LM · Megatron-Bridge · torchtitan**)로 **사전학습 → 사후학습(SFT·선호최적화·RL)**을 **통제비교**하는 학습 lab. **SkyPilot**으로 제일 싼 GPU 오퍼를 띄워 **single GPU → single-node multi-GPU → multi-node multi-GPU** 3단계 스케일을 밟고, 모든 run 을 **W&B**로 로깅해 처리량·VRAM·수렴을 한 화면에 겹쳐 본다.
+**6개 프레임워크**(**TRL · Unsloth · verl · slime · Megatron-LM · torchtitan**)로 **사전학습 → 사후학습(SFT·선호최적화·RL)**을 **통제비교**하는 학습 lab (Megatron-Bridge 는 megatron-lm 의 HF↔mcore 변환 도구로 남음). **SkyPilot**으로 제일 싼 GPU 오퍼를 띄워 **single GPU → single-node multi-GPU → multi-node multi-GPU** 3단계 스케일을 밟고, 모든 run 을 **W&B**로 로깅해 처리량·VRAM·수렴을 한 화면에 겹쳐 본다.
 
 ## 무엇을 비교하나
 
@@ -15,17 +15,15 @@
 | **TRL** | · | ✅ | ✅ | ✅ | ✅ | ·¹ |
 | **Unsloth** | · | ✅ | ✅ | · | ✅ | · |
 | **verl** | · | ✅ | · | · | ✅ | ✅ |
-| **slime** | · | F | · | · | F | F |
+| **slime** | · | · | · | · | F | F |
 | **Megatron-LM** | F² | F | · | · | F | · |
-| **Megatron-Bridge** | · | ✅ | · | · | ·³ | · |
-| **torchtitan** | F² | ✅ | · | · | F⁴ | · |
+| **torchtitan** | F² | · | · | · | F³ | · |
 
 빈칸/`F` 는 전부 upstream 실물로 검증한 **정직한 경로 부재**다(누락 아님). 네이티브 기준 maxed.
 
 ¹ TRL PPO 는 설계상 제외 — `PPOTrainer` 가 neural reward model 강제라 rule gsm8k reward 부적합(선호 패러다임).
-² 사전학습 = **continued-pretrain 4B 전용**(`init_from: Qwen3-4B-Base` 시드, from-scratch 제거).
-³ Megatron-Bridge = HF↔mcore 변환 라이브러리 + SFT recipe. 네이티브 RL 트레이너 0개(변환 배관 전용).
-⁴ torchtitan GRPO = `experiments/rl`(Monarch+vLLM, experimental), SFT/pretrain(cu124)과 다른 **별도 cu130 이미지**.
+² 사전학습 = **continued-pretrain 4B 전용**(`init_from: Qwen3-4B-Base` 시드). HF↔mcore 변환은 **AutoBridge**(=Megatron-Bridge 이미지) 글루로 — Megatron-Bridge 는 이제 별도 비교 프레임워크가 아니라 megatron-lm 의 변환 도구.
+³ torchtitan GRPO = `experiments/rl`(Monarch+vLLM, experimental), pretrain(cu124)과 다른 **별도 cu130 이미지**.
 
 ### 프레임워크 키 (엔진 · 변환 · 스케일)
 
@@ -37,10 +35,10 @@
 | verl | FSDP/DTensor · megatron-core 백엔드 | 백엔드 따라(자동) | 전 스케일(ray) |
 | slime | megatron-core | 명시(`--hf-checkpoint`→변환) | 전 스케일(SGLang+Megatron) |
 | Megatron-LM | megatron-core | 명시(continued 는 AutoBridge 글루) | 전 스케일(다중 엔트리) |
-| Megatron-Bridge | megatron-core | 명시(AutoBridge = 본업) | 전 스케일 |
+| Megatron-Bridge (변환 도구) | megatron-core | 명시(AutoBridge = 본업) | megatron-lm pretrain 의 HF↔mcore 글루 |
 | torchtitan | torchtitan(DCP) | 플래그(`initial_load_in_hf`) | 전 스케일 |
 
-- **megatron-core 가 공유 엔진**이다(slime·Megatron-LM·Megatron-Bridge·verl 의 megatron 백엔드). Megatron-LM(repo)↔Megatron-Bridge(라이브러리)는 *같은 엔진의 다른 진입 레이어* — 그래서 비교축으로 별 행이다.
+- **megatron-core 가 공유 엔진**이다(slime·Megatron-LM·verl 의 megatron 백엔드). Megatron-Bridge(라이브러리)는 Megatron-LM 과 *같은 엔진의 변환 레이어* — 별도 비교 프레임워크가 아니라 megatron-lm pretrain 의 HF↔mcore 변환 도구로 남는다.
 - **변환은 전 프레임워크 공통 전제**(모든 단계 인터페이스 = HF 체크포인트)라 매트릭스 축이 아니다. HF-네이티브는 변환이 암묵이고, mcore 계열만 명시 도구(AutoBridge 등)가 필요할 뿐.
 
 ## 설치
@@ -88,10 +86,9 @@ Vast.ai 백엔드는 계정 페이지의 API 키를 `~/.config/vastai/vast_api_k
   **Megatron-LM**(학습=순수 `pretrain_gpt.py --finetune`, HF↔mcore 변환만 Bridge `AutoBridge` 글루 —
   순수 convert.py 가 qwen3 미지원이라; bridge 이미지 사용) 두 경로. 산출 `out/hf` 가 사후학습 `model.name`.
 - **SFT**: TRL(full|lora) · Unsloth(full|lora·단일 GPU) · verl(full|lora·hydra+torchrun) ·
-  Megatron-LM(full·convert→finetune→export) · Megatron-Bridge(full|lora·HF↔mcore 브리지+네이티브
-  PEFT) · torchtitan(full|lora·nightly SHA 핀·ChatDataset·네이티브 LoRAConverter, 이미지 박제로
-  재현) · slime(full·rollout 추상 재활용 sft_rollout·loss mask=캐논
-  template). slime 은 RL 프레임워크지만 SFT 도 네이티브(full 전용 — base slime LoRA 없음).
+  Megatron-LM(full·convert→finetune→export). **2026-07-30 SFT 가로비교를 이 4개로 좁힘** — 제거:
+  megatron-bridge(변환 라이브러리라 SFT recipe 만이 프레임워크 역할) · slime(멀티GPU 전용, SFT 는
+  RL 프레임워크 부산물) · torchtitan(SFT 이미지 sm_120 NG). slime·torchtitan 은 RL/pretrain 엔 유지.
   reasoning 트랙 (Qwen3-4B-Base + TraceInversion).
 - **DPO**(offline preference): TRL(full|lora) · Unsloth(full|lora·단일 GPU). trl-lib/ultrafeedback_binarized.
 - **Online DPO**(online preference, on-policy): TRL(full|lora). 같은 DPO loss 지만 선호쌍을 학습
@@ -118,7 +115,7 @@ Vast.ai 백엔드는 계정 페이지의 API 키를 `~/.config/vastai/vast_api_k
   알고리즘이라 **대규모 RL 인프라에만** 1급으로 있고, 경량/신생/general 프레임워크는
   GRPO·DPO 로 수렴해 PPO 를 건너뛴다(넓은 가로비교는 SFT·GRPO·DPO 가 담당, PPO 는 인프라 서사 +
   같은 프레임워크 내 GRPO↔PPO 알고리즘 비교가 가치). 그래서 PPO 칸의 빈자리는 누락이 아니라 설계상
-  배제다: **Unsloth·megatron-lm·torchtitan·megatron-bridge 는 네이티브 PPO 자체가 없고**, **TRL 은
+  배제다: **Unsloth·megatron-lm·torchtitan 은 네이티브 PPO 자체가 없고**, **TRL 은
   PPO 가 있으나 neural reward model 을 강제**(rule reward 못 받음 = 선호 패러다임 → gsm8k rule 축에
   부적합)라 제외.
 

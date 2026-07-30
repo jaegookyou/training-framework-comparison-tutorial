@@ -109,13 +109,11 @@ def resolve(scale: dict[str, Any]) -> Topology:
 # 실행 결과를 메커니즘 단위로 묶어 본다(_wandb.tags).
 MULTINODE_MECHANISM: dict[tuple[str, str], str] = {
     # ① torchrun 랑데부
-    ("sft", "torchtitan"): "torchrun",
     ("pretrain", "torchtitan"): "torchrun",
     ("sft", "verl"): "torchrun",
     # ② ray 클러스터 부트스트랩(sky/ray_bootstrap.sh)
     ("grpo", "verl"): "ray",
     ("ppo", "verl"): "ray",
-    ("sft", "slime"): "ray",
     ("grpo", "slime"): "ray",
     ("ppo", "slime"): "ray",
     # ③ HF Trainer torchrun 런처(hf_torchrun_launch.sh, full=FSDP): trl SFT·DPO·GRPO·online_dpo.
@@ -130,7 +128,6 @@ MULTINODE_MECHANISM: dict[tuple[str, str], str] = {
     #    ⚠️ export·resume 은 torch_dist 분산 ckpt 라 멀티노드에선 공유 FS 필요(스모크=train 검증).
     ("pretrain", "megatron-lm"): "megatron",
     ("sft", "megatron-lm"): "megatron",
-    ("sft", "megatron-bridge"): "megatron",
     ("grpo", "megatron-lm"): "megatron",
 }
 

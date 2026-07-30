@@ -16,7 +16,7 @@ from training_framework_comparison_tutorial.trainers._dist import (
 CONFIGS = Path(__file__).resolve().parents[1] / "configs"
 SFT_TRL_LORA = CONFIGS / "sft" / "qwen3-4b_traceinversion__trl__lora.yaml"
 SMOKE_TRL = CONFIGS / "sft" / "_smoke_trl_gpu.yaml"
-SMOKE_TT_MN = CONFIGS / "sft" / "_smoke_torchtitan_multinode_gpu.yaml"
+SMOKE_TT_MN = CONFIGS / "pretrain" / "_smoke_torchtitan_multinode_gpu.yaml"
 
 
 def test_real_run_goes_to_method_project():

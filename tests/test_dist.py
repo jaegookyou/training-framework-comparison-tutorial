@@ -81,12 +81,12 @@ def test_guard_allows_single_node_for_any_framework():
 def test_guard_allows_wired_multinode_combos():
     """배선된 조합은 멀티노드 통과 — torchrun 계열 + ray 계열 둘 다."""
     wired = [
-        ("sft", "torchtitan"), ("pretrain", "torchtitan"), ("sft", "verl"),   # torchrun
+        ("pretrain", "torchtitan"), ("sft", "verl"),                          # torchrun
         ("grpo", "verl"), ("ppo", "verl"),                                     # ray
-        ("sft", "slime"), ("grpo", "slime"), ("ppo", "slime"),                 # ray
+        ("grpo", "slime"), ("ppo", "slime"),                                   # ray
         ("sft", "trl"), ("dpo", "trl"), ("grpo", "trl"), ("online_dpo", "trl"),  # HF torchrun
         ("pretrain", "megatron-lm"), ("sft", "megatron-lm"),                  # megatron 다단계
-        ("sft", "megatron-bridge"), ("grpo", "megatron-lm"),
+        ("grpo", "megatron-lm"),
     ]
     for method, fw in wired:
         _dist.guard_wired(method, fw, {"nodes": 2, "gpus": 2})        # 예외 안 남
