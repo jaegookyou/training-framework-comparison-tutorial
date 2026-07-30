@@ -24,10 +24,6 @@ NEEDS_PREPARE = {
     ("grpo", "verl"),
     ("ppo", "verl"),
     ("sft", "slime"),
-    ("sft", "nemo-rl"),
-    ("dpo", "nemo-rl"),
-    ("grpo", "nemo-rl"),
-    ("ppo", "nemo-rl"),
 }
 
 

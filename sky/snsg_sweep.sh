@@ -33,14 +33,11 @@ SMOKES=(
   "sft         verl             configs/sft/_smoke_verl_gpu.yaml                sky/sft.verl.sky.yaml"
   "sft         torchtitan       configs/sft/_smoke_torchtitan_gpu.yaml          sky/sft.torchtitan.sky.yaml"
   "sft         megatron-bridge  configs/sft/_smoke_megatron-bridge_gpu.yaml     sky/sft.megatron-bridge.sky.yaml"
-  "sft         nemo-rl          configs/sft/_smoke_nemo-rl_gpu.yaml             sky/sft.nemo-rl.sky.yaml"
   "dpo         trl              configs/dpo/_smoke_trl_gpu.yaml                 sky/dpo.trl.sky.yaml"
   "dpo         unsloth          configs/dpo/_smoke_unsloth_gpu.yaml             sky/dpo.unsloth.sky.yaml"
-  "dpo         nemo-rl          configs/dpo/_smoke_nemo-rl_gpu.yaml             sky/dpo.nemo-rl.sky.yaml"
   "grpo        trl              configs/grpo/_smoke_trl_gpu.yaml                sky/grpo.trl.sky.yaml"
   "grpo        unsloth          configs/grpo/_smoke_unsloth_gpu.yaml            sky/grpo.unsloth.sky.yaml"
   "grpo        verl             configs/grpo/_smoke_verl_gpu.yaml               sky/grpo.verl.sky.yaml"
-  "grpo        nemo-rl          configs/grpo/_smoke_nemo-rl_gpu.yaml            sky/grpo.nemo-rl.sky.yaml"
   "online_dpo  trl              configs/online_dpo/_smoke_trl_gpu.yaml          sky/online_dpo.trl.sky.yaml"
 )
 

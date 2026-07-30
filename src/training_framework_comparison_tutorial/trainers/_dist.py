@@ -97,8 +97,8 @@ def resolve(scale: dict[str, Any]) -> Topology:
 #
 # 두 배선 계열:
 #   ① torchrun 랑데부(이 모듈 torchrun_args): torchtitan SFT·pretrain, verl SFT.
-#   ② ray 클러스터 부트스트랩(sky/ray_bootstrap.sh, head/worker `ray start`): verl RL·slime·
-#      nemo-rl. 트레이너는 안 바뀐다(이미 nnodes 를 프레임워크에 전달) — sky run 블록이 노드 간
+#   ② ray 클러스터 부트스트랩(sky/ray_bootstrap.sh, head/worker `ray start`): verl RL·slime.
+#      트레이너는 안 바뀐다(이미 nnodes 를 프레임워크에 전달) — sky run 블록이 노드 간
 #      ray 를 세우고 head 에서만 드라이버를 돌린다. verl 공식 멀티노드 문서 + SkyPilot 예제 기준.
 # ③ HF Trainer torchrun 런처(sky/hf_torchrun_launch.sh): trl SFT·DPO·GRPO·online_dpo(full=FSDP).
 # 미배선으로 남는 멀티노드: **unsloth**(단일 GPU 전용 설계 = 영구) · **torchtitan GRPO**
@@ -118,10 +118,6 @@ MULTINODE_MECHANISM: dict[tuple[str, str], str] = {
     ("sft", "slime"): "ray",
     ("grpo", "slime"): "ray",
     ("ppo", "slime"): "ray",
-    ("sft", "nemo-rl"): "ray",
-    ("dpo", "nemo-rl"): "ray",
-    ("grpo", "nemo-rl"): "ray",
-    ("ppo", "nemo-rl"): "ray",
     # ③ HF Trainer torchrun 런처(hf_torchrun_launch.sh, full=FSDP): trl SFT·DPO·GRPO·online_dpo.
     #    넷 다 Trainer(model=문자열) 동일 구조 → 같은 런처. RL(grpo/online_dpo)은 루프 내 생성이
     #    있어 SFT 보다 복잡하나 하드 블로커 아님(TRL FSDP 지원, use_vllm 기본 false=HF generate).

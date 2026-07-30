@@ -8,7 +8,7 @@ vLLM + flash-attn-3 / cu130)이라 별도 torchtitan-rl 이미지를 쓴다 — 
 reward 통제: `--module` 로 우리 gsm8k 모듈(torchtitan_rl.gsm8k)을 넘긴다 — rubric=공유 gsm8k_score,
 data=공유 from_gsm8k(다른 GRPO 경로와 같은 채점/데이터 = 가로비교 성립). manager.py 가 FQN
 module 을 `<FQN>.config_registry` 로 import 하므로(소스 확인) torchtitan 소스트리에 bake 불필요 —
-megatron_rl·nemo_rl_env 와 같은 컨테이너 전용 reward 모듈 패턴이다.
+megatron_rl 과 같은 컨테이너 전용 reward 모듈 패턴이다.
 
 런치 = `python -m torchtitan.experiments.rl.train --module <FQN> --config rl_grpo_qwen3_4b_gsm8k
 --hf_assets_path=<assets>`. torchrun 이 아니라 Monarch 가 trainer/generator mesh 를 띄운다(README).

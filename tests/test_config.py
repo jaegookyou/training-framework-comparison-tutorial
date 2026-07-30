@@ -35,13 +35,6 @@ ONLINE_DPO_TRL_LORA = CONFIGS / "online_dpo" / "qwen3-4b_ultrafeedback__trl__lor
 PPO_VERL_FULL = CONFIGS / "ppo" / "qwen3-4b_gsm8k__verl__full.yaml"
 PPO_VERL_LORA = CONFIGS / "ppo" / "qwen3-4b_gsm8k__verl__lora.yaml"
 PPO_SLIME_FULL = CONFIGS / "ppo" / "qwen3-4b_gsm8k__slime__full.yaml"
-NEMO_SFT_FULL = CONFIGS / "sft" / "qwen3-4b_traceinversion__nemo-rl__full.yaml"
-NEMO_SFT_LORA = CONFIGS / "sft" / "qwen3-4b_traceinversion__nemo-rl__lora.yaml"
-NEMO_DPO_FULL = CONFIGS / "dpo" / "qwen3-4b_ultrafeedback__nemo-rl__full.yaml"
-NEMO_DPO_LORA = CONFIGS / "dpo" / "qwen3-4b_ultrafeedback__nemo-rl__lora.yaml"
-NEMO_GRPO_FULL = CONFIGS / "grpo" / "qwen3-4b_gsm8k__nemo-rl__full.yaml"
-NEMO_GRPO_LORA = CONFIGS / "grpo" / "qwen3-4b_gsm8k__nemo-rl__lora.yaml"
-NEMO_PPO_FULL = CONFIGS / "ppo" / "qwen3-4b_gsm8k__nemo-rl__full.yaml"
 
 
 def test_extends_inherits_base():
@@ -496,39 +489,6 @@ def test_sft_slime_reuses_trl_messages_format():
     assert get_format("sft", "slime") is to_trl
 
 
-def test_nemo_rl_all_methods_configs():
-    # NeMo-RL = 종합 헤비 툴킷: SFT·DPO·GRPO(full|lora) + PPO(full). 전부 _base 상속(통제비교).
-    sft_full = RunConfig.from_file(NEMO_SFT_FULL)
-    assert sft_full.framework == "nemo-rl"
-    assert sft_full.method == "sft"
-    assert sft_full.tuning == "full"
-    assert sft_full.image.endswith("/nemo-rl:latest")
-    assert sft_full.section("model")["name"] == "Qwen/Qwen3-4B-Base"
-    assert sft_full.section("nemo")["base_config"] == "sft.yaml"
-    assert sft_full.run_name() == "sft-Qwen3-4B-Base-traceinversion-nemo-rl-full"
-    assert RunConfig.from_file(NEMO_SFT_LORA).tuning == "lora"
-
-    dpo_full = RunConfig.from_file(NEMO_DPO_FULL)
-    assert dpo_full.method == "dpo"
-    assert dpo_full.section("dataset")["source"] == "ultrafeedback"
-    assert dpo_full.section("nemo")["base_config"] == "dpo.yaml"
-    assert dpo_full.run_name() == "dpo-Qwen3-4B-Base-ultrafeedback-nemo-rl-full"
-    assert float(RunConfig.from_file(NEMO_DPO_LORA).section("hp")["learning_rate"]) == 5.0e-6
-
-    grpo_full = RunConfig.from_file(NEMO_GRPO_FULL)
-    assert grpo_full.method == "grpo"
-    assert grpo_full.section("reward")["name"] == "gsm8k"  # 커스텀 env 가 공유 코어로 채점
-    assert grpo_full.section("nemo")["base_config"] == "grpo_math_8B.yaml"
-    assert grpo_full.run_name() == "grpo-Qwen3-4B-Base-gsm8k-nemo-rl-full"
-    assert float(RunConfig.from_file(NEMO_GRPO_LORA).section("hp")["learning_rate"]) == 1.0e-5
-
-    ppo_full = RunConfig.from_file(NEMO_PPO_FULL)
-    assert ppo_full.method == "ppo"
-    assert ppo_full.tuning == "full"  # NeMo PPO 는 full 전용(lora.md: LoRA 는 SFT/GRPO/DPO 만)
-    assert ppo_full.section("nemo")["base_config"] == "ppo_math_1B_megatron.yaml"
-    assert ppo_full.run_name() == "ppo-Qwen3-4B-Base-gsm8k-nemo-rl-full"
-
-
 def test_dispatch_namespaced_by_method():
     from training_framework_comparison_tutorial.run import TRAINERS
 
@@ -555,13 +515,11 @@ def test_dispatch_namespaced_by_method():
     assert TRAINERS["grpo"]["megatron-lm"].endswith("megatron_lm_grpo")
     # torchtitan GRPO = experiments/rl(Monarch+vLLM) — full 전용·experimental·별도 cu130 이미지
     assert TRAINERS["grpo"]["torchtitan"].endswith("torchtitan_grpo")
-    # PPO = critic(GAE). verl·slime·nemo-rl 가로(megatron-lm 은 GRPO 전용, TRL 은 neural RM)
+    # PPO = critic(GAE). verl·slime 가로(megatron-lm 은 GRPO 전용, TRL 은 neural RM)
     assert TRAINERS["ppo"]["verl"].endswith("verl_ppo")
     assert TRAINERS["ppo"]["slime"].endswith("slime_ppo")
-    assert TRAINERS["ppo"]["nemo-rl"].endswith("nemo_rl_ppo")
     assert "megatron-lm" not in TRAINERS["ppo"]
     assert "trl" not in TRAINERS["ppo"]
-    # NeMo-RL = 종합 헤비 툴킷: SFT·DPO·GRPO·PPO 4메서드 전부
-    assert TRAINERS["sft"]["nemo-rl"].endswith("nemo_rl_sft")
-    assert TRAINERS["dpo"]["nemo-rl"].endswith("nemo_rl_dpo")
-    assert TRAINERS["grpo"]["nemo-rl"].endswith("nemo_rl_grpo")
+    # NeMo-RL 은 2026-07-30 제거(대규모 멀티턴/agentic RL 부적합 + 저채택) → 어느 method 에도 없다
+    assert "nemo-rl" not in TRAINERS["sft"]
+    assert "nemo-rl" not in TRAINERS["ppo"]

@@ -35,8 +35,9 @@ def test_each_mnmg_smoke_is_launchable(path):
     # nodes>1 인데 미배선 조합이면 여기서 SystemExit — 즉 이게 통과해야 실제로 뜬다.
     guard_wired(cfg.method, cfg.framework, scale)
     assert cfg.is_smoke(), "스모크로 인식 안 되면 W&B 격리·로깅 간격 정책이 안 걸린다"
-    # 축소 레버가 실제로 있어야 풀런 비용이 안 나간다. megatron-lm 만 레버 이름이 다르다.
-    if cfg.framework == "megatron-lm":
+    # 축소 레버가 실제로 있어야 풀런 비용이 안 나간다. megatron-lm 은 SFT 만 레버가 다르다
+    # (train_samples) — pretrain 은 pretrain_gpt.py 가 debug.max_steps 를 소비한다(다른 셀과 동일).
+    if cfg.framework == "megatron-lm" and cfg.method == "sft":
         assert cfg.section("megatron").get("train_samples", 10**9) <= 1000
     else:
         assert int(cfg.section("debug").get("max_steps", -1)) > 0

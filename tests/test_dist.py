@@ -84,7 +84,6 @@ def test_guard_allows_wired_multinode_combos():
         ("sft", "torchtitan"), ("pretrain", "torchtitan"), ("sft", "verl"),   # torchrun
         ("grpo", "verl"), ("ppo", "verl"),                                     # ray
         ("sft", "slime"), ("grpo", "slime"), ("ppo", "slime"),                 # ray
-        ("sft", "nemo-rl"), ("dpo", "nemo-rl"), ("grpo", "nemo-rl"), ("ppo", "nemo-rl"),  # ray
         ("sft", "trl"), ("dpo", "trl"), ("grpo", "trl"), ("online_dpo", "trl"),  # HF torchrun
         ("pretrain", "megatron-lm"), ("sft", "megatron-lm"),                  # megatron 다단계
         ("sft", "megatron-bridge"), ("grpo", "megatron-lm"),

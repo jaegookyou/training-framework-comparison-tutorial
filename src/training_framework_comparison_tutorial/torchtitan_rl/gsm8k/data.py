@@ -1,6 +1,6 @@
 """gsm8k 데이터셋 (torchtitan RL) — 공유 from_gsm8k 로 prompt+정답 생성.
 
-다른 GRPO 경로(trl/verl/slime/megatron/nemo)와 같은 openai/gsm8k + 같은 프롬프트·정답 추출
+다른 GRPO 경로(trl/verl/slime/megatron)와 같은 openai/gsm8k + 같은 프롬프트·정답 추출
 (adapters.sources.from_gsm8k: system 지시 + 질문 / `####` 뒤 숫자)을 써서 통제비교 데이터 정합을
 유지한다. on-policy 라 응답은 데이터에 없고(학습 중 생성) reward(rubric)가 정답으로 채점한다.
 

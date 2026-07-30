@@ -2,7 +2,7 @@
 # SNSG 계단식 전체 스윕 — 이미지 preflight 로 게이팅 후 통과한 셀만 pretrain→SFT→DPO→RL 순서로 스모크.
 #
 # 왜 계단식인가(2026-07-30): 무작정 다 태우면 아는 실패(torchtitan 이미지 NG · verl GRPO
-# vLLM-Blackwell 벽)에 돈을 태우고, 미확인 이미지(unsloth/nemo-rl 등)를 확인 없이 12분씩 학습을 돈다.
+# vLLM-Blackwell 벽)에 돈을 태우고, 미확인 이미지(unsloth 등)를 확인 없이 12분씩 학습을 돈다.
 # → ① 미확인 이미지 preflight($0.1) 로 Blackwell 실행 여부 확정 ② 통과 이미지만 학습 스모크 ③ 아는
 #    벽은 SKIP 목록으로 건너뛰고 결과에 사유 기록.
 #
@@ -28,9 +28,9 @@ declare -A IMG_STATE=(
   [trl]=OK [verl]=OK              # 2노드 SFT 5/5 실증(07-28)
   [megatron-bridge]=OK           # NeMo 피벗 convert 실증(07-30) — 4B→mcore import 성공
   [torchtitan]=NG                # sm_120 커널 없음(07-29 preflight)
-  [unsloth]="" [nemo-rl]="" [megatron-lm]="" [slime]=""
+  [unsloth]="" [megatron-lm]="" [slime]=""
 )
-PREFLIGHT_IMAGES=(megatron-lm slime unsloth nemo-rl)   # SMOKES 에서 게이팅하는 미확인 이미지만
+PREFLIGHT_IMAGES=(megatron-lm slime unsloth)   # SMOKES 에서 게이팅하는 미확인 이미지만
 
 # (method framework config sky_yaml image)
 SMOKES=(
@@ -41,15 +41,12 @@ SMOKES=(
   "sft         megatron-bridge  configs/sft/_smoke_megatron-bridge_gpu.yaml   sky/sft.megatron-bridge.sky.yaml   megatron-bridge"
   "sft         slime            configs/sft/_smoke_slime_gpu.yaml             sky/sft.slime.sky.yaml             slime"
   "sft         unsloth          configs/sft/_smoke_unsloth_gpu.yaml           sky/sft.unsloth.sky.yaml           unsloth"
-  "sft         nemo-rl          configs/sft/_smoke_nemo-rl_gpu.yaml           sky/sft.nemo-rl.sky.yaml           nemo-rl"
   "sft         torchtitan       configs/sft/_smoke_torchtitan_gpu.yaml        sky/sft.torchtitan.sky.yaml        torchtitan"
   "dpo         trl              configs/dpo/_smoke_trl_gpu.yaml               sky/dpo.trl.sky.yaml               trl"
   "dpo         unsloth          configs/dpo/_smoke_unsloth_gpu.yaml           sky/dpo.unsloth.sky.yaml           unsloth"
-  "dpo         nemo-rl          configs/dpo/_smoke_nemo-rl_gpu.yaml           sky/dpo.nemo-rl.sky.yaml           nemo-rl"
   "online_dpo  trl              configs/online_dpo/_smoke_trl_gpu.yaml        sky/online_dpo.trl.sky.yaml        trl"
   "grpo        trl              configs/grpo/_smoke_trl_gpu.yaml              sky/grpo.trl.sky.yaml              trl"
   "grpo        unsloth          configs/grpo/_smoke_unsloth_gpu.yaml          sky/grpo.unsloth.sky.yaml          unsloth"
-  "grpo        nemo-rl          configs/grpo/_smoke_nemo-rl_gpu.yaml          sky/grpo.nemo-rl.sky.yaml          nemo-rl"
   "grpo        verl             configs/grpo/_smoke_verl_gpu.yaml             sky/grpo.verl.sky.yaml             verl"
 )
 # 아는 벽 — 이미지가 OK 여도 건너뛴다(사유 기록).

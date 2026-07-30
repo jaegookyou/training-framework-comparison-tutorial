@@ -1,0 +1,158 @@
+YAML to run: sky/dpo.unsloth.sky.yaml
+Running on cluster: tfct-dpo-unsloth
+[33mLaunching a spot job that does not automatically recover from preemptions. To get automatic recovery, use managed job instead: [0m[1msky jobs launch[0m [33mor[0m [1msky.jobs.launch()[0m.
+Considered resources (1 node):
+----------------------------------------------------------------------------------------------------------------
+ INFRA                  INSTANCE                              vCPUs   Mem(GB)   GPUS        COST ($)   CHOSEN   
+----------------------------------------------------------------------------------------------------------------
+ Nebius (us-central1)   gpu-rtx6000_1gpu-24vcpu-218gb[Spot]   24      218       RTX6000:1   0.95       [32m   ✔[0m     
+----------------------------------------------------------------------------------------------------------------
+[0m⚙︎ Launching on Nebius us-central1[0m.
+WARNING:deprecation:Field .nebius.compute.v1.PreemptibleSpec.priority is deprecated. Supported until 05/11/26. It is deprecated and doesn't affect preemption behavior anymore.
+Stack (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/usr/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+  File "/usr/lib/python3.12/multiprocessing/spawn.py", line 135, in _main
+    return self._bootstrap(parent_sentinel)
+  File "/usr/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/usr/lib/python3.12/concurrent/futures/process.py", line 263, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/server/requests/executor.py", line 535, in _request_execution_wrapper
+    return_value = func(**request_body.to_kwargs())
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 700, in _record
+    return f(*args, **kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 700, in _record
+    return f(*args, **kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/tempstore.py", line 68, in wrapper
+    return func(*args, **kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/execution.py", line 814, in launch
+    return _execute(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/execution.py", line 275, in _execute
+    return _execute_dag(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/execution.py", line 518, in _execute_dag
+    (handle, provisioning_skipped) = backend.provision(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 700, in _record
+    return f(*args, **kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 680, in _record
+    return f(*args, **kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/backend.py", line 87, in provision
+    return self._provision(task, to_provision, dryrun, stream_logs,
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/cloud_vm_ray_backend.py", line 3291, in _provision
+    return self._locked_provision(lock_id, task, to_provision,
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/cloud_vm_ray_backend.py", line 3411, in _locked_provision
+    config_dict = retry_provisioner.provision_with_retries(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 700, in _record
+    return f(*args, **kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/cloud_vm_ray_backend.py", line 1831, in provision_with_retries
+    config_dict = self._retry_zones(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/cloud_vm_ray_backend.py", line 1304, in _retry_zones
+    provision_record = provisioner.bulk_provision(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/provisioner.py", line 170, in bulk_provision
+    return _bulk_provision(cloud, region, cluster_name,
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/provisioner.py", line 78, in _bulk_provision
+    provision_record = provision.run_instances(provider_name,
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/__init__.py", line 168, in _wrapper
+    return impl(*args, **kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/nebius/instance.py", line 174, in run_instances
+    new_instance_ids = [_launch_one(0)]
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/nebius/instance.py", line 147, in _launch_one
+    return utils.launch(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/nebius/utils.py", line 672, in launch
+    preemptible=nebius.compute().PreemptibleSpec(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/nebius/api/nebius/compute/v1/__init__.py", line 6568, in __init__
+    self.priority = priority
+[2m├── [0m[2mInstance is up.[0m
+[2m└── [0m[2mDocker container is up.[0m
+[0m[32m✓ Cluster launched: tfct-dpo-unsloth.[0m[0m  [2mView logs: [1msky logs --provision tfct-dpo-unsloth[0m[0m
+[0m⚙︎ Syncing files.
+  [2mSyncing workdir (to 1 node): /home/user/workspace/projects/training-framework-comparison-tutorial -> ~/sky_workdir[0m
+[0m[32m✓ Synced workdir.[0m[0m  [2mView logs: sky api logs -l sky-2026-07-30-04-19-50-741258/workdir_sync.log[0m
+[0m[32m✓ Setup detached.[0m[0m
+[0m⚙︎ Job submitted, ID: 1
+[2m├── [0m[2mWaiting for task resources on 1 node.[0m
+[2m└── [0mJob started. Streaming logs... [2m(Ctrl-C to exit log streaming; job will not be killed)[0m
+[36m(setup pid=3114)[0m Obtaining file:///root/sky_workdir
+[36m(setup pid=3114)[0m   Installing build dependencies: started
+[36m(setup pid=3114)[0m   Installing build dependencies: finished with status 'done'
+[36m(setup pid=3114)[0m   Checking if build backend supports build_editable: started
+[36m(setup pid=3114)[0m   Checking if build backend supports build_editable: finished with status 'done'
+[36m(setup pid=3114)[0m   Getting requirements to build editable: started
+[36m(setup pid=3114)[0m   Getting requirements to build editable: finished with status 'done'
+[36m(setup pid=3114)[0m   Installing backend dependencies: started
+[36m(setup pid=3114)[0m   Installing backend dependencies: finished with status 'done'
+[36m(setup pid=3114)[0m   Preparing editable metadata (pyproject.toml): started
+[36m(setup pid=3114)[0m   Preparing editable metadata (pyproject.toml): finished with status 'done'
+[36m(setup pid=3114)[0m Requirement already satisfied: pyyaml>=6.0 in /usr/local/lib/python3.12/dist-packages (from training-framework-comparison-tutorial==0.1.0) (6.0.3)
+[36m(setup pid=3114)[0m Building wheels for collected packages: training-framework-comparison-tutorial
+[36m(setup pid=3114)[0m   Building editable for training-framework-comparison-tutorial (pyproject.toml): started
+[36m(setup pid=3114)[0m   Building editable for training-framework-comparison-tutorial (pyproject.toml): finished with status 'done'
+[36m(setup pid=3114)[0m   Created wheel for training-framework-comparison-tutorial: filename=training_framework_comparison_tutorial-0.1.0-py3-none-any.whl size=8172 sha256=c87e20a7ae2fbe57e7415aa98fe5cbec025ae9ee7260d369050b352c0e963244
+[36m(setup pid=3114)[0m   Stored in directory: /tmp/pip-ephem-wheel-cache-lg4adixe/wheels/0c/f9/ef/9c94d754d512253a9286551515f99485713d036c515880ded0
+[36m(setup pid=3114)[0m Successfully built training-framework-comparison-tutorial
+[36m(setup pid=3114)[0m Installing collected packages: training-framework-comparison-tutorial
+[36m(setup pid=3114)[0m   Attempting uninstall: training-framework-comparison-tutorial
+[36m(setup pid=3114)[0m     Found existing installation: training-framework-comparison-tutorial 0.1.0
+[36m(setup pid=3114)[0m     Uninstalling training-framework-comparison-tutorial-0.1.0:
+[36m(setup pid=3114)[0m       Successfully uninstalled training-framework-comparison-tutorial-0.1.0
+[36m(setup pid=3114)[0m Successfully installed training-framework-comparison-tutorial-0.1.0
+[36m(setup pid=3114)[0m WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+[36m(tfct-dpo-unsloth, pid=3114)[0m 🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+[36m(tfct-dpo-unsloth, pid=3114)[0m 🦥 Unsloth Zoo will now patch everything to make training faster!
+[36m(tfct-dpo-unsloth, pid=3114)[0m [36m(tfct-dpo-unsloth, pid=3114)[0m Generating train split:   0%|          | 0/62135 [00:00<?, ? examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Generating train split:  16%|█▌        | 10000/62135 [00:00<00:00, 92491.28 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Generating train split:  37%|███▋      | 23000/62135 [00:00<00:00, 110385.32 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Generating train split:  63%|██████▎   | 39000/62135 [00:00<00:00, 121876.89 examples/s]Generating train split:  89%|████████▊ | 55000/62135 [00:00<00:00, 125884.41 examples/s]Generating train split: 100%|██████████| 62135/62135 [00:00<00:00, 124962.04 examples/s]
+[36m(tfct-dpo-unsloth, pid=3114)[0m [36m(tfct-dpo-unsloth, pid=3114)[0m Generating test split:   0%|          | 0/1000 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 1000/1000 [00:00<00:00, 85673.22 examples/s]
+[36m(tfct-dpo-unsloth, pid=3114)[0m Map:   0%|          | 0/64 [00:00<?, ? examples/s]Map: 100%|██████████| 64/64 [00:00<00:00, 7030.60 examples/s]
+[36m(tfct-dpo-unsloth, pid=3114)[0m ==((====))==  Unsloth 2026.6.7: Fast Qwen3 patching. Transformers: 4.57.6. vLLM: 0.12.0.
+[36m(tfct-dpo-unsloth, pid=3114)[0m    \\   /|    NVIDIA RTX PRO 6000 Blackwell Server Edition. Num GPUs = 1. Max memory: 94.971 GB. Platform: Linux.
+[36m(tfct-dpo-unsloth, pid=3114)[0m O^O/ \_/ \    Torch: 2.9.0+cu128. CUDA: 12.0. CUDA Toolkit: 12.8. Triton: 3.5.0
+[36m(tfct-dpo-unsloth, pid=3114)[0m \        /    Bfloat16 = TRUE. FA [Xformers = 0.0.33.post1. FA2 = False]
+[36m(tfct-dpo-unsloth, pid=3114)[0m  "-____-"     Free license: http://github.com/unslothai/unsloth
+[36m(tfct-dpo-unsloth, pid=3114)[0m Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!
+[36m(tfct-dpo-unsloth, pid=3114)[0m [36m(tfct-dpo-unsloth, pid=3114)[0m Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s][36m(tfct-dpo-unsloth, pid=3114)[0m Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.15it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.49it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.43it/s]
+[36m(tfct-dpo-unsloth, pid=3114)[0m unsloth/Qwen3-4B-Base does not have a padding token! Will use pad_token = <|PAD_TOKEN|>.
+[36m(tfct-dpo-unsloth, pid=3114)[0m Unsloth 2026.6.7 patched 36 layers with 36 QKV layers, 36 O layers and 36 MLP layers.
+[36m(tfct-dpo-unsloth, pid=3114)[0m [36m(tfct-dpo-unsloth, pid=3114)[0m Extracting prompt in train dataset (num_proc=28):   0%|          | 0/64 [00:00<?, ? examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Extracting prompt in train dataset (num_proc=28):   5%|▍         | 3/64 [00:00<00:11,  5.45 examples/s]Extracting prompt in train dataset (num_proc=28): 100%|██████████| 64/64 [00:00<00:00, 80.81 examples/s]
+[36m(tfct-dpo-unsloth, pid=3114)[0m [36m(tfct-dpo-unsloth, pid=3114)[0m Applying chat template to train dataset (num_proc=28):   0%|          | 0/64 [00:00<?, ? examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Applying chat template to train dataset (num_proc=28):   5%|▍         | 3/64 [00:01<00:21,  2.88 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Applying chat template to train dataset (num_proc=28):  14%|█▍        | 9/64 [00:01<00:06,  8.70 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Applying chat template to train dataset (num_proc=28):  23%|██▎       | 15/64 [00:01<00:03, 14.74 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Applying chat template to train dataset (num_proc=28):  38%|███▊      | 24/64 [00:01<00:01, 24.53 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Applying chat template to train dataset (num_proc=28):  47%|████▋     | 30/64 [00:01<00:01, 25.95 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Applying chat template to train dataset (num_proc=28):  53%|█████▎    | 34/64 [00:01<00:01, 27.27 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Applying chat template to train dataset (num_proc=28):  59%|█████▉    | 38/64 [00:01<00:00, 27.81 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Applying chat template to train dataset (num_proc=28):  66%|██████▌   | 42/64 [00:02<00:00, 28.22 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Applying chat template to train dataset (num_proc=28):  72%|███████▏  | 46/64 [00:02<00:00, 27.86 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Applying chat template to train dataset (num_proc=28):  78%|███████▊  | 50/64 [00:02<00:00, 28.00 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Applying chat template to train dataset (num_proc=28):  84%|████████▍ | 54/64 [00:02<00:00, 28.84 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Applying chat template to train dataset (num_proc=28):  91%|█████████ | 58/64 [00:02<00:00, 27.54 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Applying chat template to train dataset (num_proc=28):  97%|█████████▋| 62/64 [00:02<00:00, 27.56 examples/s]Applying chat template to train dataset (num_proc=28): 100%|██████████| 64/64 [00:03<00:00, 19.99 examples/s]
+[36m(tfct-dpo-unsloth, pid=3114)[0m [36m(tfct-dpo-unsloth, pid=3114)[0m Tokenizing train dataset (num_proc=28):   0%|          | 0/64 [00:00<?, ? examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Tokenizing train dataset (num_proc=28):   5%|▍         | 3/64 [00:01<00:21,  2.80 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Tokenizing train dataset (num_proc=28):  14%|█▍        | 9/64 [00:01<00:06,  9.01 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Tokenizing train dataset (num_proc=28):  19%|█▉        | 12/64 [00:01<00:04, 11.44 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Tokenizing train dataset (num_proc=28):  33%|███▎      | 21/64 [00:01<00:01, 22.47 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Tokenizing train dataset (num_proc=28):  41%|████      | 26/64 [00:01<00:01, 25.48 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Tokenizing train dataset (num_proc=28):  47%|████▋     | 30/64 [00:01<00:01, 23.71 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Tokenizing train dataset (num_proc=28):  56%|█████▋    | 36/64 [00:01<00:01, 27.72 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Tokenizing train dataset (num_proc=28):  62%|██████▎   | 40/64 [00:02<00:00, 25.11 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Tokenizing train dataset (num_proc=28):  69%|██████▉   | 44/64 [00:02<00:00, 23.99 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Tokenizing train dataset (num_proc=28):  78%|███████▊  | 50/64 [00:02<00:00, 28.31 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Tokenizing train dataset (num_proc=28):  84%|████████▍ | 54/64 [00:02<00:00, 28.41 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Tokenizing train dataset (num_proc=28):  91%|█████████ | 58/64 [00:02<00:00, 27.22 examples/s][36m(tfct-dpo-unsloth, pid=3114)[0m Tokenizing train dataset (num_proc=28):  97%|█████████▋| 62/64 [00:02<00:00, 28.72 examples/s]Tokenizing train dataset (num_proc=28): 100%|██████████| 64/64 [00:03<00:00, 19.30 examples/s]
+[36m(tfct-dpo-unsloth, pid=3114)[0m ==((====))==  Unsloth - 2x faster free finetuning | Num GPUs used = 1
+[36m(tfct-dpo-unsloth, pid=3114)[0m    \\   /|    Num examples = 64 | Num Epochs = 2 | Total steps = 5
+[36m(tfct-dpo-unsloth, pid=3114)[0m O^O/ \_/ \    Batch size per device = 2 | Gradient accumulation steps = 8
+[36m(tfct-dpo-unsloth, pid=3114)[0m \        /    Data Parallel GPUs = 1 | Total batch size (2 x 8 x 1) = 16
+[36m(tfct-dpo-unsloth, pid=3114)[0m  "-____-"     Trainable parameters = 33,030,144 of 4,055,498,240 (0.81% trained)
+[36m(tfct-dpo-unsloth, pid=3114)[0m wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+[36m(tfct-dpo-unsloth, pid=3114)[0m wandb: Currently logged in as: jaegookyou (jaegookyou-personal) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+[36m(tfct-dpo-unsloth, pid=3114)[0m wandb: setting up run 6qg4je6p
+[36m(tfct-dpo-unsloth, pid=3114)[0m wandb: Tracking run with wandb version 0.28.0
+[36m(tfct-dpo-unsloth, pid=3114)[0m wandb: Run data is saved locally in /root/sky_workdir/wandb/run-20260729_193036-6qg4je6p
+[36m(tfct-dpo-unsloth, pid=3114)[0m wandb: Run `wandb offline` to turn off syncing.
+[36m(tfct-dpo-unsloth, pid=3114)[0m wandb: Syncing run dpo-Qwen3-4B-Base-ultrafeedback-unsloth-lora
+[36m(tfct-dpo-unsloth, pid=3114)[0m wandb: ⭐️ View project at https://wandb.ai/jaegookyou-personal/tfct-smoke
+[36m(tfct-dpo-unsloth, pid=3114)[0m wandb: 🚀 View run at https://wandb.ai/jaegookyou-personal/tfct-smoke/runs/6qg4je6p
+[36m(tfct-dpo-unsloth, pid=3114)[0m wandb: Detected [huggingface_hub.inference, openai] in use.
+[36m(tfct-dpo-unsloth, pid=3114)[0m wandb: Use W&B Weave for improved LLM call tracing. Install Weave with `pip install weave` then add `import weave` to the top of your script.
+[36m(tfct-dpo-unsloth, pid=3114)[0m wandb: For more information, check out the docs at: https://weave-docs.wandb.ai
+[36m(tfct-dpo-unsloth, pid=3114)[0m [36m(tfct-dpo-unsloth, pid=3114)[0m   0%|          | 0/5 [00:00<?, ?it/s] 20%|██        | 1/5 [00:04<00:19,  4.90s/it]                                             {'loss': 0.6931, 'grad_norm': 4.195417881011963, 'learning_rate': 0.0, 'rewards/chosen': 0.0, 'rewards/rejected': 0.0, 'rewards/accuracies': 0.0, 'rewards/margins': 0.0, 'logps/chosen': -273.1064758300781, 'logps/rejected': -251.24612426757812, 'logits/chosen': 4.855100631713867, 'logits/rejected': 4.805125713348389, 'epoch': 0.25}
+[36m(tfct-dpo-unsloth, pid=3114)[0m [36m(tfct-dpo-unsloth, pid=3114)[0m  20%|██        | 1/5 [00:04<00:19,  4.90s/it] 40%|████      | 2/5 [00:07<00:10,  3.50s/it]                                             {'loss': 0.6931, 'grad_norm': 3.5029282569885254, 'learning_rate': 5e-06, 'rewards/chosen': 0.0, 'rewards/rejected': 0.0, 'rewards/accuracies': 0.0, 'rewards/margins': 0.0, 'logps/chosen': -204.8951873779297, 'logps/rejected': -196.99588012695312, 'logits/chosen': 5.217616558074951, 'logits/rejected': 5.496628761291504, 'epoch': 0.5}
+[36m(tfct-dpo-unsloth, pid=3114)[0m [36m(tfct-dpo-unsloth, pid=3114)[0m  40%|████      | 2/5 [00:07<00:10,  3.50s/it] 60%|██████    | 3/5 [00:10<00:06,  3.18s/it]                                             {'loss': 0.6862, 'grad_norm': 4.135239124298096, 'learning_rate': 4.267766952966369e-06, 'rewards/chosen': -0.008611702360212803, 'rewards/rejected': -0.02525484561920166, 'rewards/accuracies': 0.5625, 'rewards/margins': 0.016643144190311432, 'logps/chosen': -229.98805236816406, 'logps/rejected': -311.5487060546875, 'logits/chosen': 5.760354995727539, 'logits/rejected': 5.756566047668457, 'epoch': 0.75}
+[36m(tfct-dpo-unsloth, pid=3114)[0m [36m(tfct-dpo-unsloth, pid=3114)[0m  60%|██████    | 3/5 [00:10<00:06,  3.18s/it] 80%|████████  | 4/5 [00:13<00:03,  3.41s/it]                                             {'loss': 0.7097, 'grad_norm': 4.975740432739258, 'learning_rate': 2.5e-06, 'rewards/chosen': -0.025946807116270065, 'rewards/rejected': 0.0042038909159600735, 'rewards/accuracies': 0.625, 'rewards/margins': -0.030150702223181725, 'logps/chosen': -333.76300048828125, 'logps/rejected': -328.9104919433594, 'logits/chosen': 4.948277950286865, 'logits/rejected': 4.698028087615967, 'epoch': 1.0}
+[36m(tfct-dpo-unsloth, pid=3114)[0m [36m(tfct-dpo-unsloth, pid=3114)[0m  80%|████████  | 4/5 [00:13<00:03,  3.41s/it]100%|██████████| 5/5 [00:16<00:00,  3.22s/it]                                             {'loss': 0.7062, 'grad_norm': 4.157399654388428, 'learning_rate': 7.322330470336314e-07, 'rewards/chosen': -0.020882820710539818, 'rewards/rejected': 0.0037810327485203743, 'rewards/accuracies': 0.5, 'rewards/margins': -0.024663854390382767, 'logps/chosen': -209.9877166748047, 'logps/rejected': -250.228271484375, 'logits/chosen': 4.841500759124756, 'logits/rejected': 4.859393119812012, 'epoch': 1.25}
+[36m(tfct-dpo-unsloth, pid=3114)[0m [36m(tfct-dpo-unsloth, pid=3114)[0m 100%|██████████| 5/5 [00:16<00:00,  3.22s/it]                                             {'train_runtime': 19.7373, 'train_samples_per_second': 4.053, 'train_steps_per_second': 0.253, 'train_loss': 0.6976830124855041, 'epoch': 1.25}
+[36m(tfct-dpo-unsloth, pid=3114)[0m 100%|██████████| 5/5 [00:17<00:00,  3.22s/it]100%|██████████| 5/5 [00:17<00:00,  3.51s/it]
+[36m(tfct-dpo-unsloth, pid=3114)[0m [1;34mwandb[0m: 
+[36m(tfct-dpo-unsloth, pid=3114)[0m [1;34mwandb[0m: 🚀 View run [33mdpo-Qwen3-4B-Base-ultrafeedback-unsloth-lora[0m at: [34mhttps://wandb.ai/jaegookyou-personal/tfct-smoke/runs/6qg4je6p[0m
+[36m(tfct-dpo-unsloth, pid=3114)[0m [1;34mwandb[0m: Find logs at: [1;35mwandb/run-20260729_193036-6qg4je6p/logs[0m
+[0m[32m✓ Job finished (status: SUCCEEDED).[0m[0m
+
+📋 Useful Commands
+Job ID: 1
+├── To cancel the job:		sky cancel tfct-dpo-unsloth 1
+├── To stream job logs:		sky logs tfct-dpo-unsloth 1
+└── To view job queue:		sky queue tfct-dpo-unsloth
+Cluster name: tfct-dpo-unsloth
+├── To log into the head VM:	ssh tfct-dpo-unsloth
+├── To submit a job:		sky exec tfct-dpo-unsloth yaml_file
+├── To stop the cluster:	sky stop tfct-dpo-unsloth
+└── To teardown the cluster:	sky down tfct-dpo-unsloth

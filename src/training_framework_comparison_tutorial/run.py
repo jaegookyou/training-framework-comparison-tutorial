@@ -29,7 +29,6 @@ TRAINERS: dict[str, dict[str, str]] = {
         "megatron-lm": f"{_PKG}.megatron_lm_sft",
         "megatron-bridge": f"{_PKG}.megatron_bridge_sft",
         "torchtitan": f"{_PKG}.torchtitan_sft",
-        "nemo-rl": f"{_PKG}.nemo_rl_sft",
         "slime": f"{_PKG}.slime_sft",  # rollout 추상 재활용(sft_rollout): RL 프레임워크 SFT
     },
     # 사후학습 RL 트랙. DPO(offline preference)와 GRPO(online RL)는 패러다임이 달라
@@ -37,7 +36,6 @@ TRAINERS: dict[str, dict[str, str]] = {
     "dpo": {
         "trl": f"{_PKG}.trl_dpo",
         "unsloth": f"{_PKG}.unsloth_dpo",
-        "nemo-rl": f"{_PKG}.nemo_rl_dpo",  # 헤비/DTensor offline DPO 가로(위키 계획)
     },
     # online DPO = 같은 DPO loss 의 on-policy 판(생성+RM 채점). offline DPO 와 별 method 로
     # 둬 "같은 method 의 offline↔online" 비교를 명시한다. Unsloth 는 네이티브 경로 부재 → TRL 단독.
@@ -50,20 +48,18 @@ TRAINERS: dict[str, dict[str, str]] = {
         "verl": f"{_PKG}.verl_grpo",
         "slime": f"{_PKG}.slime_grpo",
         "megatron-lm": f"{_PKG}.megatron_lm_grpo",
-        "nemo-rl": f"{_PKG}.nemo_rl_grpo",
         # torchtitan experiments/rl(Monarch+vLLM, GRPO-based). full 전용·experimental. reward=공유
         # gsm8k_score. 별도 cu130 이미지(torchtitan-rl) — SFT/사전학습 cu124 와 코어 스택 다름.
         "torchtitan": f"{_PKG}.torchtitan_grpo",
     },
-    # PPO = critic(value model)으로 GAE advantage 추정(GRPO 의 그룹 정규화와 다름). 대규모 RL 인프라
-    # 셋(verl=ray main_ppo / slime=SGLang+Megatron / nemo-rl=NeMo, 전부 rule reward 네이티브)으로
-    # 가로비교. PPO 는 무거운(critic) 알고리즘이라 대규모 RL 인프라에만 1급으로 있다 — Unsloth·
-    # megatron-lm·torchtitan·bridge 는 네이티브 PPO 없음. TRL 은 PPO 가 있어도 neural RM 강제(rule
-    # reward 못 씀 = 선호 패러다임)라 gsm8k rule 축엔 부적합 → 제외.
+    # PPO = critic(value model)으로 GAE advantage 추정(GRPO 그룹 정규화와 다름). 대규모 RL 인프라
+    # 둘(verl=ray main_ppo / slime=SGLang+Megatron, 전부 rule reward 네이티브)로 가로비교.
+    # PPO 는 무거운(critic) 알고리즘이라 대규모 RL 인프라에만 1급 —
+    # Unsloth·megatron-lm·torchtitan·bridge 는 네이티브 PPO 없음. TRL 은 neural RM 강제라 제외.
+    # (NeMo-RL 은 2026-07-30 제거 — 멀티턴/agentic RL 부적합 + 저채택, verl·slime 집중.)
     "ppo": {
         "verl": f"{_PKG}.verl_ppo",
         "slime": f"{_PKG}.slime_ppo",
-        "nemo-rl": f"{_PKG}.nemo_rl_ppo",  # 3번째 PPO(rule reward 네이티브, full 전용)
     },
 }
 

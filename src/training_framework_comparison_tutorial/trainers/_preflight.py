@@ -74,7 +74,7 @@ def report() -> int:
     `python -m ..._preflight` 진입점.
 
     왜 별도 진입점인가: 이미지마다 torch 출처가 다르다 — 우리가 핀하는 것(trl·verl·unsloth·megatron)
-    도 있고 **upstream 이미지에서 그냥 오는 것**(slime=slimerl/slime, nemo-rl=NGC)도 있다. 후자는
+    도 있고 **upstream 이미지에서 그냥 오는 것**(slime=slimerl/slime)도 있다. 후자는
     "핀을 읽어서" 알 수 없고 **띄워봐야 안다**(2026-07-28 교훈의 연장). 학습을 12분 태우며 하나씩
     발견하는 대신, 이미지당 수 분짜리 최소 런으로 한 번에 확정하려고 둔다.
     """

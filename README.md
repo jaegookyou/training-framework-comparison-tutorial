@@ -1,6 +1,6 @@
 # training-framework-comparison-tutorial
 
-**8개 프레임워크**(**TRL · Unsloth · verl · slime · Megatron-LM · Megatron-Bridge · torchtitan · NeMo-RL**)로 **사전학습 → 사후학습(SFT·선호최적화·RL)**을 **통제비교**하는 학습 lab. **SkyPilot**으로 제일 싼 GPU 오퍼를 띄워 **single GPU → single-node multi-GPU → multi-node multi-GPU** 3단계 스케일을 밟고, 모든 run 을 **W&B**로 로깅해 처리량·VRAM·수렴을 한 화면에 겹쳐 본다.
+**7개 프레임워크**(**TRL · Unsloth · verl · slime · Megatron-LM · Megatron-Bridge · torchtitan**)로 **사전학습 → 사후학습(SFT·선호최적화·RL)**을 **통제비교**하는 학습 lab. **SkyPilot**으로 제일 싼 GPU 오퍼를 띄워 **single GPU → single-node multi-GPU → multi-node multi-GPU** 3단계 스케일을 밟고, 모든 run 을 **W&B**로 로깅해 처리량·VRAM·수렴을 한 화면에 겹쳐 본다.
 
 ## 무엇을 비교하나
 
@@ -19,15 +19,13 @@
 | **Megatron-LM** | F² | F | · | · | F | · |
 | **Megatron-Bridge** | · | ✅ | · | · | ·³ | · |
 | **torchtitan** | F² | ✅ | · | · | F⁴ | · |
-| **NeMo-RL** | · | ✅ | ✅ | · | ✅ | F⁵ |
 
 빈칸/`F` 는 전부 upstream 실물로 검증한 **정직한 경로 부재**다(누락 아님). 네이티브 기준 maxed.
 
 ¹ TRL PPO 는 설계상 제외 — `PPOTrainer` 가 neural reward model 강제라 rule gsm8k reward 부적합(선호 패러다임).
 ² 사전학습 = **continued-pretrain 4B 전용**(`init_from: Qwen3-4B-Base` 시드, from-scratch 제거).
-³ Megatron-Bridge = HF↔mcore 변환 라이브러리 + SFT recipe. 네이티브 RL 트레이너 0개(RL 에선 NeMo-RL 의 변환 부품으로 쓰임).
+³ Megatron-Bridge = HF↔mcore 변환 라이브러리 + SFT recipe. 네이티브 RL 트레이너 0개(변환 배관 전용).
 ⁴ torchtitan GRPO = `experiments/rl`(Monarch+vLLM, experimental), SFT/pretrain(cu124)과 다른 **별도 cu130 이미지**.
-⁵ NeMo-RL PPO = full 만(`lora.md`: LoRA 는 SFT/GRPO/DPO 만 지원).
 
 ### 프레임워크 키 (엔진 · 변환 · 스케일)
 
@@ -36,13 +34,13 @@
 | 프레임워크 | 엔진 | HF↔네이티브 변환 | 스케일 |
 |---|---|---|---|
 | TRL · Unsloth | transformers | 암묵(HF 네이티브) | Unsloth=1 GPU / TRL=전 스케일 |
-| verl · NeMo-RL | FSDP/DTensor · megatron-core 백엔드 | 백엔드 따라(자동) | 전 스케일(ray) |
+| verl | FSDP/DTensor · megatron-core 백엔드 | 백엔드 따라(자동) | 전 스케일(ray) |
 | slime | megatron-core | 명시(`--hf-checkpoint`→변환) | 전 스케일(SGLang+Megatron) |
 | Megatron-LM | megatron-core | 명시(continued 는 AutoBridge 글루) | 전 스케일(다중 엔트리) |
 | Megatron-Bridge | megatron-core | 명시(AutoBridge = 본업) | 전 스케일 |
 | torchtitan | torchtitan(DCP) | 플래그(`initial_load_in_hf`) | 전 스케일 |
 
-- **megatron-core 가 공유 엔진**이다(slime·Megatron-LM·Megatron-Bridge·verl/NeMo-RL 의 megatron 백엔드). Megatron-LM(repo)↔Megatron-Bridge(라이브러리)는 *같은 엔진의 다른 진입 레이어* — 그래서 비교축으로 별 행이다.
+- **megatron-core 가 공유 엔진**이다(slime·Megatron-LM·Megatron-Bridge·verl 의 megatron 백엔드). Megatron-LM(repo)↔Megatron-Bridge(라이브러리)는 *같은 엔진의 다른 진입 레이어* — 그래서 비교축으로 별 행이다.
 - **변환은 전 프레임워크 공통 전제**(모든 단계 인터페이스 = HF 체크포인트)라 매트릭스 축이 아니다. HF-네이티브는 변환이 암묵이고, mcore 계열만 명시 도구(AutoBridge 등)가 필요할 뿐.
 
 ## 설치
@@ -92,33 +90,31 @@ Vast.ai 백엔드는 계정 페이지의 API 키를 `~/.config/vastai/vast_api_k
 - **SFT**: TRL(full|lora) · Unsloth(full|lora·단일 GPU) · verl(full|lora·hydra+torchrun) ·
   Megatron-LM(full·convert→finetune→export) · Megatron-Bridge(full|lora·HF↔mcore 브리지+네이티브
   PEFT) · torchtitan(full|lora·nightly SHA 핀·ChatDataset·네이티브 LoRAConverter, 이미지 박제로
-  재현) · NeMo-RL(full|lora·DTensor) · slime(full·rollout 추상 재활용 sft_rollout·loss mask=캐논
+  재현) · slime(full·rollout 추상 재활용 sft_rollout·loss mask=캐논
   template). slime 은 RL 프레임워크지만 SFT 도 네이티브(full 전용 — base slime LoRA 없음).
   reasoning 트랙 (Qwen3-4B-Base + TraceInversion).
-- **DPO**(offline preference): TRL(full|lora) · Unsloth(full|lora·단일 GPU) · NeMo-RL(full|lora·헤비/
-  DTensor). trl-lib/ultrafeedback_binarized.
+- **DPO**(offline preference): TRL(full|lora) · Unsloth(full|lora·단일 GPU). trl-lib/ultrafeedback_binarized.
 - **Online DPO**(online preference, on-policy): TRL(full|lora). 같은 DPO loss 지만 선호쌍을 학습
   중 생성→reward model 채점→쌍 구성. prompt-only(trl-lib/ultrafeedback-prompt) + 커뮤니티 RM
   (Skywork-Reward-V2). offline↔online DPO 비교 = 같은 ultrafeedback 도메인, "쌍을 미리 굽냐/즉석에
   만드냐"만 차이(OAIF 셋업). Unsloth 는 online DPO 네이티브 경로 부재 → TRL 단독.
 - **GRPO**(online RL): TRL(full|lora) · Unsloth(full|lora·단일 GPU·vllm 내장 fast_inference) ·
   verl(full|lora·ray main_ppo·vllm rollout) · slime(full·ray train.py·SGLang 롤아웃+Megatron 학습) ·
-  Megatron-LM(full·examples/rl train_rl.py 네이티브 GRPO·환경 에이전트) · NeMo-RL(full|lora·DTensor·
-  커스텀 환경) · torchtitan(full·experiments/rl·Monarch actors+vLLM·experimental·별도 cu130 이미지).
+  Megatron-LM(full·examples/rl train_rl.py 네이티브 GRPO·환경 에이전트) ·
+  torchtitan(full·experiments/rl·Monarch actors+vLLM·experimental·별도 cu130 이미지).
   openai/gsm8k + reward (정답 일치+형식). RL 트랙 기준점 = TRL, GRPO 가로비교를
-  verl·slime·megatron-lm·nemo-rl·torchtitan 으로 확장(전부 GRPO 본진). reward 는 태스크 1:1 채점 코어를
+  verl·slime·megatron-lm·torchtitan 으로 확장(전부 GRPO 본진). reward 는 태스크 1:1 채점 코어를
   공유하되 규약별로 노출(TRL=list 반환 / verl=compute_score / slime=async slime_rm / megatron-lm=환경
-  에이전트 get_reward / nemo-rl=커스텀 environment step / torchtitan=RewardFn rubric). TRL GRPO 는 vllm rollout 필요(이미지 추가 TODO) —
-  Unsloth·verl·slime 은 내장. slime·megatron-lm 은 full 전용(examples/rl 에 LoRA 없음), nemo-rl 은
-  full|lora(DTensor v2 lora_cfg). megatron-lm 은 SFT(post_training/modelopt)와 GRPO(examples/rl)가
-  한 이미지·두 진입점.
+  에이전트 get_reward / torchtitan=RewardFn rubric). TRL GRPO 는 vllm rollout 필요(이미지 추가 TODO) —
+  Unsloth·verl·slime 은 내장. slime·megatron-lm 은 full 전용(examples/rl 에 LoRA 없음).
+  megatron-lm 은 SFT(post_training/modelopt)와 GRPO(examples/rl)가 한 이미지·두 진입점.
 - **PPO**(online RL): verl(full|lora·ray main_ppo·vllm rollout) · slime(full·SGLang 롤아웃+Megatron
-  학습·role-tagged critic config) · NeMo-RL(full·megatron·커스텀 환경). GRPO 와 같은 진입점·데이터·
+  학습·role-tagged critic config). GRPO 와 같은 진입점·데이터·
   reward(openai/gsm8k + rule 채점 코어 공유 = 통제비교)지만 **critic(value model)으로 GAE advantage 를
-  추정**한다(verl=adv_estimator=gae / slime=advantage-estimator=ppo / nemo-rl=run_ppo, GRPO 의 그룹
+  추정**한다(verl=adv_estimator=gae / slime=advantage-estimator=ppo, GRPO 의 그룹
   정규화와 다름). KL 은 reward 페널티로(GRPO 는 loss 의 KL), 프롬프트당 1개 응답(그룹 불필요). verl 은
-  actor·critic 둘 다 lora 가능, slime·nemo-rl 은 full 전용(NeMo lora.md: LoRA 는 SFT/GRPO/DPO 만).
-  PPO 가로비교는 **verl·slime·nemo-rl**(전부 대규모 RL 인프라). PPO 는 critic 까지 굴리는 무거운
+  actor·critic 둘 다 lora 가능, slime 은 full 전용(base slime LoRA 없음).
+  PPO 가로비교는 **verl·slime**(전부 대규모 RL 인프라). PPO 는 critic 까지 굴리는 무거운
   알고리즘이라 **대규모 RL 인프라에만** 1급으로 있고, 경량/신생/general 프레임워크는
   GRPO·DPO 로 수렴해 PPO 를 건너뛴다(넓은 가로비교는 SFT·GRPO·DPO 가 담당, PPO 는 인프라 서사 +
   같은 프레임워크 내 GRPO↔PPO 알고리즘 비교가 가치). 그래서 PPO 칸의 빈자리는 누락이 아니라 설계상

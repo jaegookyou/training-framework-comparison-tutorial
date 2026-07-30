@@ -1,8 +1,8 @@
 """gsm8k reward (torchtitan RL) — 공유 gsm8k_score 채점 코어.
 
-다른 GRPO 경로(trl/verl/slime/megatron/nemo)와 같은 adapters.rewards.gsm8k_score(정답 1.0 + 형식
+다른 GRPO 경로(trl/verl/slime/megatron)와 같은 adapters.rewards.gsm8k_score(정답 1.0 + 형식
 0.1)를 쓴다 = reward 통제 변수(가로비교 성립 조건). 내장 채점이 아니라 우리 코어를 RewardFn 으로
-노출(megatron TfctGSM8KAgent·nemo TfctGsm8kEnvironment 의 torchtitan 판).
+노출(megatron TfctGSM8KAgent 의 torchtitan 판).
 """
 
 from __future__ import annotations

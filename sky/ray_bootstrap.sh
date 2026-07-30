@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Ray 멀티노드 부트스트랩 — ray 계열 프레임워크(verl RL·slime·nemo-rl)의 sky run 블록이 호출한다.
+# Ray 멀티노드 부트스트랩 — ray 계열 프레임워크(verl RL·slime)의 sky run 블록이 호출한다.
 #
 # 왜 sky yaml 의 일인가: SkyPilot 은 run 블록을 **모든 노드에서** 실행하고 SKYPILOT_NODE_RANK/
 # NODE_IPS/NUM_NODES 를 준다. ray 계열은 torchrun 랑데부가 아니라 **노드 간 ray 클러스터**가
@@ -13,9 +13,8 @@
 #
 # ⚠️ GPU 검증 대기(다른 경로와 동일한 단서):
 #   - 프레임워크 ray.init 이 우리 클러스터(포트 6385)에 붙는지 — RAY_ADDRESS export 로 명시하지만
-#     verl/slime/nemo 각자의 init 인자 확정은 GPU end-to-end 에서.
+#     verl/slime 각자의 init 인자 확정은 GPU end-to-end 에서.
 #   - 데이터 로컬리티: 드라이버(head)가 데이터를 로드해 ray 로 분배한다는 가정(verl 기본 동작).
-#   - nemo-rl 은 uv venv → `ray` 실행파일 경로가 다를 수 있음(그 sky yaml 주석 참고).
 #
 # 사용: run 블록에서
 #   bash sky/ray_bootstrap.sh "tfct-run --config $CONFIG" "tfct-run --config $CONFIG --prepare-only"

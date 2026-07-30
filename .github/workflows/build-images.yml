@@ -6,7 +6,7 @@
 #
 # 실행: GitHub → Actions 탭 → "build-images" → Run workflow.
 #   only 비움 + include_heavy=false (기본): base + verl/trl/unsloth/torchtitan/megatron-lm.
-#   only 비움 + include_heavy=true       : 위 + megatron-bridge/nemo-rl/slime/torchtitan-rl (남의 큰 베이스+nvcc
+#   only 비움 + include_heavy=true       : 위 + megatron-bridge/slime/torchtitan-rl (남의 큰 베이스+nvcc
 #                                          컴파일 — 러너 디스크/시간/업스트림 pull 인증에 걸릴 수 있어 opt-in).
 #   only="megatron-bridge,torchtitan-rl" : 지정한 이미지들만 빌드(include_heavy 무시). 재빌드 낭비 방지.
 #     - base 를 목록에 넣지 않으면 base 는 재빌드 안 하고 GHCR 의 base:latest 를 그대로 FROM 한다.
@@ -20,7 +20,7 @@ on:
   workflow_dispatch:
     inputs:
       include_heavy:
-        description: "무거운 이미지(megatron-bridge/nemo-rl/slime/torchtitan-rl)도 빌드 (only 비었을 때만 적용)"
+        description: "무거운 이미지(megatron-bridge/slime/torchtitan-rl)도 빌드 (only 비었을 때만 적용)"
         type: boolean
         default: false
       only:
@@ -56,7 +56,7 @@ jobs:
           only = [x.strip() for x in os.environ["ONLY"].split(",") if x.strip()]
           heavy = os.environ["HEAVY"] == "true"
           frameworks = ["verl", "trl", "unsloth", "torchtitan", "megatron-lm"]
-          standalone = ["megatron-bridge", "nemo-rl", "slime", "torchtitan-rl", "verl-sglang"]
+          standalone = ["megatron-bridge", "slime", "torchtitan-rl", "verl-sglang"]
           if only:
               base = "base" in only
               frameworks = [x for x in frameworks if x in only]

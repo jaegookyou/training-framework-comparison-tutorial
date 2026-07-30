@@ -1,0 +1,1437 @@
+YAML to run: sky/pretrain.megatron-lm.sky.yaml
+Running on cluster: tfct-pretrain-megatron-lm
+[33mLaunching a spot job that does not automatically recover from preemptions. To get automatic recovery, use managed job instead: [0m[1msky jobs launch[0m [33mor[0m [1msky.jobs.launch()[0m.
+Considered resources (1 node):
+----------------------------------------------------------------------------------------------------------------
+ INFRA                  INSTANCE                              vCPUs   Mem(GB)   GPUS        COST ($)   CHOSEN   
+----------------------------------------------------------------------------------------------------------------
+ Nebius (us-central1)   gpu-rtx6000_1gpu-24vcpu-218gb[Spot]   24      218       RTX6000:1   0.95       [32m   ✔[0m     
+----------------------------------------------------------------------------------------------------------------
+[0m⚙︎ Launching on Nebius us-central1[0m.
+WARNING:deprecation:Field .nebius.compute.v1.PreemptibleSpec.priority is deprecated. Supported until 05/11/26. It is deprecated and doesn't affect preemption behavior anymore.
+Stack (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/usr/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+  File "/usr/lib/python3.12/multiprocessing/spawn.py", line 135, in _main
+    return self._bootstrap(parent_sentinel)
+  File "/usr/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/usr/lib/python3.12/concurrent/futures/process.py", line 263, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/server/requests/executor.py", line 535, in _request_execution_wrapper
+    return_value = func(**request_body.to_kwargs())
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 700, in _record
+    return f(*args, **kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 700, in _record
+    return f(*args, **kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/tempstore.py", line 68, in wrapper
+    return func(*args, **kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/execution.py", line 814, in launch
+    return _execute(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/execution.py", line 275, in _execute
+    return _execute_dag(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/execution.py", line 518, in _execute_dag
+    (handle, provisioning_skipped) = backend.provision(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 700, in _record
+    return f(*args, **kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 680, in _record
+    return f(*args, **kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/backend.py", line 87, in provision
+    return self._provision(task, to_provision, dryrun, stream_logs,
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/cloud_vm_ray_backend.py", line 3291, in _provision
+    return self._locked_provision(lock_id, task, to_provision,
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/cloud_vm_ray_backend.py", line 3411, in _locked_provision
+    config_dict = retry_provisioner.provision_with_retries(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 700, in _record
+    return f(*args, **kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/cloud_vm_ray_backend.py", line 1831, in provision_with_retries
+    config_dict = self._retry_zones(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/cloud_vm_ray_backend.py", line 1304, in _retry_zones
+    provision_record = provisioner.bulk_provision(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/provisioner.py", line 170, in bulk_provision
+    return _bulk_provision(cloud, region, cluster_name,
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/provisioner.py", line 78, in _bulk_provision
+    provision_record = provision.run_instances(provider_name,
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/__init__.py", line 168, in _wrapper
+    return impl(*args, **kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/nebius/instance.py", line 174, in run_instances
+    new_instance_ids = [_launch_one(0)]
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/nebius/instance.py", line 147, in _launch_one
+    return utils.launch(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/nebius/utils.py", line 672, in launch
+    preemptible=nebius.compute().PreemptibleSpec(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/nebius/api/nebius/compute/v1/__init__.py", line 6568, in __init__
+    self.priority = priority
+[2m├── [0m[2mInstance is up.[0m
+[2m└── [0m[2mDocker container is up.[0m
+[0m[32m✓ Cluster launched: tfct-pretrain-megatron-lm.[0m[0m  [2mView logs: [1msky logs --provision tfct-pretrain-megatron-lm[0m[0m
+[0m⚙︎ Syncing files.
+  [2mSyncing workdir (to 1 node): /home/user/workspace/projects/training-framework-comparison-tutorial -> ~/sky_workdir[0m
+[0m[32m✓ Synced workdir.[0m[0m  [2mView logs: sky api logs -l sky-2026-07-30-01-57-11-316428/workdir_sync.log[0m
+[0m[32m✓ Setup detached.[0m[0m
+[0m⚙︎ Job submitted, ID: 1
+[2m├── [0m[2mWaiting for task resources on 1 node.[0m
+[2m└── [0mJob started. Streaming logs... [2m(Ctrl-C to exit log streaming; job will not be killed)[0m
+[36m(setup pid=4588)[0m Obtaining file:///root/sky_workdir
+[36m(setup pid=4588)[0m   Installing build dependencies: started
+[36m(setup pid=4588)[0m   Installing build dependencies: finished with status 'done'
+[36m(setup pid=4588)[0m   Checking if build backend supports build_editable: started
+[36m(setup pid=4588)[0m   Checking if build backend supports build_editable: finished with status 'done'
+[36m(setup pid=4588)[0m   Getting requirements to build editable: started
+[36m(setup pid=4588)[0m   Getting requirements to build editable: finished with status 'done'
+[36m(setup pid=4588)[0m   Installing backend dependencies: started
+[36m(setup pid=4588)[0m   Installing backend dependencies: finished with status 'done'
+[36m(setup pid=4588)[0m   Preparing editable metadata (pyproject.toml): started
+[36m(setup pid=4588)[0m   Preparing editable metadata (pyproject.toml): finished with status 'done'
+[36m(setup pid=4588)[0m Requirement already satisfied: pyyaml>=6.0 in /usr/lib/python3/dist-packages (from training-framework-comparison-tutorial==0.1.0) (6.0.1)
+[36m(setup pid=4588)[0m Building wheels for collected packages: training-framework-comparison-tutorial
+[36m(setup pid=4588)[0m   Building editable for training-framework-comparison-tutorial (pyproject.toml): started
+[36m(setup pid=4588)[0m   Building editable for training-framework-comparison-tutorial (pyproject.toml): finished with status 'done'
+[36m(setup pid=4588)[0m   Created wheel for training-framework-comparison-tutorial: filename=training_framework_comparison_tutorial-0.1.0-py3-none-any.whl size=8172 sha256=c87e20a7ae2fbe57e7415aa98fe5cbec025ae9ee7260d369050b352c0e963244
+[36m(setup pid=4588)[0m   Stored in directory: /tmp/pip-ephem-wheel-cache-zfhgwf5m/wheels/0c/f9/ef/9c94d754d512253a9286551515f99485713d036c515880ded0
+[36m(setup pid=4588)[0m Successfully built training-framework-comparison-tutorial
+[36m(setup pid=4588)[0m Installing collected packages: training-framework-comparison-tutorial
+[36m(setup pid=4588)[0m   Attempting uninstall: training-framework-comparison-tutorial
+[36m(setup pid=4588)[0m     Found existing installation: training-framework-comparison-tutorial 0.1.0
+[36m(setup pid=4588)[0m     Uninstalling training-framework-comparison-tutorial-0.1.0:
+[36m(setup pid=4588)[0m       Successfully uninstalled training-framework-comparison-tutorial-0.1.0
+[36m(setup pid=4588)[0m Successfully installed training-framework-comparison-tutorial-0.1.0
+[36m(setup pid=4588)[0m WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [netenv] NIC=network-interfa IP=10.96.0.44 IB_DISABLE=0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "span" in type "ir.TupleType" duplicates an ancestor field in "ir.Type". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "span" in type "ir.FuncType" duplicates an ancestor field in "ir.Type". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "span" in type "ir.TensorMapType" duplicates an ancestor field in "ir.Type". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "binding_blocks" in type "script.ir_builder.relax.FunctionFrame" duplicates an ancestor field in "script.ir_builder.relax.SeqExprFrame". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "output" in type "script.ir_builder.relax.FunctionFrame" duplicates an ancestor field in "script.ir_builder.relax.SeqExprFrame". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "policy_type" in type "tl.GemmSPWarpPolicy" duplicates an ancestor field in "tl.GemmWarpPolicy". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "m_warp" in type "tl.GemmSPWarpPolicy" duplicates an ancestor field in "tl.GemmWarpPolicy". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "n_warp" in type "tl.GemmSPWarpPolicy" duplicates an ancestor field in "tl.GemmWarpPolicy". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m ERROR 07-29 17:11:10 [config.py:29] Failed to import Triton kernels. Please make sure your triton version is compatible. Error: No module named 'triton_kernels.matmul_ogs'
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO 07-29 17:11:10 [nixl_utils.py:20] Setting UCX_RCACHE_MAX_UNRELEASED to '1024' to avoid a rare memory leak in UCX when using NIXL.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m WARNING 07-29 17:11:10 [nixl_utils.py:34] NIXL is not available
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m WARNING 07-29 17:11:10 [nixl_utils.py:44] NIXL agent config is not available
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m WARNING:huggingface_hub.utils._http:Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Model parallel not initialized, initializing...
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [36m(tfct-pretrain-megatron-lm, pid=4588)[0m Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Fetching 4 files:  25%|██▌       | 1/4 [01:20<04:02, 80.94s/it]Fetching 4 files: 100%|██████████| 4/4 [01:20<00:00, 20.23s/it]
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Loading from Qwen/Qwen3-4B-Base ━━━━━━━━━━━━━ 100% 0:00:00 (290/290) Qwen3Bridge
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m  > number of parameters on (tensor, pipeline) model parallel rank (0, 0): 4022468096
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Processing factories:   0%|          | 0/36 [00:00<?, ?factory/s][LOW_MEMORY_SAVE] Processing factories:  56%|█████▌    | 20/36 [00:00<00:00, 41.12factory/s][LOW_MEMORY_SAVE] Processing factories: 100%|██████████| 36/36 [00:00<00:00, 73.91factory/s]
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:   0%|          | 0/326 [00:00<?, ?tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:   0%|          | 1/326 [00:00<01:44,  3.11tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:   4%|▍         | 13/326 [00:00<00:08, 39.02tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:   8%|▊         | 26/326 [00:00<00:04, 64.44tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  11%|█         | 36/326 [00:00<00:03, 73.54tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  14%|█▍        | 46/326 [00:00<00:03, 80.09tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  17%|█▋        | 56/326 [00:01<00:07, 34.45tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  22%|██▏       | 71/326 [00:01<00:05, 49.97tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  25%|██▌       | 82/326 [00:01<00:04, 57.80tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  29%|██▉       | 94/326 [00:01<00:03, 68.56tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  32%|███▏      | 104/326 [00:02<00:06, 36.61tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  36%|███▌      | 116/326 [00:02<00:04, 46.88tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  39%|███▊      | 126/326 [00:02<00:03, 54.67tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  42%|████▏     | 136/326 [00:02<00:03, 61.30tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  45%|████▍     | 146/326 [00:02<00:02, 68.79tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  48%|████▊     | 156/326 [00:03<00:04, 35.11tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  52%|█████▏    | 170/326 [00:03<00:03, 47.56tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  55%|█████▌    | 180/326 [00:03<00:02, 55.15tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  58%|█████▊    | 190/326 [00:03<00:02, 62.34tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  61%|██████▏   | 200/326 [00:04<00:03, 35.05tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  65%|██████▍   | 211/326 [00:04<00:02, 44.04tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  69%|██████▊   | 224/326 [00:04<00:01, 56.89tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  72%|███████▏  | 234/326 [00:04<00:01, 63.47tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  75%|███████▍  | 244/326 [00:04<00:01, 70.44tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  78%|███████▊  | 254/326 [00:05<00:02, 35.91tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  83%|████████▎ | 269/326 [00:05<00:01, 49.89tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  86%|████████▌ | 279/326 [00:05<00:00, 56.59tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  89%|████████▊ | 289/326 [00:05<00:00, 62.54tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  92%|█████████▏| 300/326 [00:06<00:00, 37.15tensor/s][36m(tfct-pretrain-megatron-lm, pid=4588)[0m [LOW_MEMORY_SAVE] Cloning tensors:  95%|█████████▌| 310/326 [00:06<00:00, 44.55tensor/s][LOW_MEMORY_SAVE] Cloning tensors:  99%|█████████▉| 323/326 [00:06<00:00, 57.24tensor/s][LOW_MEMORY_SAVE] Cloning tensors: 100%|██████████| 326/326 [00:06<00:00, 50.23tensor/s]
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m saving checkpoint at iteration       0 to /workspace/out/megatron_pretrain_workspace/mcore_init in torch_dist format
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m WARNING:megatron.core.rerun_state_machine:Implicit initialization of Rerun State Machine!
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m WARNING:megatron.core.rerun_state_machine:RerunStateMachine initialized in mode RerunMode.DISABLED
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Using pre-built state dict (low-memory save mode)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m WARNING:megatron.core.dist_checkpointing.strategies.torch:MCore's async save is deprecated and will be removed in the future releases. Please, use NVRx async solution by setting `async_strategy` to `nvrx`.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   successfully saved checkpoint from iteration       0 to /workspace/out/megatron_pretrain_workspace/mcore_init [ t 1/1, p 1/1 ]
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [rank0]:[W729 17:14:18.057808968 ProcessGroupNCCL.cpp:1601] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Generating test split:   0%|          | 0/4358 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 4358/4358 [00:00<00:00, 466021.90 examples/s]
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [36m(tfct-pretrain-megatron-lm, pid=4588)[0m Generating train split:   0%|          | 0/36718 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 36718/36718 [00:00<00:00, 1091130.01 examples/s]
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [36m(tfct-pretrain-megatron-lm, pid=4588)[0m Generating validation split:   0%|          | 0/3760 [00:00<?, ? examples/s]Generating validation split: 100%|██████████| 3760/3760 [00:00<00:00, 688341.10 examples/s]
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "span" in type "ir.TupleType" duplicates an ancestor field in "ir.Type". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "span" in type "ir.FuncType" duplicates an ancestor field in "ir.Type". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "span" in type "ir.TensorMapType" duplicates an ancestor field in "ir.Type". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "binding_blocks" in type "script.ir_builder.relax.FunctionFrame" duplicates an ancestor field in "script.ir_builder.relax.SeqExprFrame". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "output" in type "script.ir_builder.relax.FunctionFrame" duplicates an ancestor field in "script.ir_builder.relax.SeqExprFrame". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "policy_type" in type "tl.GemmSPWarpPolicy" duplicates an ancestor field in "tl.GemmWarpPolicy". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "m_warp" in type "tl.GemmSPWarpPolicy" duplicates an ancestor field in "tl.GemmWarpPolicy". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "n_warp" in type "tl.GemmSPWarpPolicy" duplicates an ancestor field in "tl.GemmWarpPolicy". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m ERROR 07-29 17:14:48 [config.py:29] Failed to import Triton kernels. Please make sure your triton version is compatible. Error: No module named 'triton_kernels.matmul_ogs'
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO 07-29 17:14:48 [nixl_utils.py:20] Setting UCX_RCACHE_MAX_UNRELEASED to '1024' to avoid a rare memory leak in UCX when using NIXL.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m WARNING 07-29 17:14:48 [nixl_utils.py:34] NIXL is not available
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m WARNING 07-29 17:14:48 [nixl_utils.py:44] NIXL agent config is not available
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m LANG_RL Log directory: None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processing data with 8 workers.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Opening /workspace/out/megatron_pretrain_workspace/wikitext.jsonl
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Time to startup: 1.5480315685272217
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 1000 documents (1968.9053792191796 docs/s, 0.9024049511048354 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 2000 documents (3707.452464693804 docs/s, 1.6572561006331559 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 3000 documents (5232.171489019141 docs/s, 2.3334774827519675 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 4000 documents (6645.3973383104185 docs/s, 2.844846209573891 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 5000 documents (7799.128063408973 docs/s, 3.415513152497418 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 6000 documents (8918.699843923434 docs/s, 3.9493722206392476 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 7000 documents (9996.403897899572 docs/s, 4.435485853413726 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 8000 documents (10934.234460285132 docs/s, 4.8784905906313645 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 9000 documents (11748.14007488562 docs/s, 5.2136885508907564 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 10000 documents (12650.150077692953 docs/s, 5.650328626716725 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 11000 documents (13350.605817888874 docs/s, 5.976025399441638 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 12000 documents (14047.595031673736 docs/s, 6.317027622869171 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 13000 documents (14650.043244076878 docs/s, 6.5258743054952895 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 14000 documents (15239.798955953747 docs/s, 6.837658957002257 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 15000 documents (15777.633496414743 docs/s, 7.055351630651079 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 16000 documents (16295.556028790032 docs/s, 7.191811241282968 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 17000 documents (16802.81558374229 docs/s, 7.4491098791688515 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 18000 documents (17204.78158539053 docs/s, 7.668429285296279 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 19000 documents (17756.452585379026 docs/s, 7.895485919707596 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 20000 documents (18198.642837168445 docs/s, 8.096779911091712 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 21000 documents (18613.03959458914 docs/s, 8.320928145908013 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 22000 documents (18871.816015788772 docs/s, 8.448157396897464 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Processed 23000 documents (19277.320146738566 docs/s, 8.634344961926546 MB/s).
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "span" in type "ir.TupleType" duplicates an ancestor field in "ir.Type". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "span" in type "ir.FuncType" duplicates an ancestor field in "ir.Type". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "span" in type "ir.TensorMapType" duplicates an ancestor field in "ir.Type". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "binding_blocks" in type "script.ir_builder.relax.FunctionFrame" duplicates an ancestor field in "script.ir_builder.relax.SeqExprFrame". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "output" in type "script.ir_builder.relax.FunctionFrame" duplicates an ancestor field in "script.ir_builder.relax.SeqExprFrame". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "policy_type" in type "tl.GemmSPWarpPolicy" duplicates an ancestor field in "tl.GemmWarpPolicy". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "m_warp" in type "tl.GemmSPWarpPolicy" duplicates an ancestor field in "tl.GemmWarpPolicy". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "n_warp" in type "tl.GemmSPWarpPolicy" duplicates an ancestor field in "tl.GemmWarpPolicy". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m ERROR 07-29 17:15:15 [config.py:29] Failed to import Triton kernels. Please make sure your triton version is compatible. Error: No module named 'triton_kernels.matmul_ogs'
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO 07-29 17:15:15 [nixl_utils.py:20] Setting UCX_RCACHE_MAX_UNRELEASED to '1024' to avoid a rare memory leak in UCX when using NIXL.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m WARNING 07-29 17:15:15 [nixl_utils.py:34] NIXL is not available
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m WARNING 07-29 17:15:15 [nixl_utils.py:44] NIXL agent config is not available
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m LANG_RL Log directory: None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m using world size: 1, data-parallel size: 1, context-parallel size: 1, hierarchical context-parallel sizes: None, tensor-model-parallel size: 1, pipeline-model-parallel size: 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Number of virtual stages per pipeline stage: None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m accumulate and all-reduce gradients in fp32 for bfloat16 data type.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m using torch.bfloat16 for parameters ...
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m ------------------------ arguments ------------------------
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   account_for_embedding_in_pipeline_split ......... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   account_for_loss_in_pipeline_split .............. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   accumulate_allreduce_grads_in_fp32 .............. True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   activation_func_clamp_value ..................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   adam_beta1 ...................................... 0.9
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   adam_beta2 ...................................... 0.95
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   adam_eps ........................................ 1e-08
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   add_bias_linear ................................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   add_position_embedding .......................... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   add_qkv_bias .................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   adlr_autoresume ................................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   adlr_autoresume_interval ........................ 1000
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   align_grad_reduce ............................... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   align_param_gather .............................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   allow_ambiguous_pad_tokens ...................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   app_tag_run_name ................................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   app_tag_run_version ............................. 0.0.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   apply_query_key_layer_scaling ................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   apply_residual_connection_post_layernorm ........ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   apply_rope_fusion ............................... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   apply_wd_to_qk_layernorm ........................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   async_ckpt_cpu_priority ......................... 10
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   async_ckpt_io_priority .......................... 3
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   async_save ...................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   async_strategy .................................. mcore
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   attention_backend ............................... AttnBackend.auto
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   attention_dropout ............................... 0.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   attention_output_gate ........................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   attention_softmax_in_fp32 ....................... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   auto_detect_ckpt_format ......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   barrier_with_L1_time ............................ True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   batch_invariant_mode ............................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   bert_binary_head ................................ True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   bert_embedder_type .............................. megatron
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   bert_load ....................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   bf16 ............................................ True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   bias_dropout_fusion ............................. True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   bias_gelu_fusion ................................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   bias_swiglu_fusion .............................. True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   biencoder_projection_dim ........................ 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   biencoder_shared_query_context_model ............ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   block_data_path ................................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   cache_mla_latents ............................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   calc_ft_timeouts ................................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   calculate_per_token_loss ........................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   check_for_large_grads ........................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   check_for_nan_in_loss_and_grad .................. True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   check_for_spiky_loss ............................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   check_weight_hash_across_dp_replicas_interval ... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ckpt_assume_constant_structure .................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ckpt_convert_format ............................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ckpt_convert_save ............................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ckpt_convert_update_legacy_dist_opt_format ...... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ckpt_format ..................................... torch_dist
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ckpt_fully_parallel_load ........................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ckpt_fully_parallel_load_exchange_algo .......... broadcast
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ckpt_fully_parallel_load_process_group .......... dp
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ckpt_fully_parallel_save ........................ True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ckpt_fully_parallel_save_deprecated ............. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ckpt_fully_parallel_save_process_group .......... dp
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ckpt_step ....................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   classes_fraction ................................ 1.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   clip_grad ....................................... 1.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   clone_scatter_output_in_embedding ............... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   config_logger_dir ............................... 
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   consumed_train_samples .......................... 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   consumed_valid_samples .......................... 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   context_parallel_size ........................... 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   cp_comm_type .................................... ['p2p']
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   cpu_offloading_num_layers ....................... 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   cpu_offloading_retain_pinned_cpu_buffers ........ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   create_all_gather_group ......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   create_attention_mask_in_dataloader ............. True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   cross_entropy_fusion_impl ....................... native
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   cross_entropy_loss_fusion ....................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   cuda_graph_impl ................................. none
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   cuda_graph_scope ................................ []
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   cuda_graph_warmup_steps ......................... 3
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   data_args_path .................................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   data_cache_path ................................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   data_parallel_random_init ....................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   data_parallel_sharding_strategy ................. no_shard
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   data_parallel_size .............................. 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   data_path ....................................... ['/workspace/out/megatron_pretrain_workspace/wikitext_text_document']
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   data_per_class_fraction ......................... 1.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   data_sharding ................................... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dataloader_defer_npy_index_mmap ................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dataloader_fast_cache_load ...................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dataloader_type ................................. single
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ddp_average_in_collective ....................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ddp_bucket_size ................................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ddp_num_buckets ................................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ddp_pad_buckets_for_high_nccl_busbw ............. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ddp_param_name_patterns_for_fp32_local_accumulation  []
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ddp_reduce_scatter_with_fp32_accumulation ....... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   decode_only_cuda_graphs ......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   decoder_first_pipeline_num_layers ............... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   decoder_last_pipeline_num_layers ................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   decoder_num_layers .............................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   decoder_seq_length .............................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   decoupled_lr .................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   decoupled_min_lr ................................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   decrease_batch_size_if_needed ................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   defer_embedding_wgrad_compute ................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   delay_wgrad_compute ............................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   deprecated_use_mcore_models ..................... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   deterministic_mode .............................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dino_bottleneck_size ............................ 256
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dino_freeze_last_layer .......................... 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dino_head_hidden_size ........................... 2048
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dino_local_crops_number ......................... 10
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dino_local_img_size ............................. 96
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dino_norm_last_layer ............................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dino_teacher_temp ............................... 0.07
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dino_warmup_teacher_temp ........................ 0.04
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dino_warmup_teacher_temp_epochs ................. 30
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   disable_bf16_reduced_precision_matmul ........... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   disable_jit_fuser ............................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   disable_straggler_on_startup .................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   disable_symmetric_registration .................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dist_ckpt_format_deprecated ..................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dist_ckpt_optim_fully_reshardable ............... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dist_ckpt_save_pre_mcore_014 .................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dist_ckpt_strictness ............................ assume_ok_unexpected
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dist_ckpt_workers ............................... 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   distrib_optim_fully_reshardable_mem_efficient ... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   distribute_saved_activations .................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   distributed_backend ............................. nccl
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   distributed_timeout_minutes ..................... 10
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   distributed_timeout_seconds_after_init .......... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dsa_indexer_head_dim ............................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dsa_indexer_loss_coeff .......................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dsa_indexer_n_heads ............................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dsa_indexer_topk ................................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dsa_indexer_use_sparse_loss ..................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   dump_param_to_param_group_map ................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   embedding_init_method_std ....................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   embedding_path .................................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   empty_unused_memory_level ....................... 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   enable_chunked_prefill .......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   enable_cuda_graph ............................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   enable_experimental ............................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   enable_ft_package ............................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   enable_full_sharding_in_hsdp .................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   enable_gpt_oss .................................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   enable_msc ...................................... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   enable_one_logger ............................... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   encoder_num_layers .............................. 36
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   encoder_seq_length .............................. 2048
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   end_weight_decay ................................ 0.1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   eod_mask_loss ................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ep_overlap_early_attn_memory_release ............ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   error_injection_rate ............................ 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   error_injection_type ............................ transient_error
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   eval_interval ................................... 1000
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   eval_iters ...................................... 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   evidence_data_path .............................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   exit_duration_in_mins ........................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   exit_interval ................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   exit_on_missing_checkpoint ...................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   exit_signal ..................................... 15
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   exit_signal_handler ............................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   exit_signal_handler_for_dataloader .............. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   exit_signal_handler_for_training ................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   exp_avg_dtype ................................... torch.float32
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   exp_avg_sq_dtype ................................ torch.float32
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   experimental_attention_variant .................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   expert_model_parallel_size ...................... 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   expert_tensor_parallel_size ..................... 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   export_default_te_spec .......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   export_force_local_attention .................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   export_kd_cfg ................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   export_kd_teacher_ckpt_format ................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   export_kd_teacher_load .......................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   export_kd_teacher_model_config .................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   export_kv_cache_quant ........................... none
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   export_legacy_megatron .......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   export_model_type ............................... GPTModel
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   export_moe_apply_probs_on_input ................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   export_offline_model ............................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   export_qk_l2_norm ............................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   export_quant_cfg ................................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   export_real_quant_cfg ........................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   export_te_mcore_model ........................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   external_cuda_graph ............................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fake_process_group .............................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ffn_hidden_size ................................. 9728
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fim_data ........................................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fim_eod_token ................................... <|endoftext|>
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fim_fragment_rate ............................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fim_middle_token ................................ <fim_middle>
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fim_no_prefix ................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fim_pad_token ................................... <fim_pad>
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fim_prefix_token ................................ <fim_prefix>
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fim_rate ........................................ 0.5
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fim_split_sample ................................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fim_spm_rate .................................... 0.5
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fim_suffix_token ................................ <fim_suffix>
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fine_grained_activation_offloading .............. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   finetune ........................................ True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   finetune_data_split ............................. train
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   finetune_hf_dataset ............................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   first_last_layers_bf16 .......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   flash_decode .................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   flight_recorder_dump_on_timeout ................. True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   flight_recorder_dump_path ....................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   flight_recorder_extra_dump_on_exec .............. True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   flight_recorder_include_only_active ............. True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   flight_recorder_include_stack_trace ............. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   flight_recorder_trace_buffer_size ............... 2000
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fp16 ............................................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fp16_lm_cross_entropy ........................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fp32_residual_connection ........................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fp4 ............................................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fp4_param_gather ................................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fp4_quantizer_factory ........................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fp4_recipe ...................................... nvfp4
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fp8 ............................................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fp8_amax_compute_algo ........................... most_recent
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fp8_amax_history_len ............................ 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fp8_interval .................................... 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fp8_margin ...................................... 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fp8_param_gather ................................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fp8_quantizer_factory ........................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fp8_recipe ...................................... delayed
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fp8_wgrad ....................................... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fsdp_double_buffer .............................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fsdp_manual_registration ........................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ft_num_warmup_iters ............................. 5
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   full_validation ................................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   fused_residual_rmsnorm .......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   global_batch_size ............................... 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   glu_linear_offset ............................... 0.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   grad_reduce_in_bf16 ............................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   gradient_accumulation_fusion .................... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   gradient_reduce_div_fusion ...................... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   group_query_attention ........................... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   grpo_clamp_eps_lower ............................ 0.01
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   grpo_clamp_eps_upper ............................ 0.01
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   grpo_entropy_term_weight ........................ 0.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   grpo_filter_groups_with_same_reward ............. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   grpo_group_size ................................. 2
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   grpo_iterations ................................. 2
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   grpo_kl_beta .................................... 0.001
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   grpo_prompts_per_step ........................... 32
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   head_lr_mult .................................... 1.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   heterogeneous_layers_config_encoded_json ........ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   heterogeneous_layers_config_path ................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   hidden_dropout .................................. 0.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   hidden_size ..................................... 2560
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   hierarchical_context_parallel_sizes ............. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   high_priority_stream_groups ..................... []
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   hybrid_context_parallel ......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   hybrid_layer_pattern ............................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   hybrid_override_pattern ......................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   hysteresis ...................................... 2
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ict_head_size ................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   ict_load ........................................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   img_h ........................................... 224
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   img_w ........................................... 224
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   indexer_batch_size .............................. 128
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   indexer_log_interval ............................ 1000
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_batch_times_seqlen_threshold .......... -1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_coordinator_port ...................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_disable_triton_nvls_kernels ........... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_dynamic_batching ...................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_dynamic_batching_block_size ........... 256
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_dynamic_batching_buffer_size_gb ....... 40.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_dynamic_batching_cuda_graph_max_tokens  16384
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_dynamic_batching_cuda_graph_mixed_prefill_count  16
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_dynamic_batching_enable_prefix_caching  False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_dynamic_batching_mamba_memory_ratio ... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_dynamic_batching_max_requests ......... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_dynamic_batching_max_tokens ........... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_dynamic_batching_num_cuda_graphs ...... 16
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_dynamic_batching_paused_buffer_size_gb  None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_dynamic_batching_prefix_caching_coordinator_policy  first_prefix_block
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_dynamic_batching_prefix_caching_eviction_policy  ref_zero
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_dynamic_batching_prefix_caching_mamba_gb  None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_dynamic_batching_prefix_caching_routing_alpha  0.5
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_dynamic_batching_track_generated_token_events  False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_dynamic_batching_track_paused_request_events  False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_dynamic_batching_unified_memory_level . 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_fuse_tp_communication ................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_grouped_gemm_backend .................. auto
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_logging_step_interval ................. 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_max_requests .......................... 8
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_max_seq_length ........................ 2560
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_moe_disable_fused_quant_kernels ....... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_rng_tracker ........................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_text_gen_server_logging ............... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_use_synchronous_zmq_collectives ....... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inference_wandb_logging ......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   init_method_std ................................. 0.02
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   init_method_xavier_uniform ...................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   init_model_with_meta_device ..................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   initial_loss_scale .............................. 4294967296
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inprocess_active_world_size ..................... 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inprocess_barrier_timeout ....................... 120
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inprocess_completion_timeout .................... 120
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inprocess_empty_cuda_cache ...................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inprocess_granularity ........................... node
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inprocess_hard_timeout .......................... 90
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inprocess_heartbeat_interval .................... 30
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inprocess_heartbeat_timeout ..................... 60
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inprocess_last_call_wait ........................ 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inprocess_max_iterations ........................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inprocess_monitor_process_interval .............. 1.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inprocess_monitor_thread_interval ............... 1.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inprocess_progress_watchdog_interval ............ 1.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inprocess_restart ............................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inprocess_soft_timeout .......................... 60
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   inprocess_termination_grace_time ................ 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   is_hybrid_model ................................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   iter_per_epoch .................................. 1250
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   iterations_to_skip .............................. []
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   keep_fp8_transpose_cache ........................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   kitchen_attention_backend ....................... sdpa
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   kv_channels ..................................... 128
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   kv_lora_rank .................................... 32
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   langrl_env_config ............................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   layernorm_epsilon ............................... 1e-06
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   layernorm_zero_centered_gamma ................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   lazy_mpu_init ................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   linear_attention_freq ........................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   linear_conv_kernel_dim .......................... 4
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   linear_key_head_dim ............................. 128
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   linear_num_key_heads ............................ 16
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   linear_num_value_heads .......................... 32
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   linear_value_head_dim ........................... 128
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   lion_beta1 ...................................... 0.95
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   lion_beta2 ...................................... 0.98
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   load ............................................ /workspace/out/megatron_pretrain_workspace/checkpoint
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   load_main_params_from_ckpt ...................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   local_rank ...................................... 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   log_device_memory_used .......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   log_energy ...................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   log_interval .................................... 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   log_loss_scale_to_tensorboard ................... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   log_max_attention_logit ......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   log_memory_interval ............................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   log_memory_to_tensorboard ....................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   log_num_zeros_in_grad ........................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   log_params_norm ................................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   log_progress .................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   log_straggler ................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   log_throughput .................................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   log_timers_to_tensorboard ....................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   log_validation_ppl_to_tensorboard ............... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   log_world_size_to_tensorboard ................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   logging_level ................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   loss_scale ...................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   loss_scale_window ............................... 1000
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   lr .............................................. 2e-05
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   lr_decay_iters .................................. 5
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   lr_decay_samples ................................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   lr_decay_style .................................. cosine
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   lr_warmup_fraction .............................. 0.02
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   lr_warmup_init .................................. 0.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   lr_warmup_iters ................................. 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   lr_warmup_samples ............................... 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   lr_wsd_decay_iters .............................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   lr_wsd_decay_samples ............................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   lr_wsd_decay_style .............................. exponential
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   main_grads_dtype ................................ torch.float32
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   main_params_dtype ............................... torch.float32
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   make_vocab_size_divisible_by .................... 128
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mamba_head_dim .................................. 64
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mamba_inference_conv_states_dtype ............... torch.bfloat16
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mamba_inference_ssm_states_dtype ................ torch.bfloat16
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mamba_num_groups ................................ 8
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mamba_num_heads ................................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mamba_state_dim ................................. 128
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   manual_gc ....................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   manual_gc_eval .................................. True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   manual_gc_interval .............................. 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mask_factor ..................................... 1.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mask_prob ....................................... 0.15
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mask_type ....................................... random
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   masked_softmax_fusion ........................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   max_position_embeddings ......................... 40960
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   max_seqlen_per_dp_cp_rank ....................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   max_tokens_to_oom ............................... 12000
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   megatron_fsdp_grad_comm_dtype ................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   megatron_fsdp_main_grads_dtype .................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   megatron_fsdp_main_params_dtype ................. torch.float32
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   memory_snapshot_path ............................ snapshot.pickle
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   merge_file ...................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   micro_batch_size ................................ 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   microbatch_group_size_per_vp_stage .............. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mid_level_dataset_surplus ....................... 0.005
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   min_loss_scale .................................. 1.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   min_lr .......................................... 2.0000000000000003e-06
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   min_offloaded_tensor_size ....................... 1048576
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mla_down_proj_fusion ............................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mlp_chunks_for_prefill .......................... 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mmap_bin_files .................................. True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mock_data ....................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   modelopt_enabled ................................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_apply_probs_on_input ........................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_aux_loss_coeff .............................. 0.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_deepep_num_sms .............................. 20
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_enable_deepep ............................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_enable_routing_replay ....................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_expert_capacity_factor ...................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_ffn_hidden_size ............................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_flex_dispatcher_backend ..................... deepep
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_grouped_gemm ................................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_hybridep_num_blocks_permute ................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_hybridep_num_blocks_unpermute ............... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_hybridep_num_sms ............................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_input_jitter_eps ............................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_latent_size ................................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_layer_freq .................................. 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_layer_recompute ............................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_pad_expert_input_to_capacity ................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_pad_experts_for_cuda_graph_inference ........ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_per_layer_logging ........................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_permute_fusion .............................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_permute_fusion_into_hybridep ................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_router_bias_update_rate ..................... 0.001
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_router_dtype ................................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_router_enable_expert_bias ................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_router_force_biased ......................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_router_force_load_balancing ................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_router_fusion ............................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_router_group_topk ........................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_router_load_balancing_type .................. aux_loss
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_router_num_groups ........................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_router_padding_for_fp8 ...................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_router_padding_for_quantization ............. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_router_pre_softmax .......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_router_score_function ....................... softmax
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_router_topk ................................. 2
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_router_topk_scaling_factor .................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_shared_expert_gate .......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_shared_expert_intermediate_size ............. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_shared_expert_overlap ....................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_token_dispatcher_type ....................... allgather
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_token_drop_policy ........................... probs
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_upcycling_granularity ....................... 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_use_upcycling ............................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   moe_z_loss_coeff ................................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mrope_section ................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mscale .......................................... 1.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mscale_all_dim .................................. 0.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mtp_hybrid_override_pattern ..................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mtp_loss_scaling_factor ......................... 0.1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mtp_num_layers .................................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mtp_standalone .................................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mtp_use_repeated_layer .......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   multi_latent_attention .......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   multiple_validation_sets ........................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   muon_coefficient_type ........................... quintic
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   muon_extra_scale_factor ......................... 1.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   muon_fp32_matmul_prec ........................... medium
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   muon_momentum ................................... 0.9
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   muon_num_ns_steps ............................... 5
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   muon_scalar_optimizer ........................... adam
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   muon_scale_mode ................................. spectral
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   muon_split_qkv .................................. True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   muon_tp_mode .................................... blockwise
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   muon_use_nesterov ............................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mup_attn_scale_power ............................ 1.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mup_base_head_dim ............................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mup_base_hidden_size ............................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mup_embedding_mult .............................. 1.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mup_output_mult ................................. 1.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   mup_width_mult .................................. 1.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   nccl_all_reduce_for_prefill ..................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   nccl_communicator_config_path ................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   nccl_ub ......................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   no_load_optim ................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   no_load_rng ..................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   no_persist_layer_norm ........................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   no_rope_freq .................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   no_save_optim ................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   no_save_rng ..................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   no_weight_decay_cond_type ....................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   non_persistent_ckpt_type ........................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   non_persistent_global_ckpt_dir .................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   non_persistent_local_ckpt_algo .................. fully_parallel
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   non_persistent_local_ckpt_dir ................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   non_persistent_save_interval .................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   normalization ................................... RMSNorm
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   num_attention_heads ............................. 32
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   num_channels .................................... 3
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   num_classes ..................................... 1000
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   num_dataset_builder_threads ..................... 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   num_distributed_optimizer_instances ............. 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   num_experts ..................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   num_layers ...................................... 36
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   num_layers_at_end_in_bf16 ....................... 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   num_layers_at_start_in_bf16 ..................... 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   num_layers_per_virtual_pipeline_stage ........... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   num_query_groups ................................ 8
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   num_speculative_tokens .......................... 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   num_virtual_stages_per_pipeline_rank ............ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   num_workers ..................................... 2
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   object_storage_cache_path ....................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   offload_modules ................................. []
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   one_logger_async ................................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   one_logger_project .............................. megatron-lm
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   one_logger_run_name ............................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   onnx_safe ....................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   openai_gelu ..................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   optimizer ....................................... adam
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   optimizer_cpu_offload ........................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   optimizer_cuda_graph ............................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   optimizer_offload_fraction ...................... 1.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   outer_dp_sharding_strategy ...................... no_shard
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   output_bert_embeddings .......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   overlap_cpu_optimizer_d2h_h2d ................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   overlap_grad_reduce ............................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   overlap_moe_expert_parallel_comm ................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   overlap_p2p_comm ................................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   overlap_p2p_comm_warmup_flush ................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   overlap_param_gather ............................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   overlap_param_gather_with_optimizer_step ........ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   override_opt_param_scheduler .................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   padded_vocab_size ............................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   params_dtype .................................... torch.bfloat16
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   patch_dim ....................................... 16
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   per_dataset_sequences_path ...................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   per_split_data_args_path ........................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   perform_initialization .......................... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   perform_rl_step ................................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   phase_transition_iterations ..................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   pin_cpu_grads ................................... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   pin_cpu_params .................................. True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   pipeline_model_parallel_comm_backend ............ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   pipeline_model_parallel_layout .................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   pipeline_model_parallel_size .................... 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   position_embedding_type ......................... rope
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   pretrained_checkpoint ........................... /workspace/out/megatron_pretrain_workspace/mcore_init
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   profile ......................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   profile_ranks ................................... []
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   profile_step_end ................................ 12
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   profile_step_start .............................. 10
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   pytorch_profiler_collect_callstack .............. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   pytorch_profiler_collect_chakra ................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   pytorch_profiler_collect_shapes ................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   q_lora_rank ..................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   qk_clip ......................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   qk_clip_alpha ................................... 0.5
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   qk_clip_threshold ............................... 100
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   qk_head_dim ..................................... 128
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   qk_l2_norm ...................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   qk_layernorm .................................... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   qk_pos_emb_head_dim ............................. 64
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   query_in_block_prob ............................. 0.1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   quick_geglu ..................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rampup_batch_size ............................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rank ............................................ 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   recompute_granularity ........................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   recompute_method ................................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   recompute_modules ............................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   recompute_num_layers ............................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   record_memory_history ........................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   refit_method .................................... gloo
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   relative_attention_max_distance ................. 128
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   relative_attention_num_buckets .................. 32
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   replication ..................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   replication_factor .............................. 2
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   replication_jump ................................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rerun_mode ...................................... validate_results
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   reset_attention_mask ............................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   reset_position_ids .............................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   result_rejected_tracker_filename ................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   retriever_report_topk_accuracies ................ []
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   retriever_score_scaling ......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   reuse_grad_buf_for_mxfp8_param_ag ............... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_default_temperature .......................... 1.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_default_top_k ................................ -1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_default_top_p ................................ 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_generation_batch_size ........................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_importance_sampling_truncation_coef .......... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_inference_expert_model_parallel_size ......... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_inference_expert_tensor_model_parallel_size .. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_inference_logprobs_is_correction ............. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_inference_model_unified_memory_level ......... 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_inference_parsers ............................ []
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_inference_pipeline_model_parallel_size ....... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_inference_tensor_model_parallel_size ......... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_kv_cache_management_mode ..................... persist
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_num_parallel_generation_batches .............. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_num_parallel_generations ..................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_offload_inference_model_weights_when_idle .... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_offload_optimizer_during_inference ........... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_parallel_generation_tasks .................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_partial_rollouts ............................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_persist_cuda_graphs .......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_prompts_per_eval ............................. 32
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_sequence_packing_algo ........................ fifo
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_sequence_packing_max_sequences_per_bin ....... 50
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_skip_bos_token ............................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_training_cuda_graphs ......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_use_sequence_packing ......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rl_verify_model_weights_swap .................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rope_scaling_factor ............................. 8.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rope_type ....................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rotary_base ..................................... 1000000
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rotary_interleaved .............................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rotary_percent .................................. 1.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rotary_scaling_factor ........................... 1.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rotary_seq_len_interpolation_factor ............. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   run_workload_inspector_server ................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   sample_rate ..................................... 1.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   save ............................................ /workspace/out/megatron_pretrain_workspace/checkpoint
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   save_dgrads_interval ............................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   save_interval ................................... 1000
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   save_retain_interval ............................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   save_wgrads_interval ............................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   scatter_gather_tensors_in_pipeline .............. True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   seed ............................................ 1234
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   seq_length ...................................... 2048
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   sequence_parallel ............................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   sft ............................................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   sft_tokenizer_prompt_format ..................... nemotron-h-aligned
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   sgd_momentum .................................... 0.9
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   sharp_enabled_group ............................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   short_seq_prob .................................. 0.1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   skip_train ...................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   skipped_train_samples ........................... 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   softmax_type .................................... vanilla
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   spec ............................................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   split ........................................... 100,0,0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   squared_relu .................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   start_weight_decay .............................. 0.1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   straggler_ctrlr_port ............................ 65535
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   straggler_minmax_count .......................... 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   strict_fsdp_dtensor_load ........................ True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   suggested_communication_unit_size ............... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   swiglu .......................................... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   swin_backbone_type .............................. tiny
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   symmetric_ar_type ............................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   te_precision_config_file ........................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   te_rng_tracker .................................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tensor_model_parallel_size ...................... 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tensorboard_dir ................................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tensorboard_log_interval ........................ 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tensorboard_queue_size .......................... 1000
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   test_data_path .................................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   test_mode ....................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tiktoken_num_special_tokens ..................... 1000
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tiktoken_pattern ................................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tiktoken_special_tokens ......................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   timing_log_level ................................ 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   timing_log_option ............................... minmax
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   titles_data_path ................................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tokenizer_hf_include_special_tokens ............. True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tokenizer_hf_no_include_special_tokens .......... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tokenizer_hf_no_use_fast ........................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tokenizer_hf_use_fast ........................... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tokenizer_metadata .............................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tokenizer_model ................................. /workspace/out/megatron_pretrain_workspace/hf_tokenizer
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tokenizer_sentencepiece_legacy .................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tokenizer_special_tokens ........................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tokenizer_type .................................. HuggingFaceTokenizer
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   torch_fsdp2_reshard_after_forward ............... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tp_comm_bootstrap_backend ....................... nccl
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tp_comm_bulk_dgrad .............................. True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tp_comm_bulk_wgrad .............................. True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tp_comm_overlap ................................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tp_comm_overlap_ag .............................. True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tp_comm_overlap_cfg ............................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tp_comm_overlap_rs .............................. True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tp_comm_overlap_rs_dgrad ........................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tp_comm_split_ag ................................ True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   tp_comm_split_rs ................................ True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   train_data_path ................................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   train_iters ..................................... 5
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   train_samples ................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   train_sync_interval ............................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   transformer_impl ................................ transformer_engine
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   transformer_pipeline_model_parallel_size ........ 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   trust_remote_code ............................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   untie_embeddings_and_output_weights ............. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_checkpoint_args ............................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_checkpoint_opt_param_scheduler .............. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_cpu_initialization .......................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_dist_ckpt ................................... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_dist_ckpt_deprecated ........................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_distributed_optimizer ....................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_flash_attn .................................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_fused_weighted_squared_relu ................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_gloo_process_groups ......................... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_kitchen_attention ........................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_legacy_models ............................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_legacy_static_engine ........................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_mamba_mem_eff_path .......................... True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_megatron_fsdp ............................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_mp_args_from_checkpoint_args ................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_mup ......................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_one_sent_docs ............................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_persistent_ckpt_worker ...................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_precision_aware_optimizer ................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_pytorch_profiler ............................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_ring_exchange_p2p ........................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_rope_scaling ................................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_rotary_position_embeddings .................. True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_sharp ....................................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_te_activation_func .......................... False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_tokenizer_model_from_checkpoint_args ........ True
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_torch_fsdp2 ................................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_torch_optimizer_for_cpu_offload ............. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   use_tp_pp_dp_mapping ............................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   v_head_dim ...................................... 128
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   valid_data_path ................................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   variable_seq_lengths ............................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   verify_integrity ................................ False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   virtual_pipeline_model_parallel_size ............ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   vision_backbone_type ............................ vit
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   vision_pretraining .............................. False
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   vision_pretraining_type ......................... classify
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   vocab_extra_ids ................................. 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   vocab_file ...................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   vocab_size ...................................... 151936
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   wandb_entity .................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   wandb_exp_name .................................. pretrain-4b-wikitext-megatron-lm
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   wandb_project ................................... tfct-smoke
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   wandb_save_dir .................................. None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   weight_decay .................................... 0.1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   weight_decay_incr_style ......................... constant
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   wgrad_deferral_limit ............................ 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   window_attn_skip_freq ........................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   window_size ..................................... None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   world_size ...................................... 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   yaml_cfg ........................................ None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m -------------------- end of arguments ---------------------
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO:megatron.core.num_microbatches_calculator:setting number of microbatches to constant 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO:megatron.core.tokenizers.utils.build_tokenizer: > padded vocab (size: 151669) with 11 dummy tokens (new size: 151680)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m wandb: Currently logged in as: jaegookyou (jaegookyou-personal) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m wandb: setting up run g4mqxo9q
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m wandb: Tracking run with wandb version 0.28.1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m wandb: Run data is saved locally in /workspace/out/megatron_pretrain_workspace/checkpoint/wandb/wandb/run-20260729_171518-g4mqxo9q
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m wandb: Run `wandb offline` to turn off syncing.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m wandb: Syncing run pretrain-4b-wikitext-megatron-lm
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m wandb: ⭐️ View project at https://wandb.ai/jaegookyou-personal/tfct-smoke
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m wandb: 🚀 View run at https://wandb.ai/jaegookyou-personal/tfct-smoke/runs/g4mqxo9q
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m wandb: Detected [openai] in use.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m wandb: Use W&B Weave for improved LLM call tracing. Install Weave with `pip install weave` then add `import weave` to the top of your script.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m wandb: For more information, check out the docs at: https://weave-docs.wandb.ai
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m WARNING: one_logger package is required to enable e2e metrics tracking. please go to https://confluence.nvidia.com/display/MLWFO/Package+Repositories for details to install it
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m WARNING:megatron.core.rerun_state_machine:RerunStateMachine initialized in mode RerunMode.VALIDATE_RESULTS
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m > initializing torch distributed ...
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m > initialized tensor model parallel with size 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m > initialized pipeline model parallel with size 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m > setting random seeds to 1234 ...
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m > compiling dataset index builder ...
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m make: Entering directory '/opt/Megatron-LM/megatron/core/datasets'
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m g++ -O3 -Wall -shared -std=c++17 -fPIC -fdiagnostics-color -I/usr/include/python3.12 -I/opt/venv/lib/python3.12/site-packages/pybind11/include helpers.cpp -o helpers_cpp.cpython-312-x86_64-linux-gnu.so
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m make: Leaving directory '/opt/Megatron-LM/megatron/core/datasets'
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m >>> done with dataset index builder. Compilation time: 5.862 seconds
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [rank0]:[W729 17:15:27.498625776 ProcessGroupNCCL.cpp:5238] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m time to initialize megatron (seconds): 14.899
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [after in-process setup and before initialize_megatron] datetime: 2026-07-29 17:15:15.692845 
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [after in-job setup and before initialize_megatron] datetime: 2026-07-29 17:15:15.737822 
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO:megatron.core.timers:(min, max) time across ranks (ms):
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     startup-library-setup ..........................: (18791.85, 18791.85)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     startup-program-setup ..........................: (63.81, 63.81)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     startup-in-process-setup .......................: (0.00, 0.00)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     startup-in-job-setup ...........................: (44.98, 44.98)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     startup-initialize-megatron ....................: (12254.35, 12254.35)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     startup-set-jit-fusion-options .................: (2289.60, 2289.60)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     all-reduce-start-timestamps-tensor .............: (0.55, 0.55)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     startup-megatron-init-local ....................: (14589.48, 14589.48)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     startup-megatron-init-global ...................: (33445.14, 33445.14)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [before library-setup] datetime: 2026-07-29 17:14:56.837185
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [after library-setup] datetime: 2026-07-29 17:15:15.629034
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [before megatron-init] datetime: 2026-07-29 17:15:15.692843
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [after megatron is initialized] datetime: 2026-07-29 17:15:30.286011 
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Failed to inspect checkpoint in /workspace/out/megatron_pretrain_workspace/checkpoint: /workspace/out/megatron_pretrain_workspace/checkpoint is not a MLM or NeMo sharded checkpoint!
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m building GPT model ...
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m  > number of parameters on (tensor, pipeline) model parallel rank (0, 0): 4021812736
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO:megatron.core.distributed.distributed_data_parallel:Setting up DistributedDataParallel with config DistributedDataParallelConfig(grad_reduce_in_fp32=True, overlap_grad_reduce=False, overlap_param_gather=False, align_param_gather=False, use_distributed_optimizer=False, num_distributed_optimizer_instances=1, check_for_nan_in_grad=True, check_for_large_grads=False, bucket_size=None, pad_buckets_for_high_nccl_busbw=False, reduce_scatter_with_fp32_accumulation=False, param_name_patterns_for_fp32_local_accumulation=(), average_in_collective=False, fp8_param_gather=False, fp4_param_gather=False, reuse_grad_buf_for_mxfp8_param_ag=False, use_megatron_fsdp=False, use_custom_fsdp=False, data_parallel_sharding_strategy='no_shard', gradient_reduce_div_fusion=True, suggested_communication_unit_size=None, keep_fp8_transpose_cache=False, nccl_ub=False, fsdp_double_buffer=False, fsdp_db_use_persist_buf_on_alloc_fail=False, fsdp_all_gather_in_start_param_sync=True, outer_dp_sharding_strategy='no_shard', disable_symmetric_registration=False, fsdp_manual_registration=False, delay_wgrad_compute=False, megatron_fsdp_main_params_dtype=torch.float32, megatron_fsdp_main_grads_dtype=None, megatron_fsdp_grad_comm_dtype=None)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO:megatron.core.distributed.param_and_grad_buffer:Number of buckets for gradient all-reduce / reduce-scatter: 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Params for bucket 1 (4021812736 elements, 4021812736 padded size, 0 param(s) with extra main_grads):
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.final_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.35.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.35.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.35.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.35.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.35.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.35.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.35.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.35.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.34.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.34.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.34.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.34.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.34.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.34.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.34.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.34.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.33.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.33.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.33.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.33.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.33.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.33.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.33.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.33.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.32.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.32.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.32.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.32.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.32.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.32.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.32.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.32.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.31.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.31.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.31.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.31.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.31.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.31.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.31.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.31.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.30.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.30.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.30.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.30.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.30.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.30.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.30.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.30.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.29.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.29.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.29.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.29.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.29.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.29.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.29.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.29.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.28.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.28.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.28.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.28.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.28.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.28.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.28.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.28.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.27.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.27.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.27.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.27.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.27.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.27.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.27.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.27.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.26.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.26.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.26.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.26.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.26.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.26.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.26.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.26.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.25.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.25.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.25.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.25.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.25.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.25.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.25.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.25.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.24.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.24.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.24.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.24.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.24.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.24.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.24.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.24.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.23.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.23.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.23.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.23.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.23.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.23.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.23.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.23.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.22.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.22.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.22.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.22.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.22.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.22.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.22.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.22.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.21.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.21.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.21.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.21.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.21.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.21.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.21.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.21.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.20.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.20.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.20.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.20.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.20.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.20.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.20.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.20.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.19.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.19.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.19.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.19.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.19.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.19.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.19.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.19.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.18.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.18.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.18.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.18.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.18.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.18.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.18.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.18.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.17.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.17.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.17.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.17.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.17.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.17.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.17.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.17.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.16.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.16.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.16.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.16.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.16.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.16.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.16.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.16.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.15.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.15.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.15.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.15.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.15.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.15.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.15.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.15.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.14.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.14.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.14.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.14.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.14.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.14.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.14.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.14.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.13.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.13.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.13.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.13.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.13.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.13.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.13.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.13.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.12.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.12.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.12.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.12.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.12.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.12.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.12.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.12.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.11.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.11.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.11.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.11.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.11.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.11.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.11.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.11.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.10.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.10.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.10.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.10.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.10.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.10.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.10.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.10.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.9.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.9.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.9.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.9.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.9.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.9.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.9.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.9.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.8.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.8.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.8.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.8.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.8.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.8.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.8.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.8.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.7.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.7.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.7.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.7.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.7.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.7.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.7.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.7.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.6.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.6.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.6.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.6.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.6.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.6.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.6.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.6.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.5.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.5.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.5.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.5.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.5.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.5.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.5.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.5.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.4.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.4.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.4.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.4.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.4.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.4.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.4.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.4.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.3.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.3.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.3.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.3.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.3.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.3.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.3.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.3.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.2.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.2.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.2.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.2.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.2.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.2.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.2.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.2.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.1.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.1.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.1.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.1.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.1.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.1.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.1.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.1.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.0.mlp.linear_fc2.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.0.mlp.linear_fc1.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.0.mlp.linear_fc1.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.0.self_attention.k_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.0.self_attention.q_layernorm.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.0.self_attention.linear_qkv.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.0.self_attention.linear_qkv.layer_norm_weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.decoder.layers.0.self_attention.linear_proj.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 	module.embedding.word_embeddings.weight (param.main_grad.dtype=torch.float32)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO:megatron.core.optimizer:Setting up optimizer with config AdamOptimizerConfig(lr=2e-05, min_lr=2.0000000000000003e-06, decoupled_lr=None, decoupled_min_lr=None, weight_decay=0.1, apply_wd_to_qk_layernorm=False, fp8_recipe='delayed', fp16=False, bf16=True, reuse_grad_buf_for_mxfp8_param_ag=False, params_dtype=torch.bfloat16, use_precision_aware_optimizer=False, store_param_remainders=True, main_grads_dtype=torch.float32, main_params_dtype=torch.float32, exp_avg_dtype=torch.float32, exp_avg_sq_dtype=torch.float32, optimizer='adam', loss_scale=None, initial_loss_scale=4294967296, min_loss_scale=1.0, loss_scale_window=1000, hysteresis=2, adam_beta1=0.9, adam_beta2=0.95, adam_eps=1e-08, decoupled_weight_decay=True, sgd_momentum=0.9, muon_momentum=0.9, muon_split_qkv=True, muon_use_nesterov=False, muon_scale_mode='spectral', muon_fp32_matmul_prec='medium', muon_coefficient_type='quintic', muon_num_ns_steps=5, muon_tp_mode='blockwise', muon_extra_scale_factor=1.0, muon_scalar_optimizer='adam', lion_beta1=0.95, lion_beta2=0.98, use_distributed_optimizer=False, overlap_param_gather=False, overlap_param_gather_with_optimizer_step=False, optimizer_cpu_offload=False, optimizer_offload_fraction=1.0, use_torch_optimizer_for_cpu_offload=False, overlap_cpu_optimizer_d2h_h2d=False, pin_cpu_grads=True, pin_cpu_params=True, clip_grad=1.0, log_num_zeros_in_grad=False, barrier_with_L1_time=True, timers=<megatron.core.timers.Timers object at 0x7dd67a35fd10>, config_logger_dir='', optimizer_cuda_graph=False)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO:megatron.core.optimizer_param_scheduler:> learning rate decay style: cosine
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Checkpoint file not found in load directory /workspace/out/megatron_pretrain_workspace/checkpoint attempting to finetune with checkpoint in /workspace/out/megatron_pretrain_workspace/mcore_init
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m WARNING: TP size not found in checkpoint args, using 1 as default.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m WARNING: PP size not found in checkpoint args, using 1 as default.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m sharded_state_dict metadata loaded from the checkpoint: {'singleton_local_shards': False, 'chained_optim_avoid_prefix': True}
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Job sharding has changed: Rerun state will be ignored
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m  loading distributed checkpoint from /workspace/out/megatron_pretrain_workspace/mcore_init at iteration 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m could not find arguments in the checkpoint ...
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m  checkpoint version 3.0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   successfully loaded checkpoint from /workspace/out/megatron_pretrain_workspace/mcore_init [ t 1/1, p 1/1 ] at iteration 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   failed to find checkpoint /workspace/out/megatron_pretrain_workspace/mcore_init/iter_0000000 in wandb
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO:megatron.core.timers:(min, max) time across ranks (ms):
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     load-checkpoint ................................: (5348.76, 5348.76)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [after model, optimizer, and learning rate scheduler are built] datetime: 2026-07-29 17:15:35.923304 
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m > building train, validation, and test datasets ...
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m  > datasets target sizes (minimum size):
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     train:      5
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     validation: 0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     test:       0
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO:megatron.core.datasets.blended_megatron_dataset_config:Let split_matrix = [(0, 1.0), None, None]
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m > building train, validation, and test datasets for GPT ...
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO:megatron.core.datasets.blended_megatron_dataset_builder:Building GPTDataset splits with sizes=(5, 0, 0) and config=GPTDatasetConfig(random_seed=1234, sequence_length=2048, blend=(['/workspace/out/megatron_pretrain_workspace/wikitext_text_document'], None), blend_per_split=None, multiple_validation_sets=False, full_validation=False, split='100,0,0', split_matrix=[(0, 1.0), None, None], num_dataset_builder_threads=1, path_to_cache=None, mmap_bin_files=True, mock=False, tokenizer=<megatron.core.tokenizers.text.models.default_tokenizer.DefaultTokenizerText object at 0x7dd660583680>, mid_level_dataset_surplus=0.005, allow_ambiguous_pad_tokens=False, fast_cache_load=False, defer_npy_index_mmap=False, reset_position_ids=False, reset_attention_mask=False, eod_mask_loss=False, create_attention_mask=True, drop_last_partial_validation_sequence=True, add_extra_token_to_sequence=True, object_storage_cache_path=None, data_parallel_size=1, sequence_parallel_size=0, hybrid_context_parallel=False, sequences_per_dataset=None, token_dtype_code=4, context_parallel_size=1)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO:megatron.core.datasets.indexed_dataset:Load the _IndexReader from /workspace/out/megatron_pretrain_workspace/wikitext_text_document.idx
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO:megatron.core.datasets.indexed_dataset:	Extract the sequence lengths
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO:megatron.core.datasets.indexed_dataset:	Extract the sequence pointers
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO:megatron.core.datasets.indexed_dataset:	Extract the document indices
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO:megatron.core.datasets.indexed_dataset:> total number of sequences: 23767
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO:megatron.core.datasets.indexed_dataset:> total number of documents: 23767
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO:megatron.core.datasets.gpt_dataset:Build and save the GPTDataset train indices
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO:megatron.core.datasets.gpt_dataset:> total number of samples: 1230
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO:megatron.core.datasets.gpt_dataset:> total number of epochs: 1
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m > finished creating GPT datasets ...
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [after dataloaders are built] datetime: 2026-07-29 17:15:37.044604 
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m done with setup ...
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO:megatron.core.timers:(min, max) time across ranks (ms):
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     model-and-optimizer-setup ......................: (5636.42, 5636.42)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     train/valid/test-data-iterators-setup ..........: (1120.06, 1120.06)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m training ...
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Overwriting rerun_state_machine.current_iteration from -1 to 0...
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [before the start of training step] datetime: 2026-07-29 17:15:37.056499 
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m WARNING:megatron.core.rerun_state_machine:Result validation enabled
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m  [2026-07-29 17:15:40.496499] iteration        1/       5 | consumed samples:            1 | elapsed time per iteration (ms): 3440.1 | learning rate: 1.854279E-05 | global batch size:     1 | lm loss: 2.355861E+00 | loss scale: 1.0 | grad norm: 7.644 | number of skipped iterations:   0 | number of nan iterations:   0 |
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Number of parameters in transformer block in billions:  3.63
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Number of active parameters in transformer block in billions:  3.63
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Number of parameters in embedding layers in billions: 0.39
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Total number of parameters in billions: 4.02
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Total number of active parameters in billions: 4.02
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Number of parameters in most loaded shard in billions: 4.0218
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m compute_activation_memory_without_sp
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Activation memory footprint per transformer layer (precise, without SP): 170.0 MB
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Theoretical memory footprints: weight and optimizer=69038.83 MB, activation=7063.89 MB, total=76102.72 MB
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [Rank 0] (after 1 iterations) memory (MB) | allocated: 70230.39 | max allocated: 70230.39 | reserved: 74906.00 | max reserved: 74906.00
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m  [2026-07-29 17:15:40.929203] iteration        2/       5 | consumed samples:            2 | elapsed time per iteration (ms): 1936.4 | learning rate: 1.410829E-05 | global batch size:     1 | lm loss: 2.549418E+00 | loss scale: 1.0 | grad norm: 7.736 | number of skipped iterations:   0 | number of nan iterations:   0 |
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Number of parameters in transformer block in billions:  3.63
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Number of active parameters in transformer block in billions:  3.63
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Number of parameters in embedding layers in billions: 0.39
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Total number of parameters in billions: 4.02
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Total number of active parameters in billions: 4.02
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Number of parameters in most loaded shard in billions: 4.0218
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m compute_activation_memory_without_sp
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Activation memory footprint per transformer layer (precise, without SP): 170.0 MB
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Theoretical memory footprints: weight and optimizer=69038.83 MB, activation=7063.89 MB, total=76102.72 MB
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m 
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [Rank 0] (after 2 iterations) memory (MB) | allocated: 70230.39 | max allocated: 79760.84 | reserved: 80712.00 | max reserved: 80712.00
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m  [2026-07-29 17:15:41.307335] iteration        3/       5 | consumed samples:            3 | elapsed time per iteration (ms): 378.0 | learning rate: 8.439251E-06 | global batch size:     1 | lm loss: 2.377707E+00 | loss scale: 1.0 | grad norm: 6.536 | number of skipped iterations:   0 | number of nan iterations:   0 |
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m  [2026-07-29 17:15:41.681906] iteration        4/       5 | consumed samples:            4 | elapsed time per iteration (ms): 374.5 | learning rate: 3.787277E-06 | global batch size:     1 | lm loss: 2.398758E+00 | loss scale: 1.0 | grad norm: 6.245 | number of skipped iterations:   0 | number of nan iterations:   0 |
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m  [2026-07-29 17:15:42.063269] iteration        5/       5 | consumed samples:            5 | elapsed time per iteration (ms): 381.3 | learning rate: 2.000000E-06 | global batch size:     1 | lm loss: 2.309338E+00 | loss scale: 1.0 | grad norm: 6.798 | number of skipped iterations:   0 | number of nan iterations:   0 |
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [after training is done] datetime: 2026-07-29 17:15:42.064418 
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [2026-07-29 17:15:42.064845] saving checkpoint at iteration       5 to /workspace/out/megatron_pretrain_workspace/checkpoint in torch_dist format
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m WARNING:megatron.core.dist_checkpointing.strategies.torch:MCore's async save is deprecated and will be removed in the future releases. Please, use NVRx async solution by setting `async_strategy` to `nvrx`.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "span" in type "ir.TupleType" duplicates an ancestor field in "ir.Type". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "span" in type "ir.FuncType" duplicates an ancestor field in "ir.Type". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "span" in type "ir.TensorMapType" duplicates an ancestor field in "ir.Type". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "binding_blocks" in type "script.ir_builder.relax.FunctionFrame" duplicates an ancestor field in "script.ir_builder.relax.SeqExprFrame". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "output" in type "script.ir_builder.relax.FunctionFrame" duplicates an ancestor field in "script.ir_builder.relax.SeqExprFrame". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "policy_type" in type "tl.GemmSPWarpPolicy" duplicates an ancestor field in "tl.GemmWarpPolicy". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "m_warp" in type "tl.GemmSPWarpPolicy" duplicates an ancestor field in "tl.GemmWarpPolicy". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "n_warp" in type "tl.GemmSPWarpPolicy" duplicates an ancestor field in "tl.GemmWarpPolicy". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m ERROR 07-29 17:15:56 [config.py:29] Failed to import Triton kernels. Please make sure your triton version is compatible. Error: No module named 'triton_kernels.matmul_ogs'
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m WARNING 07-29 17:15:56 [nixl_utils.py:34] NIXL is not available
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m WARNING 07-29 17:15:56 [nixl_utils.py:44] NIXL agent config is not available
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m LANG_RL Log directory: None
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   [2026-07-29 17:24:08.553208] successfully saved checkpoint from iteration       5 to /workspace/out/megatron_pretrain_workspace/checkpoint [ t 1/1, p 1/1 ]
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m wandb: uploading data; uploading artifact checkpoint; updating run metadata
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m wandb: uploading data; uploading artifact checkpoint
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m wandb: uploading data
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m wandb: 🚀 View run pretrain-4b-wikitext-megatron-lm at: https://wandb.ai/jaegookyou-personal/tfct-smoke/runs/g4mqxo9q
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m wandb: ⭐️ View project at: https://wandb.ai/jaegookyou-personal/tfct-smoke
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m wandb: Synced 5 W&B file(s), 0 media file(s), 2 artifact file(s) and 0 other file(s)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m wandb: Find logs at: /workspace/out/megatron_pretrain_workspace/checkpoint/wandb/wandb/run-20260729_171518-g4mqxo9q/logs
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Stack (most recent call first):
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   <no Python frame>
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [rank0]:[W729 17:24:44.334557871 ProcessGroupNCCL.cpp:1601] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "span" in type "ir.TupleType" duplicates an ancestor field in "ir.Type". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "span" in type "ir.FuncType" duplicates an ancestor field in "ir.Type". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "span" in type "ir.TensorMapType" duplicates an ancestor field in "ir.Type". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "binding_blocks" in type "script.ir_builder.relax.FunctionFrame" duplicates an ancestor field in "script.ir_builder.relax.SeqExprFrame". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "output" in type "script.ir_builder.relax.FunctionFrame" duplicates an ancestor field in "script.ir_builder.relax.SeqExprFrame". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "policy_type" in type "tl.GemmSPWarpPolicy" duplicates an ancestor field in "tl.GemmWarpPolicy". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "m_warp" in type "tl.GemmSPWarpPolicy" duplicates an ancestor field in "tl.GemmWarpPolicy". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [WARNING] Field "n_warp" in type "tl.GemmSPWarpPolicy" duplicates an ancestor field in "tl.GemmWarpPolicy". Child types should not re-register inherited fields.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m ERROR 07-29 17:25:13 [config.py:29] Failed to import Triton kernels. Please make sure your triton version is compatible. Error: No module named 'triton_kernels.matmul_ogs'
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m INFO 07-29 17:25:13 [nixl_utils.py:20] Setting UCX_RCACHE_MAX_UNRELEASED to '1024' to avoid a rare memory leak in UCX when using NIXL.
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m WARNING 07-29 17:25:13 [nixl_utils.py:34] NIXL is not available
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m WARNING 07-29 17:25:13 [nixl_utils.py:44] NIXL agent config is not available
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Traceback (most recent call last):
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   File "<frozen runpy>", line 198, in _run_module_as_main
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   File "<frozen runpy>", line 88, in _run_code
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   File "/root/sky_workdir/src/training_framework_comparison_tutorial/trainers/_megatron_bridge_entry.py", line 167, in <module>
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     main()
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   File "/root/sky_workdir/src/training_framework_comparison_tutorial/trainers/_megatron_bridge_entry.py", line 156, in main
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     _export(cfg, args.megatron_path, args.hf_path)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   File "/root/sky_workdir/src/training_framework_comparison_tutorial/trainers/_megatron_bridge_entry.py", line 49, in _export
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     AutoBridge.export_ckpt(
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m TypeError: AutoBridge.export_ckpt() missing 1 required positional argument: 'self'
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m E0729 17:25:17.032000 9089 torch/distributed/elastic/multiprocessing/api.py:988] failed (exitcode: 1) local_rank: 0 (pid: 9095) of binary: /opt/venv/bin/python3
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Traceback (most recent call last):
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   File "/usr/local/bin/torchrun", line 6, in <module>
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     sys.exit(main())
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m              ^^^^^^
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   File "/usr/local/lib/python3.12/dist-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 367, in wrapper
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     return f(*args, **kwargs)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m            ^^^^^^^^^^^^^^^^^^
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   File "/usr/local/lib/python3.12/dist-packages/torch/distributed/run.py", line 1016, in main
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     run(args)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   File "/usr/local/lib/python3.12/dist-packages/torch/distributed/run.py", line 1007, in run
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     elastic_launch(
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   File "/usr/local/lib/python3.12/dist-packages/torch/distributed/launcher/api.py", line 184, in __call__
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     return launch_agent(self._config, self._entrypoint, list(args))
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   File "/usr/local/lib/python3.12/dist-packages/torch/distributed/launcher/api.py", line 332, in launch_agent
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     raise ChildFailedError(
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m ============================================================
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m training_framework_comparison_tutorial.trainers._megatron_bridge_entry FAILED
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m ------------------------------------------------------------
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Failures:
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   <NO_OTHER_FAILURES>
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m ------------------------------------------------------------
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Root Cause (first observed failure):
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m [0]:
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   time      : 2026-07-29_17:25:17
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   host      : computeinstance-u00nmbfpwsbfb6nbve
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   rank      : 0 (local_rank: 0)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   exitcode  : 1 (pid: 9095) 
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   error_file: <N/A>
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m ============================================================
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m Traceback (most recent call last):
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   File "/usr/local/bin/tfct-run", line 6, in <module>
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     sys.exit(main())
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m              ^^^^^^
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   File "/root/sky_workdir/src/training_framework_comparison_tutorial/run.py", line 141, in main
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     dispatch(RunConfig.from_file(args.config), prepare_only=args.prepare_only)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   File "/root/sky_workdir/src/training_framework_comparison_tutorial/run.py", line 99, in dispatch
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     module.train(cfg)
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   File "/root/sky_workdir/src/training_framework_comparison_tutorial/trainers/megatron_lm_pretrain.py", line 219, in train
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     subprocess.run(
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m   File "/usr/lib/python3.12/subprocess.py", line 571, in run
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m     raise CalledProcessError(retcode, process.args,
+[36m(tfct-pretrain-megatron-lm, pid=4588)[0m subprocess.CalledProcessError: Command '['torchrun', '--standalone', '--nnodes=1', '--nproc_per_node=1', '-m', 'training_framework_comparison_tutorial.trainers._megatron_bridge_entry', '--stage', 'export', '--config', '/workspace/out/megatron_pretrain_workspace/run.yaml', '--megatron-path', '/workspace/out/megatron_pretrain_workspace/checkpoint', '--hf-path', '/workspace/out/hf']' returned non-zero exit status 1.
+ERROR: [31mJob 1 failed with return code list:[0m [1] 
+[0m[32m✓ Job finished (status: FAILED).[0m[0m
+
+📋 Useful Commands
+Job ID: 1
+├── To cancel the job:		sky cancel tfct-pretrain-megatron-lm 1
+├── To stream job logs:		sky logs tfct-pretrain-megatron-lm 1
+└── To view job queue:		sky queue tfct-pretrain-megatron-lm
+Cluster name: tfct-pretrain-megatron-lm
+├── To log into the head VM:	ssh tfct-pretrain-megatron-lm
+├── To submit a job:		sky exec tfct-pretrain-megatron-lm yaml_file
+├── To stop the cluster:	sky stop tfct-pretrain-megatron-lm
+└── To teardown the cluster:	sky down tfct-pretrain-megatron-lm

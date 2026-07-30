@@ -242,7 +242,7 @@ def prepare(cfg: RunConfig) -> None:
     slime 은 토크나이저를 `--hf-checkpoint` 에서 로드하므로(별도 --tokenizer-path 없음) 그 경로가
     워커에도 있어야 한다. GRPO/PPO 는 `--hf-checkpoint` 로 **hub id** 를 넘기므로 준비물이 없다
     (그래서 그쪽엔 prepare 가 없다 — 필요 없는 곳에 만들지 않는다).
-    ⚠️ 이건 가중치까지 받는다(수 GB) — 토크나이저만 받는 verl/nemo 경로보다 무겁다.
+    ⚠️ 이건 가중치까지 받는다(수 GB) — 토크나이저만 받는 verl 경로보다 무겁다.
     호출: `tfct-run --config <cfg> --prepare-only` (sky/ray_bootstrap.sh 의 워커 분기).
     """
     _prepare_hf_dir(cfg, Path(cfg.section("output").get("local_dir", "out")))

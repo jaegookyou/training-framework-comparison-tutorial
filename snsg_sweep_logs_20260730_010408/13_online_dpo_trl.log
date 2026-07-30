@@ -1,0 +1,143 @@
+YAML to run: sky/online_dpo.trl.sky.yaml
+Running on cluster: tfct-online_dpo-trl
+[33mLaunching a spot job that does not automatically recover from preemptions. To get automatic recovery, use managed job instead: [0m[1msky jobs launch[0m [33mor[0m [1msky.jobs.launch()[0m.
+Considered resources (1 node):
+----------------------------------------------------------------------------------------------------------------
+ INFRA                  INSTANCE                              vCPUs   Mem(GB)   GPUS        COST ($)   CHOSEN   
+----------------------------------------------------------------------------------------------------------------
+ Nebius (us-central1)   gpu-rtx6000_1gpu-24vcpu-218gb[Spot]   24      218       RTX6000:1   0.95       [32m   ✔[0m     
+----------------------------------------------------------------------------------------------------------------
+[0m⚙︎ Launching on Nebius us-central1[0m.
+WARNING:deprecation:Field .nebius.compute.v1.PreemptibleSpec.priority is deprecated. Supported until 05/11/26. It is deprecated and doesn't affect preemption behavior anymore.
+Stack (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/usr/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+  File "/usr/lib/python3.12/multiprocessing/spawn.py", line 135, in _main
+    return self._bootstrap(parent_sentinel)
+  File "/usr/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/usr/lib/python3.12/concurrent/futures/process.py", line 263, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/server/requests/executor.py", line 535, in _request_execution_wrapper
+    return_value = func(**request_body.to_kwargs())
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 700, in _record
+    return f(*args, **kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 700, in _record
+    return f(*args, **kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/tempstore.py", line 68, in wrapper
+    return func(*args, **kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/execution.py", line 814, in launch
+    return _execute(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/execution.py", line 275, in _execute
+    return _execute_dag(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/execution.py", line 518, in _execute_dag
+    (handle, provisioning_skipped) = backend.provision(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 700, in _record
+    return f(*args, **kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 680, in _record
+    return f(*args, **kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/backend.py", line 87, in provision
+    return self._provision(task, to_provision, dryrun, stream_logs,
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/cloud_vm_ray_backend.py", line 3291, in _provision
+    return self._locked_provision(lock_id, task, to_provision,
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/cloud_vm_ray_backend.py", line 3411, in _locked_provision
+    config_dict = retry_provisioner.provision_with_retries(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 700, in _record
+    return f(*args, **kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/cloud_vm_ray_backend.py", line 1831, in provision_with_retries
+    config_dict = self._retry_zones(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/cloud_vm_ray_backend.py", line 1304, in _retry_zones
+    provision_record = provisioner.bulk_provision(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/provisioner.py", line 170, in bulk_provision
+    return _bulk_provision(cloud, region, cluster_name,
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/provisioner.py", line 78, in _bulk_provision
+    provision_record = provision.run_instances(provider_name,
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/__init__.py", line 168, in _wrapper
+    return impl(*args, **kwargs)
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/nebius/instance.py", line 174, in run_instances
+    new_instance_ids = [_launch_one(0)]
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/nebius/instance.py", line 147, in _launch_one
+    return utils.launch(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/nebius/utils.py", line 672, in launch
+    preemptible=nebius.compute().PreemptibleSpec(
+  File "/home/user/.sky-venv/lib/python3.12/site-packages/nebius/api/nebius/compute/v1/__init__.py", line 6568, in __init__
+    self.priority = priority
+[2m├── [0m[2mInstance is up.[0m
+[2m└── [0m[2mDocker container is up.[0m
+[0m[32m✓ Cluster launched: tfct-online_dpo-trl.[0m[0m  [2mView logs: [1msky logs --provision tfct-online_dpo-trl[0m[0m
+[0m⚙︎ Syncing files.
+  [2mSyncing workdir (to 1 node): /home/user/workspace/projects/training-framework-comparison-tutorial -> ~/sky_workdir[0m
+[0m[32m✓ Synced workdir.[0m[0m  [2mView logs: sky api logs -l sky-2026-07-30-04-48-18-417139/workdir_sync.log[0m
+[0m[32m✓ Setup detached.[0m[0m
+[0m⚙︎ Job submitted, ID: 1
+[2m├── [0m[2mWaiting for task resources on 1 node.[0m
+[2m└── [0mJob started. Streaming logs... [2m(Ctrl-C to exit log streaming; job will not be killed)[0m
+[36m(setup pid=3119)[0m Obtaining file:///root/sky_workdir
+[36m(setup pid=3119)[0m   Installing build dependencies: started
+[36m(setup pid=3119)[0m   Installing build dependencies: finished with status 'done'
+[36m(setup pid=3119)[0m   Checking if build backend supports build_editable: started
+[36m(setup pid=3119)[0m   Checking if build backend supports build_editable: finished with status 'done'
+[36m(setup pid=3119)[0m   Getting requirements to build editable: started
+[36m(setup pid=3119)[0m   Getting requirements to build editable: finished with status 'done'
+[36m(setup pid=3119)[0m   Installing backend dependencies: started
+[36m(setup pid=3119)[0m   Installing backend dependencies: finished with status 'done'
+[36m(setup pid=3119)[0m   Preparing editable metadata (pyproject.toml): started
+[36m(setup pid=3119)[0m   Preparing editable metadata (pyproject.toml): finished with status 'done'
+[36m(setup pid=3119)[0m Requirement already satisfied: pyyaml>=6.0 in /usr/local/lib/python3.12/dist-packages (from training-framework-comparison-tutorial==0.1.0) (6.0.3)
+[36m(setup pid=3119)[0m Building wheels for collected packages: training-framework-comparison-tutorial
+[36m(setup pid=3119)[0m   Building editable for training-framework-comparison-tutorial (pyproject.toml): started
+[36m(setup pid=3119)[0m   Building editable for training-framework-comparison-tutorial (pyproject.toml): finished with status 'done'
+[36m(setup pid=3119)[0m   Created wheel for training-framework-comparison-tutorial: filename=training_framework_comparison_tutorial-0.1.0-py3-none-any.whl size=8172 sha256=c87e20a7ae2fbe57e7415aa98fe5cbec025ae9ee7260d369050b352c0e963244
+[36m(setup pid=3119)[0m   Stored in directory: /tmp/pip-ephem-wheel-cache-811tu912/wheels/0c/f9/ef/9c94d754d512253a9286551515f99485713d036c515880ded0
+[36m(setup pid=3119)[0m Successfully built training-framework-comparison-tutorial
+[36m(setup pid=3119)[0m Installing collected packages: training-framework-comparison-tutorial
+[36m(setup pid=3119)[0m   Attempting uninstall: training-framework-comparison-tutorial
+[36m(setup pid=3119)[0m     Found existing installation: training-framework-comparison-tutorial 0.1.0
+[36m(setup pid=3119)[0m     Uninstalling training-framework-comparison-tutorial-0.1.0:
+[36m(setup pid=3119)[0m       Successfully uninstalled training-framework-comparison-tutorial-0.1.0
+[36m(setup pid=3119)[0m Successfully installed training-framework-comparison-tutorial-0.1.0
+[36m(setup pid=3119)[0m WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+[36m(tfct-online-dpo-trl, pid=3119)[0m Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[36m(tfct-online-dpo-trl, pid=3119)[0m Generating train split:   0%|          | 0/37775 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 37775/37775 [00:00<00:00, 1360664.30 examples/s]
+[36m(tfct-online-dpo-trl, pid=3119)[0m Generating test split:   0%|          | 0/1989 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 1989/1989 [00:00<00:00, 540560.53 examples/s]
+[36m(tfct-online-dpo-trl, pid=3119)[0m Map:   0%|          | 0/64 [00:00<?, ? examples/s]Map: 100%|██████████| 64/64 [00:00<00:00, 11411.62 examples/s]
+[36m(tfct-online-dpo-trl, pid=3119)[0m [36m(tfct-online-dpo-trl, pid=3119)[0m Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s][36m(tfct-online-dpo-trl, pid=3119)[0m Fetching 4 files:  25%|██▌       | 1/4 [02:25<07:17, 145.93s/it][36m(tfct-online-dpo-trl, pid=3119)[0m Fetching 4 files:  50%|█████     | 2/4 [02:32<02:07, 63.99s/it] Fetching 4 files:  75%|███████▌  | 3/4 [02:39<00:38, 38.01s/it]Fetching 4 files: 100%|██████████| 4/4 [02:39<00:00, 39.91s/it]
+[36m(tfct-online-dpo-trl, pid=3119)[0m [36m(tfct-online-dpo-trl, pid=3119)[0m Loading weights:   0%|          | 0/291 [00:00<?, ?it/s]Loading weights: 100%|██████████| 291/291 [00:00<00:00, 6271.45it/s]
+[36m(tfct-online-dpo-trl, pid=3119)[0m [transformers] warmup_ratio is deprecated and will be removed in v5.2. Use `warmup_steps` instead.
+[36m(tfct-online-dpo-trl, pid=3119)[0m [36m(tfct-online-dpo-trl, pid=3119)[0m Fetching 3 files:   0%|          | 0/3 [00:00<?, ?it/s][36m(tfct-online-dpo-trl, pid=3119)[0m Fetching 3 files:  33%|███▎      | 1/3 [01:14<02:29, 74.80s/it]Fetching 3 files:  67%|██████▋   | 2/3 [01:19<00:33, 33.66s/it]Fetching 3 files: 100%|██████████| 3/3 [01:19<00:00, 26.56s/it]
+[36m(tfct-online-dpo-trl, pid=3119)[0m [36m(tfct-online-dpo-trl, pid=3119)[0m Loading weights:   0%|          | 0/398 [00:00<?, ?it/s][36m(tfct-online-dpo-trl, pid=3119)[0m Loading weights:   0%|          | 1/398 [00:00<00:41,  9.54it/s][36m(tfct-online-dpo-trl, pid=3119)[0m Loading weights:   8%|▊         | 33/398 [00:00<00:02, 179.69it/s][36m(tfct-online-dpo-trl, pid=3119)[0m Loading weights:  17%|█▋        | 67/398 [00:00<00:01, 240.58it/s][36m(tfct-online-dpo-trl, pid=3119)[0m Loading weights:  24%|██▍       | 96/398 [00:00<00:01, 258.61it/s][36m(tfct-online-dpo-trl, pid=3119)[0m Loading weights:  35%|███▌      | 141/398 [00:00<00:00, 324.43it/s][36m(tfct-online-dpo-trl, pid=3119)[0m Loading weights:  44%|████▍     | 177/398 [00:00<00:00, 313.49it/s][36m(tfct-online-dpo-trl, pid=3119)[0m Loading weights:  55%|█████▍    | 217/398 [00:00<00:00, 338.35it/s][36m(tfct-online-dpo-trl, pid=3119)[0m Loading weights:  63%|██████▎   | 252/398 [00:00<00:00, 316.99it/s][36m(tfct-online-dpo-trl, pid=3119)[0m Loading weights:  74%|███████▍  | 294/398 [00:00<00:00, 343.12it/s][36m(tfct-online-dpo-trl, pid=3119)[0m Loading weights:  83%|████████▎ | 329/398 [00:01<00:00, 342.59it/s][36m(tfct-online-dpo-trl, pid=3119)[0m Loading weights:  91%|█████████▏| 364/398 [00:01<00:00, 337.67it/s]Loading weights: 100%|██████████| 398/398 [00:01<00:00, 312.75it/s]
+[36m(tfct-online-dpo-trl, pid=3119)[0m [transformers] The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'bos_token_id': None, 'pad_token_id': 151643}.
+[36m(tfct-online-dpo-trl, pid=3119)[0m wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+[36m(tfct-online-dpo-trl, pid=3119)[0m wandb: Currently logged in as: jaegookyou (jaegookyou-personal) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+[36m(tfct-online-dpo-trl, pid=3119)[0m wandb: setting up run ifeyxr40
+[36m(tfct-online-dpo-trl, pid=3119)[0m wandb: Tracking run with wandb version 0.28.0
+[36m(tfct-online-dpo-trl, pid=3119)[0m wandb: Run data is saved locally in /root/sky_workdir/wandb/run-20260729_195942-ifeyxr40
+[36m(tfct-online-dpo-trl, pid=3119)[0m wandb: Run `wandb offline` to turn off syncing.
+[36m(tfct-online-dpo-trl, pid=3119)[0m wandb: Syncing run online_dpo-Qwen3-4B-Base-ultrafeedback_prompt-trl-lora
+[36m(tfct-online-dpo-trl, pid=3119)[0m wandb: ⭐️ View project at https://wandb.ai/jaegookyou-personal/tfct-smoke
+[36m(tfct-online-dpo-trl, pid=3119)[0m wandb: 🚀 View run at https://wandb.ai/jaegookyou-personal/tfct-smoke/runs/ifeyxr40
+[36m(tfct-online-dpo-trl, pid=3119)[0m [36m(tfct-online-dpo-trl, pid=3119)[0m   0%|          | 0/5 [00:00<?, ?it/s] 20%|██        | 1/5 [05:49<23:18, 349.53s/it]                                              {'loss': '0.6931', 'grad_norm': '40.9', 'learning_rate': '0', 'objective/kl': '0', 'objective/entropy': '4329', 'objective/non_score_reward': '0', 'rewards/chosen': '0', 'rewards/rejected': '0', 'rewards/accuracies': '0', 'rewards/margins': '0', 'logps/chosen': '-268', 'logps/rejected': '-388.8', 'val/contain_eos_token': '0.5625', 'beta': '0.1', 'objective/rlhf_reward': '-11', 'objective/scores_margin': '12.72', 'objective/scores': '-11', 'epoch': '0.25'}
+[36m(tfct-online-dpo-trl, pid=3119)[0m [36m(tfct-online-dpo-trl, pid=3119)[0m  20%|██        | 1/5 [05:49<23:18, 349.53s/it] 40%|████      | 2/5 [11:33<17:19, 346.35s/it]                                              {'loss': '0.6931', 'grad_norm': '33.45', 'learning_rate': '5e-06', 'objective/kl': '0', 'objective/entropy': '3570', 'objective/non_score_reward': '0', 'rewards/chosen': '0', 'rewards/rejected': '0', 'rewards/accuracies': '0', 'rewards/margins': '0', 'logps/chosen': '-292.6', 'logps/rejected': '-328.6', 'val/contain_eos_token': '0.4062', 'beta': '0.1', 'objective/rlhf_reward': '-12.65', 'objective/scores_margin': '12.62', 'objective/scores': '-12.65', 'epoch': '0.5'}
+[36m(tfct-online-dpo-trl, pid=3119)[0m [36m(tfct-online-dpo-trl, pid=3119)[0m  40%|████      | 2/5 [11:33<17:19, 346.35s/it] 60%|██████    | 3/5 [16:56<11:10, 335.43s/it]                                              {'loss': '0.6808', 'grad_norm': '35.53', 'learning_rate': '4.268e-06', 'objective/kl': '-6.571', 'objective/entropy': '2792', 'objective/non_score_reward': '0.6571', 'rewards/chosen': '0.0257', 'rewards/rejected': '-0.002197', 'rewards/accuracies': '0.5625', 'rewards/margins': '0.0279', 'logps/chosen': '-281.7', 'logps/rejected': '-327', 'val/contain_eos_token': '0.5312', 'beta': '0.1', 'objective/rlhf_reward': '-10.51', 'objective/scores_margin': '11.28', 'objective/scores': '-11.16', 'epoch': '0.75'}
+[36m(tfct-online-dpo-trl, pid=3119)[0m [36m(tfct-online-dpo-trl, pid=3119)[0m  60%|██████    | 3/5 [16:56<11:10, 335.43s/it] 80%|████████  | 4/5 [22:15<05:29, 329.13s/it]                                              {'loss': '0.6905', 'grad_norm': '32.09', 'learning_rate': '2.5e-06', 'objective/kl': '-0.2907', 'objective/entropy': '2952', 'objective/non_score_reward': '0.02907', 'rewards/chosen': '0.02402', 'rewards/rejected': '0.0126', 'rewards/accuracies': '0.625', 'rewards/margins': '0.01143', 'logps/chosen': '-296.3', 'logps/rejected': '-307.3', 'val/contain_eos_token': '0.5312', 'beta': '0.1', 'objective/rlhf_reward': '-6.894', 'objective/scores_margin': '15.54', 'objective/scores': '-6.923', 'epoch': '1'}
+[36m(tfct-online-dpo-trl, pid=3119)[0m [36m(tfct-online-dpo-trl, pid=3119)[0m  80%|████████  | 4/5 [22:15<05:29, 329.13s/it]100%|██████████| 5/5 [27:34<00:00, 325.54s/it]                                              {'loss': '0.6678', 'grad_norm': '70.46', 'learning_rate': '7.322e-07', 'objective/kl': '-0.5286', 'objective/entropy': '3180', 'objective/non_score_reward': '0.05286', 'rewards/chosen': '0.02572', 'rewards/rejected': '-0.02742', 'rewards/accuracies': '0.75', 'rewards/margins': '0.05315', 'logps/chosen': '-227.7', 'logps/rejected': '-430', 'val/contain_eos_token': '0.5', 'beta': '0.1', 'objective/rlhf_reward': '-10.52', 'objective/scores_margin': '13.81', 'objective/scores': '-10.57', 'epoch': '1.25'}
+[36m(tfct-online-dpo-trl, pid=3119)[0m [36m(tfct-online-dpo-trl, pid=3119)[0m 100%|██████████| 5/5 [27:34<00:00, 325.54s/it]                                              {'train_runtime': '1657', 'train_samples_per_second': '0.048', 'train_steps_per_second': '0.003', 'train_loss': '0.6851', 'epoch': '1.25'}
+[36m(tfct-online-dpo-trl, pid=3119)[0m 100%|██████████| 5/5 [27:35<00:00, 325.54s/it]100%|██████████| 5/5 [27:35<00:00, 331.12s/it]
+[36m(tfct-online-dpo-trl, pid=3119)[0m [1;34mwandb[0m: 
+[36m(tfct-online-dpo-trl, pid=3119)[0m [1;34mwandb[0m: 🚀 View run [33monline_dpo-Qwen3-4B-Base-ultrafeedback_prompt-trl-lora[0m at: [34mhttps://wandb.ai/jaegookyou-personal/tfct-smoke/runs/ifeyxr40[0m
+[36m(tfct-online-dpo-trl, pid=3119)[0m [1;34mwandb[0m: Find logs at: [1;35mwandb/run-20260729_195942-ifeyxr40/logs[0m
+[0m[32m✓ Job finished (status: SUCCEEDED).[0m[0m
+
+📋 Useful Commands
+Job ID: 1
+├── To cancel the job:		sky cancel tfct-online_dpo-trl 1
+├── To stream job logs:		sky logs tfct-online_dpo-trl 1
+└── To view job queue:		sky queue tfct-online_dpo-trl
+Cluster name: tfct-online_dpo-trl
+├── To log into the head VM:	ssh tfct-online_dpo-trl
+├── To submit a job:		sky exec tfct-online_dpo-trl yaml_file
+├── To stop the cluster:	sky stop tfct-online_dpo-trl
+└── To teardown the cluster:	sky down tfct-online_dpo-trl

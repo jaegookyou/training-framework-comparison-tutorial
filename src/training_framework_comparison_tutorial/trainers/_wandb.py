@@ -1,7 +1,7 @@
 """W&B run 식별을 **프레임워크 무관하게** env 한 곳에서 주입한다.
 
 왜 env 인가: 8 프레임워크가 wandb 를 부르는 방식이 제각각이다(HF 콜백 / torchtitan WandBLogger /
-verl tracking / slime init_wandb_primary / megatron global_vars / nemo-rl Logger). 그런데 **여섯 곳
+verl tracking / slime init_wandb_primary / megatron global_vars). 그런데 **여섯 곳
 어디도 wandb.init 에 group·tags 를 넘기지 않는다** → wandb 가 env 에서 읽어 채운다. 즉 env 로 주면
 프레임워크별 코드 0 줄로 같은 식별자가 붙는다(반대로 프레임워크마다 배선하면 6 곳이 어긋난다).
 
@@ -23,7 +23,7 @@ verl tracking / slime init_wandb_primary / megatron global_vars / nemo-rl Logger
 group=framework 로 맞추면 run 이름이 전부 "slime" 이 되어 못 알아본다 → slime 만 group=run_name 을
 유지한다. framework 로 묶어 보는 건 태그로 성립하므로 손해가 없다.
 **예외 2 — project**: 프레임워크가 명시로 넘기는 값(verl trainer.project_name, slime/megatron
---wandb-project, nemo-rl logger.wandb.project)이 env 를 이긴다 → 그 값도 같은 `project()` 에서
+--wandb-project)이 env 를 이긴다 → 그 값도 같은 `project()` 에서
 뽑아 써서 한 곳으로 수렴시킨다.
 """
 
