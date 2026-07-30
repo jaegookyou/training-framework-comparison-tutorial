@@ -64,7 +64,8 @@ def train(cfg: RunConfig) -> None:
         bf16=hp.get("bf16", False),
         beta=hp.get("beta", 0.04),                # KL 계수 (DeepSeekMath 0.04)
         num_generations=hp.get("num_generations", 8),  # 그룹 크기 G (advantage 정규화 단위)
-        max_prompt_length=hp.get("max_prompt_length", 512),
+        # trl 1.6.0 GRPOConfig 는 max_prompt_length 제거(max_completion_length 만 남음) — 넘기면
+        # unexpected keyword argument (2026-07-30 스윕 실측). v1.6.0 grpo_config.py 실물 확인.
         max_completion_length=hp.get("max_completion_length", 1024),
         temperature=hp.get("temperature", 1.0),
         use_vllm=hp.get("use_vllm", False),       # true = vllm rollout (이미지에 vllm 필요)
