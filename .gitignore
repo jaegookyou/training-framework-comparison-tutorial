@@ -14,3 +14,4 @@ out/
 # 로컬 크레덴셜 (절대 커밋 금지)
 *.pem
 *credentials*.json
+snsg_sweep_logs_*/

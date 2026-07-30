@@ -1,188 +1,0 @@
-YAML to run: sky/sft.verl.sky.yaml
-Running on cluster: tfct-sft-verl
-[33mLaunching a spot job that does not automatically recover from preemptions. To get automatic recovery, use managed job instead: [0m[1msky jobs launch[0m [33mor[0m [1msky.jobs.launch()[0m.
-Considered resources (1 node):
-----------------------------------------------------------------------------------------------------------------
- INFRA                  INSTANCE                              vCPUs   Mem(GB)   GPUS        COST ($)   CHOSEN   
-----------------------------------------------------------------------------------------------------------------
- Nebius (us-central1)   gpu-rtx6000_1gpu-24vcpu-218gb[Spot]   24      218       RTX6000:1   0.95       [32m   ✔[0m     
-----------------------------------------------------------------------------------------------------------------
-[0m⚙︎ Launching on Nebius us-central1[0m.
-WARNING:deprecation:Field .nebius.compute.v1.PreemptibleSpec.priority is deprecated. Supported until 05/11/26. It is deprecated and doesn't affect preemption behavior anymore.
-Stack (most recent call last):
-  File "<string>", line 1, in <module>
-  File "/usr/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
-    exitcode = _main(fd, parent_sentinel)
-  File "/usr/lib/python3.12/multiprocessing/spawn.py", line 135, in _main
-    return self._bootstrap(parent_sentinel)
-  File "/usr/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
-    self.run()
-  File "/usr/lib/python3.12/multiprocessing/process.py", line 108, in run
-    self._target(*self._args, **self._kwargs)
-  File "/usr/lib/python3.12/concurrent/futures/process.py", line 263, in _process_worker
-    r = call_item.fn(*call_item.args, **call_item.kwargs)
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/server/requests/executor.py", line 535, in _request_execution_wrapper
-    return_value = func(**request_body.to_kwargs())
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 700, in _record
-    return f(*args, **kwargs)
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 700, in _record
-    return f(*args, **kwargs)
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/tempstore.py", line 68, in wrapper
-    return func(*args, **kwargs)
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/execution.py", line 814, in launch
-    return _execute(
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/execution.py", line 275, in _execute
-    return _execute_dag(
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/execution.py", line 518, in _execute_dag
-    (handle, provisioning_skipped) = backend.provision(
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 700, in _record
-    return f(*args, **kwargs)
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 680, in _record
-    return f(*args, **kwargs)
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/backend.py", line 87, in provision
-    return self._provision(task, to_provision, dryrun, stream_logs,
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/cloud_vm_ray_backend.py", line 3291, in _provision
-    return self._locked_provision(lock_id, task, to_provision,
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/cloud_vm_ray_backend.py", line 3411, in _locked_provision
-    config_dict = retry_provisioner.provision_with_retries(
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 700, in _record
-    return f(*args, **kwargs)
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/cloud_vm_ray_backend.py", line 1831, in provision_with_retries
-    config_dict = self._retry_zones(
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/cloud_vm_ray_backend.py", line 1304, in _retry_zones
-    provision_record = provisioner.bulk_provision(
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/provisioner.py", line 170, in bulk_provision
-    return _bulk_provision(cloud, region, cluster_name,
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/provisioner.py", line 78, in _bulk_provision
-    provision_record = provision.run_instances(provider_name,
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/__init__.py", line 168, in _wrapper
-    return impl(*args, **kwargs)
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/nebius/instance.py", line 174, in run_instances
-    new_instance_ids = [_launch_one(0)]
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/nebius/instance.py", line 147, in _launch_one
-    return utils.launch(
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/nebius/utils.py", line 672, in launch
-    preemptible=nebius.compute().PreemptibleSpec(
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/nebius/api/nebius/compute/v1/__init__.py", line 6568, in __init__
-    self.priority = priority
-[2m├── [0m[2mInstance is up.[0m
-[2m└── [0m[2mDocker container is up.[0m
-[0m[32m✓ Cluster launched: tfct-sft-verl.[0m[0m  [2mView logs: [1msky logs --provision tfct-sft-verl[0m[0m
-[0m⚙︎ Syncing files.
-  [2mSyncing workdir (to 1 node): /home/user/workspace/projects/training-framework-comparison-tutorial -> ~/sky_workdir[0m
-[0m[32m✓ Synced workdir.[0m[0m  [2mView logs: sky api logs -l sky-2026-07-30-02-37-10-363935/workdir_sync.log[0m
-[0m[32m✓ Setup detached.[0m[0m
-[0m⚙︎ Job submitted, ID: 1
-[2m├── [0m[2mWaiting for task resources on 1 node.[0m
-[2m└── [0mJob started. Streaming logs... [2m(Ctrl-C to exit log streaming; job will not be killed)[0m
-[36m(setup pid=3118)[0m Obtaining file:///root/sky_workdir
-[36m(setup pid=3118)[0m   Installing build dependencies: started
-[36m(setup pid=3118)[0m   Installing build dependencies: finished with status 'done'
-[36m(setup pid=3118)[0m   Checking if build backend supports build_editable: started
-[36m(setup pid=3118)[0m   Checking if build backend supports build_editable: finished with status 'done'
-[36m(setup pid=3118)[0m   Getting requirements to build editable: started
-[36m(setup pid=3118)[0m   Getting requirements to build editable: finished with status 'done'
-[36m(setup pid=3118)[0m   Installing backend dependencies: started
-[36m(setup pid=3118)[0m   Installing backend dependencies: finished with status 'done'
-[36m(setup pid=3118)[0m   Preparing editable metadata (pyproject.toml): started
-[36m(setup pid=3118)[0m   Preparing editable metadata (pyproject.toml): finished with status 'done'
-[36m(setup pid=3118)[0m Requirement already satisfied: pyyaml>=6.0 in /usr/local/lib/python3.12/dist-packages (from training-framework-comparison-tutorial==0.1.0) (6.0.3)
-[36m(setup pid=3118)[0m Building wheels for collected packages: training-framework-comparison-tutorial
-[36m(setup pid=3118)[0m   Building editable for training-framework-comparison-tutorial (pyproject.toml): started
-[36m(setup pid=3118)[0m   Building editable for training-framework-comparison-tutorial (pyproject.toml): finished with status 'done'
-[36m(setup pid=3118)[0m   Created wheel for training-framework-comparison-tutorial: filename=training_framework_comparison_tutorial-0.1.0-py3-none-any.whl size=8172 sha256=c87e20a7ae2fbe57e7415aa98fe5cbec025ae9ee7260d369050b352c0e963244
-[36m(setup pid=3118)[0m   Stored in directory: /tmp/pip-ephem-wheel-cache-1j17ykvo/wheels/0c/f9/ef/9c94d754d512253a9286551515f99485713d036c515880ded0
-[36m(setup pid=3118)[0m Successfully built training-framework-comparison-tutorial
-[36m(setup pid=3118)[0m Installing collected packages: training-framework-comparison-tutorial
-[36m(setup pid=3118)[0m   Attempting uninstall: training-framework-comparison-tutorial
-[36m(setup pid=3118)[0m     Found existing installation: training-framework-comparison-tutorial 0.1.0
-[36m(setup pid=3118)[0m     Uninstalling training-framework-comparison-tutorial-0.1.0:
-[36m(setup pid=3118)[0m       Successfully uninstalled training-framework-comparison-tutorial-0.1.0
-[36m(setup pid=3118)[0m Successfully installed training-framework-comparison-tutorial-0.1.0
-[36m(setup pid=3118)[0m WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
-[36m(tfct-sft-verl, pid=3118)[0m [36m(tfct-sft-verl, pid=3118)[0m Generating train split:   0%|          | 0/4761 [00:00<?, ? examples/s][36m(tfct-sft-verl, pid=3118)[0m Generating train split:  61%|██████    | 2883/4761 [00:00<00:00, 17884.50 examples/s]Generating train split: 100%|██████████| 4761/4761 [00:00<00:00, 15260.07 examples/s]Generating train split: 100%|██████████| 4761/4761 [00:00<00:00, 15661.21 examples/s]
-[36m(tfct-sft-verl, pid=3118)[0m Map:   0%|          | 0/64 [00:00<?, ? examples/s]Map: 100%|██████████| 64/64 [00:00<00:00, 6063.19 examples/s]
-[36m(tfct-sft-verl, pid=3118)[0m Creating parquet from Arrow format:   0%|          | 0/1 [00:00<?, ?ba/s]Creating parquet from Arrow format: 100%|██████████| 1/1 [00:00<00:00, 447.20ba/s]
-[36m(tfct-sft-verl, pid=3118)[0m INFO 07-29 17:45:38 [__init__.py:216] Automatically detected platform cuda.
-[36m(tfct-sft-verl, pid=3118)[0m dataset len: 64
-[36m(tfct-sft-verl, pid=3118)[0m Warning: Failed to set NUMA affinity: libnuma.so: cannot open shared object file: No such file or directory
-[36m(tfct-sft-verl, pid=3118)[0m `torch_dtype` is deprecated! Use `dtype` instead!
-[36m(tfct-sft-verl, pid=3118)[0m [36m(tfct-sft-verl, pid=3118)[0m Fetching 3 files:   0%|          | 0/3 [00:00<?, ?it/s][36m(tfct-sft-verl, pid=3118)[0m Fetching 3 files:  33%|███▎      | 1/3 [01:16<02:32, 76.20s/it]Fetching 3 files:  67%|██████▋   | 2/3 [01:19<00:33, 33.18s/it]Fetching 3 files: 100%|██████████| 3/3 [01:19<00:00, 26.42s/it]
-[36m(tfct-sft-verl, pid=3118)[0m [36m(tfct-sft-verl, pid=3118)[0m Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s][36m(tfct-sft-verl, pid=3118)[0m Loading checkpoint shards:  33%|███▎      | 1/3 [00:04<00:08,  4.25s/it][36m(tfct-sft-verl, pid=3118)[0m Loading checkpoint shards:  67%|██████▋   | 2/3 [00:08<00:04,  4.14s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:08<00:00,  2.30s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:08<00:00,  2.81s/it]
-[36m(tfct-sft-verl, pid=3118)[0m Skipping monkey patch for Qwen3ForCausalLM as use_fused_kernels is False or fused_kernels_backend is torch
-[36m(tfct-sft-verl, pid=3118)[0m [rank0]:[W729 17:47:08.509677332 ProcessGroupNCCL.cpp:5023] [PG ID 0 PG GUID 0 Rank 0]  using GPU 0 as device used by this process is currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. You can specify device_id in init_process_group() to force use of a particular device.
-[36m(tfct-sft-verl, pid=3118)[0m NCCL version 2.27.3+cuda12.9
-[36m(tfct-sft-verl, pid=3118)[0m PeftModelForCausalLM contains 4.06B parameters
-[36m(tfct-sft-verl, pid=3118)[0m Before FSDP, memory allocated (GB): 0.00, memory reserved (GB): 0.00, device memory used/total (GB): 1.17/94.97
-[36m(tfct-sft-verl, pid=3118)[0m After FSDP, memory allocated (GB): 15.14, memory reserved (GB): 17.36, device memory used/total (GB): 18.52/94.97
-[36m(tfct-sft-verl, pid=3118)[0m Total steps: 5, num_warmup_steps: 0
-[36m(tfct-sft-verl, pid=3118)[0m {'model': {'_target_': 'verl.workers.config.HFModelConfig', 'path': 'Qwen/Qwen3-4B-Base', 'hf_config_path': None, 'tokenizer_path': '/workspace/out/tokenizer', 'use_shm': False, 'trust_remote_code': False, 'custom_chat_template': None, 'external_lib': None, 'override_config': {'attn_implementation': 'sdpa'}, 'enable_gradient_checkpointing': True, 'enable_activation_offload': False, 'use_remove_padding': False, 'lora_rank': 16, 'lora_alpha': 32, 'target_modules': 'all-linear', 'exclude_modules': None, 'lora_adapter_path': None, 'use_liger': False, 'use_fused_kernels': False, 'fused_kernel_options': {'impl_backend': 'torch'}, 'tiled_mlp': {'enabled': False, 'num_shards': 4}, 'mtp': {'_target_': 'verl.workers.config.MtpConfig', 'enable': False, 'enable_train': False, 'enable_rollout': False, 'detach_encoder': False, 'mtp_loss_scaling_factor': 0.1, 'speculative_algorithm': 'EAGLE', 'speculative_num_steps': 3, 'speculative_eagle_topk': 1, 'speculative_num_draft_tokens': 4, 'method': 'mtp', 'num_speculative_tokens': 1}, 'lora': {'type': 'lora', 'merge': False, 'rank': 0, 'alpha': 32, 'dropout': 0.0, 'target_modules': ['linear_qkv', 'linear_proj', 'linear_fc1', 'linear_fc2'], 'exclude_modules': [], 'dropout_position': 'pre', 'lora_A_init_method': 'xavier', 'lora_B_init_method': 'zero', 'a2a_experimental': False, 'dtype': None, 'adapter_path': None, 'freeze_vision_model': True, 'freeze_vision_projection': True, 'freeze_language_model': True}}, 'engine': {'_target_': 'verl.workers.config.FSDPEngineConfig', 'wrap_policy': {'min_num_params': 0}, 'param_offload': False, 'optimizer_offload': False, 'offload_policy': False, 'reshard_after_forward': True, 'fsdp_size': -1, 'forward_prefetch': False, 'model_dtype': 'fp32', 'use_orig_params': False, 'seed': 42, 'full_determinism': False, 'ulysses_sequence_parallel_size': 1, 'entropy_from_logits_with_chunking': False, 'use_torch_compile': True, 'entropy_checkpointing': False, 'forward_only': False, 'strategy': 'fsdp', 'dtype': 'bfloat16', 'qat': {'_target_': 'verl.workers.config.QATEngineConfig', 'enable': False, 'mode': 'w4a16', 'group_size': 16, 'ignore_patterns': ['lm_head', 'embed_tokens', 're:.*mlp.gate$'], 'activation_observer': 'static_minmax', 'quantization_config_path': None}}, 'optim': {'_target_': 'verl.workers.config.FSDPOptimizerConfig', 'optimizer': 'AdamW', 'optimizer_impl': 'torch.optim', 'lr': 0.0002, 'lr_warmup_steps_ratio': 0.0, 'total_training_steps': -1, 'weight_decay': 0.01, 'lr_warmup_steps': -1, 'betas': [0.9, 0.999], 'clip_grad': 1.0, 'min_lr_ratio': 0.0, 'num_cycles': 0.5, 'lr_scheduler_type': 'constant', 'zero_indexed_step': True, 'warmup_style': None, 'override_optimizer_config': None}, 'profiler': {'_target_': 'verl.utils.profiler.ProfilerConfig', 'tool': 'torch', 'enable': False, 'all_ranks': False, 'ranks': [], 'save_path': 'outputs/profile', 'tool_config': {'npu': {'_target_': 'verl.utils.profiler.config.NPUToolConfig', 'contents': [], 'level': 'level0', 'analysis': True, 'discrete': False, 'name': 'npu'}, 'nsys': {'_target_': 'verl.utils.profiler.config.NsightToolConfig', 'discrete': '${oc.select:global_profiler.global_tool_config.nsys.discrete}', 'name': 'nsight'}, 'torch': {'_target_': 'verl.utils.profiler.config.TorchProfilerToolConfig', 'contents': [], 'discrete': False, 'name': 'torch'}, 'torch_memory': {'_target_': 'verl.utils.profiler.config.TorchMemoryToolConfig', 'trace_alloc_max_entries': '${oc.select:global_profiler.global_tool_config.torch_memory.trace_alloc_max_entries,100000}', 'stack_depth': '${oc.select:global_profiler.global_tool_config.torch_memory.stack_depth,32}', 'name': 'torch_memory'}, 'precision_debugger': {'_target_': 'verl.utils.profiler.config.PrecisionDebuggerToolConfig', 'config_path': '${oc.select:global_profiler.global_tool_config.precision_debugger.config_path,null}', 'steps': None, 'stages': '${oc.select:global_profiler.global_tool_config.precision_debugger.stages,null}', 'name': 'precision_debugger'}}}, 'data': {'train_batch_size': 8, 'micro_batch_size_per_gpu': 1, 'max_token_len_per_gpu': 8192, 'use_dynamic_bsz': False, 'train_files': '/workspace/out/data/train.parquet', 'val_files': None, 'train_max_samples': -1, 'val_max_samples': -1, 'messages_key': 'messages', 'tools_key': 'tools', 'enable_thinking_key': 'enable_thinking', 'enable_thinking_default': 'none', 'pad_mode': 'no_padding', 'max_length': 16384, 'truncation': 'error', 'balance_dp_token': False, 'custom_cls': {'path': None, 'name': None}, 'use_shm': False, 'apply_chat_template_kwargs': {}, 'num_workers': 8, 'ignore_input_ids_mismatch': False}, 'checkpoint': {'_target_': 'verl.trainer.config.CheckpointConfig', 'save_contents': ['model', 'optimizer', 'extra'], 'load_contents': '${checkpoint.save_contents}', 'mbridge_config': {}}, 'trainer': {'default_local_dir': '/workspace/out/ckpt', 'default_hdfs_dir': None, 'project_name': 'tfct-smoke', 'experiment_name': 'sft-Qwen3-4B-Base-traceinversion-verl-lora', 'total_epochs': 3, 'total_training_steps': 5, 'logger': ['console', 'wandb'], 'seed': 1, 'save_freq': -1, 'test_freq': -1, 'max_ckpt_to_keep': None, 'balance_batch': True, 'resume_mode': 'auto', 'resume_from_path': None, 'device': 'cuda', 'nnodes': 1, 'n_gpus_per_node': 1, 'profile_interval': [-1, -1]}}
-[36m(tfct-sft-verl, pid=3118)[0m wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
-[36m(tfct-sft-verl, pid=3118)[0m wandb: Currently logged in as: jaegookyou (jaegookyou-personal) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
-[36m(tfct-sft-verl, pid=3118)[0m wandb: setting up run xd018kc8
-[36m(tfct-sft-verl, pid=3118)[0m wandb: Tracking run with wandb version 0.28.0
-[36m(tfct-sft-verl, pid=3118)[0m wandb: Run data is saved locally in /root/sky_workdir/wandb/run-20260729_174712-xd018kc8
-[36m(tfct-sft-verl, pid=3118)[0m wandb: Run `wandb offline` to turn off syncing.
-[36m(tfct-sft-verl, pid=3118)[0m wandb: Syncing run sft-Qwen3-4B-Base-traceinversion-verl-lora
-[36m(tfct-sft-verl, pid=3118)[0m wandb: ⭐️ View project at https://wandb.ai/jaegookyou-personal/tfct-smoke
-[36m(tfct-sft-verl, pid=3118)[0m wandb: 🚀 View run at https://wandb.ai/jaegookyou-personal/tfct-smoke/runs/xd018kc8
-[36m(tfct-sft-verl, pid=3118)[0m [36m(tfct-sft-verl, pid=3118)[0m Epoch 1/3:   0%|          | 0/8 [00:00<?, ?it/s]step:1 - perf/max_memory_allocated_gb:19.923054218292236 - perf/max_memory_reserved_gb:22.169921875 - perf/cpu_memory_used_gb:9.382953643798828 - train/loss:0.7361388206481934 - train/grad_norm:0.16829468309879303 - train/lr:0.0002 - train/mfu:0.0 - train/global_tokens:9898 - train/total_tokens(B):9.898e-06
-[36m(tfct-sft-verl, pid=3118)[0m [36m(tfct-sft-verl, pid=3118)[0m Epoch 1/3:  12%|█▎        | 1/8 [00:12<01:26, 12.42s/it]step:2 - perf/max_memory_allocated_gb:19.923054218292236 - perf/max_memory_reserved_gb:22.169921875 - perf/cpu_memory_used_gb:9.524883270263672 - train/loss:1.604649305343628 - train/grad_norm:0.2672041058540344 - train/lr:0.0002 - train/mfu:0.0 - train/global_tokens:8232 - train/total_tokens(B):1.813e-05
-[36m(tfct-sft-verl, pid=3118)[0m [36m(tfct-sft-verl, pid=3118)[0m Epoch 1/3:  25%|██▌       | 2/8 [00:22<01:07, 11.31s/it]step:3 - perf/max_memory_allocated_gb:19.923054218292236 - perf/max_memory_reserved_gb:22.169921875 - perf/cpu_memory_used_gb:9.501461029052734 - train/loss:1.6747626066207886 - train/grad_norm:0.3666781187057495 - train/lr:0.0002 - train/mfu:0.0 - train/global_tokens:3673 - train/total_tokens(B):2.1803e-05
-[36m(tfct-sft-verl, pid=3118)[0m [36m(tfct-sft-verl, pid=3118)[0m Epoch 1/3:  38%|███▊      | 3/8 [00:33<00:55, 11.06s/it]step:4 - perf/max_memory_allocated_gb:19.923054218292236 - perf/max_memory_reserved_gb:22.169921875 - perf/cpu_memory_used_gb:9.489204406738281 - train/loss:2.2622478008270264 - train/grad_norm:0.36568135023117065 - train/lr:0.0002 - train/mfu:0.0 - train/global_tokens:4761 - train/total_tokens(B):2.6564e-05
-[36m(tfct-sft-verl, pid=3118)[0m [36m(tfct-sft-verl, pid=3118)[0m Epoch 1/3:  50%|█████     | 4/8 [00:42<00:40, 10.21s/it]step:5 - perf/max_memory_allocated_gb:19.923054218292236 - perf/max_memory_reserved_gb:22.169921875 - perf/cpu_memory_used_gb:9.494709014892578 - train/loss:1.4227263927459717 - train/grad_norm:0.39926671981811523 - train/lr:0.0002 - train/mfu:0.0 - train/global_tokens:3099 - train/total_tokens(B):2.9663e-05
-[36m(tfct-sft-verl, pid=3118)[0m Saving checkpoint to: /workspace/out/ckpt/global_step_5
-[36m(tfct-sft-verl, pid=3118)[0m [2026-07-29 17:48:32,329][/usr/local/lib/python3.12/dist-packages/verl/utils/checkpoint/fsdp_checkpoint_manager.py][INFO] - [Rank 0] Saved model to /workspace/out/ckpt/global_step_5/model_world_size_1_rank_0.pt
-[36m(tfct-sft-verl, pid=3118)[0m [2026-07-29 17:48:32,618][/usr/local/lib/python3.12/dist-packages/verl/utils/checkpoint/fsdp_checkpoint_manager.py][INFO] - [Rank 0] Saved optim to /workspace/out/ckpt/global_step_5/optim_world_size_1_rank_0.pt
-[36m(tfct-sft-verl, pid=3118)[0m [2026-07-29 17:48:32,619][/usr/local/lib/python3.12/dist-packages/verl/utils/checkpoint/fsdp_checkpoint_manager.py][INFO] - [Rank 0] Saved extra_state to /workspace/out/ckpt/global_step_5/extra_state_world_size_1_rank_0.pt
-[36m(tfct-sft-verl, pid=3118)[0m [2026-07-29 17:48:32,795][/usr/local/lib/python3.12/dist-packages/verl/utils/checkpoint/fsdp_checkpoint_manager.py][INFO] - [Rank 0] Saved model config and tokenizer class to /workspace/out/ckpt/global_step_5/huggingface
-[36m(tfct-sft-verl, pid=3118)[0m [2026-07-29 17:48:32,796][/usr/local/lib/python3.12/dist-packages/verl/utils/checkpoint/fsdp_checkpoint_manager.py][INFO] - [Rank 0] Saved LoRA rank/alpha metadata to /workspace/out/ckpt/global_step_5/lora_train_meta.json
-[36m(tfct-sft-verl, pid=3118)[0m Saved LoRA rank/alpha metadata to: /workspace/out/ckpt/global_step_5/lora_train_meta.json
-[36m(tfct-sft-verl, pid=3118)[0m Saved dataloader state to: /workspace/out/ckpt/global_step_5/data_0.pt
-[36m(tfct-sft-verl, pid=3118)[0m Updated checkpoint tracker: /workspace/out/ckpt/latest_checkpointed_iteration.txt
-[36m(tfct-sft-verl, pid=3118)[0m Total time for train steps: 0.00s
-[36m(tfct-sft-verl, pid=3118)[0m Final validation metrics: None
-[36m(tfct-sft-verl, pid=3118)[0m Epoch 1/3:  50%|█████     | 4/8 [01:18<01:18, 19.70s/it]
-[36m(tfct-sft-verl, pid=3118)[0m wandb: updating run metadata
-[36m(tfct-sft-verl, pid=3118)[0m wandb: uploading output.log; uploading wandb-summary.json; uploading config.yaml
-[36m(tfct-sft-verl, pid=3118)[0m wandb: uploading history steps 4-4, summary, console lines 0-0
-[36m(tfct-sft-verl, pid=3118)[0m wandb: uploading console lines 7-16
-[36m(tfct-sft-verl, pid=3118)[0m wandb: 
-[36m(tfct-sft-verl, pid=3118)[0m wandb: Run history:
-[36m(tfct-sft-verl, pid=3118)[0m wandb:      perf/cpu_memory_used_gb ▁█▇▆▇
-[36m(tfct-sft-verl, pid=3118)[0m wandb: perf/max_memory_allocated_gb ▁▁▁▁▁
-[36m(tfct-sft-verl, pid=3118)[0m wandb:  perf/max_memory_reserved_gb ▁▁▁▁▁
-[36m(tfct-sft-verl, pid=3118)[0m wandb:          train/global_tokens █▆▂▃▁
-[36m(tfct-sft-verl, pid=3118)[0m wandb:              train/grad_norm ▁▄▇▇█
-[36m(tfct-sft-verl, pid=3118)[0m wandb:                   train/loss ▁▅▅█▄
-[36m(tfct-sft-verl, pid=3118)[0m wandb:                     train/lr ▁▁▁▁▁
-[36m(tfct-sft-verl, pid=3118)[0m wandb:                    train/mfu ▁▁▁▁▁
-[36m(tfct-sft-verl, pid=3118)[0m wandb:        train/total_tokens(B) ▁▄▅▇█
-[36m(tfct-sft-verl, pid=3118)[0m wandb: 
-[36m(tfct-sft-verl, pid=3118)[0m wandb: Run summary:
-[36m(tfct-sft-verl, pid=3118)[0m wandb:      perf/cpu_memory_used_gb 9.49471
-[36m(tfct-sft-verl, pid=3118)[0m wandb: perf/max_memory_allocated_gb 19.92305
-[36m(tfct-sft-verl, pid=3118)[0m wandb:  perf/max_memory_reserved_gb 22.16992
-[36m(tfct-sft-verl, pid=3118)[0m wandb:          train/global_tokens 3099
-[36m(tfct-sft-verl, pid=3118)[0m wandb:              train/grad_norm 0.39927
-[36m(tfct-sft-verl, pid=3118)[0m wandb:                   train/loss 1.42273
-[36m(tfct-sft-verl, pid=3118)[0m wandb:                     train/lr 0.0002
-[36m(tfct-sft-verl, pid=3118)[0m wandb:                    train/mfu 0
-[36m(tfct-sft-verl, pid=3118)[0m wandb:        train/total_tokens(B) 3e-05
-[36m(tfct-sft-verl, pid=3118)[0m wandb: 
-[36m(tfct-sft-verl, pid=3118)[0m wandb: 🚀 View run sft-Qwen3-4B-Base-traceinversion-verl-lora at: https://wandb.ai/jaegookyou-personal/tfct-smoke/runs/xd018kc8
-[36m(tfct-sft-verl, pid=3118)[0m wandb: ⭐️ View project at: https://wandb.ai/jaegookyou-personal/tfct-smoke
-[36m(tfct-sft-verl, pid=3118)[0m wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
-[36m(tfct-sft-verl, pid=3118)[0m wandb: Find logs at: ./wandb/run-20260729_174712-xd018kc8/logs
-[0m[32m✓ Job finished (status: SUCCEEDED).[0m[0m
-
-📋 Useful Commands
-Job ID: 1
-├── To cancel the job:		sky cancel tfct-sft-verl 1
-├── To stream job logs:		sky logs tfct-sft-verl 1
-└── To view job queue:		sky queue tfct-sft-verl
-Cluster name: tfct-sft-verl
-├── To log into the head VM:	ssh tfct-sft-verl
-├── To submit a job:		sky exec tfct-sft-verl yaml_file
-├── To stop the cluster:	sky stop tfct-sft-verl
-└── To teardown the cluster:	sky down tfct-sft-verl

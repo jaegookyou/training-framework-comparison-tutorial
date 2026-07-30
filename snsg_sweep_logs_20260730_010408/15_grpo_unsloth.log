@@ -1,158 +1,0 @@
-YAML to run: sky/grpo.unsloth.sky.yaml
-Running on cluster: tfct-grpo-unsloth
-[33mLaunching a spot job that does not automatically recover from preemptions. To get automatic recovery, use managed job instead: [0m[1msky jobs launch[0m [33mor[0m [1msky.jobs.launch()[0m.
-Considered resources (1 node):
-----------------------------------------------------------------------------------------------------------------
- INFRA                  INSTANCE                              vCPUs   Mem(GB)   GPUS        COST ($)   CHOSEN   
-----------------------------------------------------------------------------------------------------------------
- Nebius (us-central1)   gpu-rtx6000_1gpu-24vcpu-218gb[Spot]   24      218       RTX6000:1   0.95       [32m   ✔[0m     
-----------------------------------------------------------------------------------------------------------------
-[0m⚙︎ Launching on Nebius us-central1[0m.
-WARNING:deprecation:Field .nebius.compute.v1.PreemptibleSpec.priority is deprecated. Supported until 05/11/26. It is deprecated and doesn't affect preemption behavior anymore.
-Stack (most recent call last):
-  File "<string>", line 1, in <module>
-  File "/usr/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
-    exitcode = _main(fd, parent_sentinel)
-  File "/usr/lib/python3.12/multiprocessing/spawn.py", line 135, in _main
-    return self._bootstrap(parent_sentinel)
-  File "/usr/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
-    self.run()
-  File "/usr/lib/python3.12/multiprocessing/process.py", line 108, in run
-    self._target(*self._args, **self._kwargs)
-  File "/usr/lib/python3.12/concurrent/futures/process.py", line 263, in _process_worker
-    r = call_item.fn(*call_item.args, **call_item.kwargs)
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/server/requests/executor.py", line 535, in _request_execution_wrapper
-    return_value = func(**request_body.to_kwargs())
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 700, in _record
-    return f(*args, **kwargs)
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 700, in _record
-    return f(*args, **kwargs)
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/tempstore.py", line 68, in wrapper
-    return func(*args, **kwargs)
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/execution.py", line 814, in launch
-    return _execute(
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/execution.py", line 275, in _execute
-    return _execute_dag(
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/execution.py", line 518, in _execute_dag
-    (handle, provisioning_skipped) = backend.provision(
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 700, in _record
-    return f(*args, **kwargs)
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 680, in _record
-    return f(*args, **kwargs)
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/backend.py", line 87, in provision
-    return self._provision(task, to_provision, dryrun, stream_logs,
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/cloud_vm_ray_backend.py", line 3291, in _provision
-    return self._locked_provision(lock_id, task, to_provision,
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/cloud_vm_ray_backend.py", line 3411, in _locked_provision
-    config_dict = retry_provisioner.provision_with_retries(
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/utils/common_utils.py", line 700, in _record
-    return f(*args, **kwargs)
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/cloud_vm_ray_backend.py", line 1831, in provision_with_retries
-    config_dict = self._retry_zones(
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/backends/cloud_vm_ray_backend.py", line 1304, in _retry_zones
-    provision_record = provisioner.bulk_provision(
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/provisioner.py", line 170, in bulk_provision
-    return _bulk_provision(cloud, region, cluster_name,
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/provisioner.py", line 78, in _bulk_provision
-    provision_record = provision.run_instances(provider_name,
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/__init__.py", line 168, in _wrapper
-    return impl(*args, **kwargs)
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/nebius/instance.py", line 174, in run_instances
-    new_instance_ids = [_launch_one(0)]
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/nebius/instance.py", line 147, in _launch_one
-    return utils.launch(
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/sky/provision/nebius/utils.py", line 672, in launch
-    preemptible=nebius.compute().PreemptibleSpec(
-  File "/home/user/.sky-venv/lib/python3.12/site-packages/nebius/api/nebius/compute/v1/__init__.py", line 6568, in __init__
-    self.priority = priority
-[2m├── [0m[2mInstance is up.[0m
-[2m└── [0m[2mDocker container is up.[0m
-[0m[32m✓ Cluster launched: tfct-grpo-unsloth.[0m[0m  [2mView logs: [1msky logs --provision tfct-grpo-unsloth[0m[0m
-[0m⚙︎ Syncing files.
-  [2mSyncing workdir (to 1 node): /home/user/workspace/projects/training-framework-comparison-tutorial -> ~/sky_workdir[0m
-[0m[32m✓ Synced workdir.[0m[0m  [2mView logs: sky api logs -l sky-2026-07-30-05-38-53-099582/workdir_sync.log[0m
-[0m[32m✓ Setup detached.[0m[0m
-[0m⚙︎ Job submitted, ID: 1
-[2m├── [0m[2mWaiting for task resources on 1 node.[0m
-[2m└── [0mJob started. Streaming logs... [2m(Ctrl-C to exit log streaming; job will not be killed)[0m
-[36m(setup pid=3117)[0m Obtaining file:///root/sky_workdir
-[36m(setup pid=3117)[0m   Installing build dependencies: started
-[36m(setup pid=3117)[0m   Installing build dependencies: finished with status 'done'
-[36m(setup pid=3117)[0m   Checking if build backend supports build_editable: started
-[36m(setup pid=3117)[0m   Checking if build backend supports build_editable: finished with status 'done'
-[36m(setup pid=3117)[0m   Getting requirements to build editable: started
-[36m(setup pid=3117)[0m   Getting requirements to build editable: finished with status 'done'
-[36m(setup pid=3117)[0m   Installing backend dependencies: started
-[36m(setup pid=3117)[0m   Installing backend dependencies: finished with status 'done'
-[36m(setup pid=3117)[0m   Preparing editable metadata (pyproject.toml): started
-[36m(setup pid=3117)[0m   Preparing editable metadata (pyproject.toml): finished with status 'done'
-[36m(setup pid=3117)[0m Requirement already satisfied: pyyaml>=6.0 in /usr/local/lib/python3.12/dist-packages (from training-framework-comparison-tutorial==0.1.0) (6.0.3)
-[36m(setup pid=3117)[0m Building wheels for collected packages: training-framework-comparison-tutorial
-[36m(setup pid=3117)[0m   Building editable for training-framework-comparison-tutorial (pyproject.toml): started
-[36m(setup pid=3117)[0m   Building editable for training-framework-comparison-tutorial (pyproject.toml): finished with status 'done'
-[36m(setup pid=3117)[0m   Created wheel for training-framework-comparison-tutorial: filename=training_framework_comparison_tutorial-0.1.0-py3-none-any.whl size=8172 sha256=c87e20a7ae2fbe57e7415aa98fe5cbec025ae9ee7260d369050b352c0e963244
-[36m(setup pid=3117)[0m   Stored in directory: /tmp/pip-ephem-wheel-cache-l9flni5s/wheels/0c/f9/ef/9c94d754d512253a9286551515f99485713d036c515880ded0
-[36m(setup pid=3117)[0m Successfully built training-framework-comparison-tutorial
-[36m(setup pid=3117)[0m Installing collected packages: training-framework-comparison-tutorial
-[36m(setup pid=3117)[0m   Attempting uninstall: training-framework-comparison-tutorial
-[36m(setup pid=3117)[0m     Found existing installation: training-framework-comparison-tutorial 0.1.0
-[36m(setup pid=3117)[0m     Uninstalling training-framework-comparison-tutorial-0.1.0:
-[36m(setup pid=3117)[0m       Successfully uninstalled training-framework-comparison-tutorial-0.1.0
-[36m(setup pid=3117)[0m Successfully installed training-framework-comparison-tutorial-0.1.0
-[36m(setup pid=3117)[0m WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
-[36m(tfct-grpo-unsloth, pid=3117)[0m 🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
-[36m(tfct-grpo-unsloth, pid=3117)[0m 🦥 Unsloth Zoo will now patch everything to make training faster!
-[36m(tfct-grpo-unsloth, pid=3117)[0m Generating train split:   0%|          | 0/7473 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 7473/7473 [00:00<00:00, 349424.02 examples/s]
-[36m(tfct-grpo-unsloth, pid=3117)[0m Generating test split:   0%|          | 0/1319 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 1319/1319 [00:00<00:00, 262616.87 examples/s]
-[36m(tfct-grpo-unsloth, pid=3117)[0m Map:   0%|          | 0/64 [00:00<?, ? examples/s]Map: 100%|██████████| 64/64 [00:00<00:00, 11080.47 examples/s]
-[36m(tfct-grpo-unsloth, pid=3117)[0m ==((====))==  Unsloth 2026.6.7: Fast Qwen3 patching. Transformers: 4.57.6. vLLM: 0.12.0.
-[36m(tfct-grpo-unsloth, pid=3117)[0m    \\   /|    NVIDIA RTX PRO 6000 Blackwell Server Edition. Num GPUs = 1. Max memory: 94.971 GB. Platform: Linux.
-[36m(tfct-grpo-unsloth, pid=3117)[0m O^O/ \_/ \    Torch: 2.9.0+cu128. CUDA: 12.0. CUDA Toolkit: 12.8. Triton: 3.5.0
-[36m(tfct-grpo-unsloth, pid=3117)[0m \        /    Bfloat16 = TRUE. FA [Xformers = 0.0.33.post1. FA2 = False]
-[36m(tfct-grpo-unsloth, pid=3117)[0m  "-____-"     Free license: http://github.com/unslothai/unsloth
-[36m(tfct-grpo-unsloth, pid=3117)[0m Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!
-[36m(tfct-grpo-unsloth, pid=3117)[0m [36m(tfct-grpo-unsloth, pid=3117)[0m Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s][36m(tfct-grpo-unsloth, pid=3117)[0m Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.16it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.49it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.43it/s]
-[36m(tfct-grpo-unsloth, pid=3117)[0m unsloth/Qwen3-4B-Base does not have a padding token! Will use pad_token = <|PAD_TOKEN|>.
-[36m(tfct-grpo-unsloth, pid=3117)[0m Unsloth 2026.6.7 patched 36 layers with 36 QKV layers, 36 O layers and 36 MLP layers.
-[36m(tfct-grpo-unsloth, pid=3117)[0m ==((====))==  Unsloth - 2x faster free finetuning | Num GPUs used = 1
-[36m(tfct-grpo-unsloth, pid=3117)[0m    \\   /|    Num examples = 64 | Num Epochs = 1 | Total steps = 5
-[36m(tfct-grpo-unsloth, pid=3117)[0m O^O/ \_/ \    Batch size per device = 8 | Gradient accumulation steps = 4
-[36m(tfct-grpo-unsloth, pid=3117)[0m \        /    Data Parallel GPUs = 1 | Total batch size (8 x 4 x 1) = 32
-[36m(tfct-grpo-unsloth, pid=3117)[0m  "-____-"     Trainable parameters = 33,030,144 of 4,055,498,240 (0.81% trained)
-[36m(tfct-grpo-unsloth, pid=3117)[0m wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
-[36m(tfct-grpo-unsloth, pid=3117)[0m wandb: Currently logged in as: jaegookyou (jaegookyou-personal) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
-[36m(tfct-grpo-unsloth, pid=3117)[0m wandb: setting up run 2jcighnn
-[36m(tfct-grpo-unsloth, pid=3117)[0m wandb: Tracking run with wandb version 0.28.0
-[36m(tfct-grpo-unsloth, pid=3117)[0m wandb: Run data is saved locally in /root/sky_workdir/wandb/run-20260729_204905-2jcighnn
-[36m(tfct-grpo-unsloth, pid=3117)[0m wandb: Run `wandb offline` to turn off syncing.
-[36m(tfct-grpo-unsloth, pid=3117)[0m wandb: Syncing run grpo-Qwen3-4B-Base-gsm8k-unsloth-lora
-[36m(tfct-grpo-unsloth, pid=3117)[0m wandb: ⭐️ View project at https://wandb.ai/jaegookyou-personal/tfct-smoke
-[36m(tfct-grpo-unsloth, pid=3117)[0m wandb: 🚀 View run at https://wandb.ai/jaegookyou-personal/tfct-smoke/runs/2jcighnn
-[36m(tfct-grpo-unsloth, pid=3117)[0m wandb: Detected [huggingface_hub.inference, openai] in use.
-[36m(tfct-grpo-unsloth, pid=3117)[0m wandb: Use W&B Weave for improved LLM call tracing. Install Weave with `pip install weave` then add `import weave` to the top of your script.
-[36m(tfct-grpo-unsloth, pid=3117)[0m wandb: For more information, check out the docs at: https://weave-docs.wandb.ai
-[36m(tfct-grpo-unsloth, pid=3117)[0m [36m(tfct-grpo-unsloth, pid=3117)[0m   0%|          | 0/5 [00:00<?, ?it/s]`generation_config` default values have been modified to match model-specific defaults: {'max_length': 32768}. If this is not desired, please set these values explicitly.
-[36m(tfct-grpo-unsloth, pid=3117)[0m Unsloth: Will smartly offload gradients to save VRAM!
-[36m(tfct-grpo-unsloth, pid=3117)[0m Unsloth: Double buffering enabled (parallel H2D + compute) for backward pass.
-[36m(tfct-grpo-unsloth, pid=3117)[0m  20%|██        | 1/5 [04:40<18:40, 280.23s/it]                                              {'loss': 0.1959, 'grad_norm': 0.16041000187397003, 'learning_rate': 0.0, 'num_tokens': 13646.0, 'completions/mean_length': 343.1875, 'completions/min_length': 43.0, 'completions/max_length': 1024.0, 'completions/clipped_ratio': 0.15625, 'completions/mean_terminated_length': 217.11111450195312, 'completions/min_terminated_length': 43.0, 'completions/max_terminated_length': 613.0, 'rewards/gsm8k_correctness_reward/mean': 0.5625, 'rewards/gsm8k_correctness_reward/std': 0.504016101360321, 'rewards/gsm8k_format_reward/mean': 0.07500000298023224, 'rewards/gsm8k_format_reward/std': 0.04399413242936134, 'reward': 0.6375000476837158, 'reward_std': 0.5315974354743958, 'frac_reward_zero_std': 0.0, 'completion_length': 343.1875, 'kl': -2.6479110570853948e-11, 'clip_ratio/low_mean': 0.0, 'clip_ratio/low_min': 0.0, 'clip_ratio/high_mean': 0.0, 'clip_ratio/high_max': 0.0, 'clip_ratio/region_mean': 0.0, 'epoch': 0.06}
-[36m(tfct-grpo-unsloth, pid=3117)[0m [36m(tfct-grpo-unsloth, pid=3117)[0m  20%|██        | 1/5 [04:40<18:40, 280.23s/it] 40%|████      | 2/5 [05:59<08:06, 162.24s/it]                                              {'loss': 0.0843, 'grad_norm': 0.11461645364761353, 'learning_rate': 1e-05, 'num_tokens': 27756.0, 'completions/mean_length': 346.9375, 'completions/min_length': 5.0, 'completions/max_length': 1024.0, 'completions/clipped_ratio': 0.125, 'completions/mean_terminated_length': 250.21429443359375, 'completions/min_terminated_length': 5.0, 'completions/max_terminated_length': 558.0, 'rewards/gsm8k_correctness_reward/mean': 0.53125, 'rewards/gsm8k_correctness_reward/std': 0.507007360458374, 'rewards/gsm8k_format_reward/mean': 0.078125, 'rewards/gsm8k_format_reward/std': 0.04200134426355362, 'reward': 0.609375, 'reward_std': 0.47282129526138306, 'frac_reward_zero_std': 0.0, 'completion_length': 346.9375, 'kl': -5.028046035082667e-11, 'clip_ratio/low_mean': 0.0, 'clip_ratio/low_min': 0.0, 'clip_ratio/high_mean': 0.0, 'clip_ratio/high_max': 0.0, 'clip_ratio/region_mean': 0.0, 'epoch': 0.12}
-[36m(tfct-grpo-unsloth, pid=3117)[0m [36m(tfct-grpo-unsloth, pid=3117)[0m  40%|████      | 2/5 [05:59<08:06, 162.24s/it] 60%|██████    | 3/5 [07:19<04:09, 124.74s/it]                                              {'loss': 0.4952, 'grad_norm': 0.1452001929283142, 'learning_rate': 8.535533905932739e-06, 'num_tokens': 46008.0, 'completions/mean_length': 469.625, 'completions/min_length': 61.0, 'completions/max_length': 1024.0, 'completions/clipped_ratio': 0.28125, 'completions/mean_terminated_length': 252.69566345214844, 'completions/min_terminated_length': 61.0, 'completions/max_terminated_length': 744.0, 'rewards/gsm8k_correctness_reward/mean': 0.5, 'rewards/gsm8k_correctness_reward/std': 0.5080004930496216, 'rewards/gsm8k_format_reward/mean': 0.06562499701976776, 'rewards/gsm8k_format_reward/std': 0.04825586825609207, 'reward': 0.565625011920929, 'reward_std': 0.5635408163070679, 'frac_reward_zero_std': 0.0, 'completion_length': 469.625, 'kl': 0.0008109644841169938, 'clip_ratio/low_mean': 0.0, 'clip_ratio/low_min': 0.0, 'clip_ratio/high_mean': 0.0, 'clip_ratio/high_max': 0.0, 'clip_ratio/region_mean': 0.0, 'epoch': 0.19}
-[36m(tfct-grpo-unsloth, pid=3117)[0m [36m(tfct-grpo-unsloth, pid=3117)[0m  60%|██████    | 3/5 [07:20<04:09, 124.74s/it] 80%|████████  | 4/5 [08:39<01:46, 106.73s/it]                                              {'loss': 0.4106, 'grad_norm': 0.10266010463237762, 'learning_rate': 5e-06, 'num_tokens': 62072.0, 'completions/mean_length': 400.0, 'completions/min_length': 76.0, 'completions/max_length': 1024.0, 'completions/clipped_ratio': 0.25, 'completions/mean_terminated_length': 192.0, 'completions/min_terminated_length': 76.0, 'completions/max_terminated_length': 569.0, 'rewards/gsm8k_correctness_reward/mean': 0.5625, 'rewards/gsm8k_correctness_reward/std': 0.504016101360321, 'rewards/gsm8k_format_reward/mean': 0.08437500149011612, 'rewards/gsm8k_format_reward/std': 0.03689020499587059, 'reward': 0.6468750238418579, 'reward_std': 0.4611399173736572, 'frac_reward_zero_std': 0.0, 'completion_length': 400.0, 'kl': 0.000663178478134796, 'clip_ratio/low_mean': 0.0, 'clip_ratio/low_min': 0.0, 'clip_ratio/high_mean': 0.0, 'clip_ratio/high_max': 0.0, 'clip_ratio/region_mean': 0.0, 'epoch': 0.25}
-[36m(tfct-grpo-unsloth, pid=3117)[0m [36m(tfct-grpo-unsloth, pid=3117)[0m  80%|████████  | 4/5 [08:39<01:46, 106.73s/it]100%|██████████| 5/5 [09:58<00:00, 96.72s/it]                                              {'loss': 0.2136, 'grad_norm': 0.1214742660522461, 'learning_rate': 1.4644660940672628e-06, 'num_tokens': 78400.0, 'completions/mean_length': 418.25, 'completions/min_length': 5.0, 'completions/max_length': 1024.0, 'completions/clipped_ratio': 0.15625, 'completions/mean_terminated_length': 306.0740661621094, 'completions/min_terminated_length': 5.0, 'completions/max_terminated_length': 938.0, 'rewards/gsm8k_correctness_reward/mean': 0.5625, 'rewards/gsm8k_correctness_reward/std': 0.504016101360321, 'rewards/gsm8k_format_reward/mean': 0.06875000149011612, 'rewards/gsm8k_format_reward/std': 0.04709290713071823, 'reward': 0.6312500238418579, 'reward_std': 0.5224632024765015, 'frac_reward_zero_std': 0.0, 'completion_length': 418.25, 'kl': 0.0012471311638364568, 'clip_ratio/low_mean': 0.0, 'clip_ratio/low_min': 0.0, 'clip_ratio/high_mean': 0.0, 'clip_ratio/high_max': 0.0, 'clip_ratio/region_mean': 0.0, 'epoch': 0.31}
-[36m(tfct-grpo-unsloth, pid=3117)[0m [36m(tfct-grpo-unsloth, pid=3117)[0m 100%|██████████| 5/5 [09:58<00:00, 96.72s/it]                                             {'train_runtime': 600.1372, 'train_samples_per_second': 0.267, 'train_steps_per_second': 0.008, 'train_loss': 0.2799259558320045, 'epoch': 0.31}
-[36m(tfct-grpo-unsloth, pid=3117)[0m 100%|██████████| 5/5 [09:58<00:00, 96.72s/it]100%|██████████| 5/5 [09:58<00:00, 119.76s/it]
-[36m(tfct-grpo-unsloth, pid=3117)[0m [1;34mwandb[0m: 
-[36m(tfct-grpo-unsloth, pid=3117)[0m [1;34mwandb[0m: 🚀 View run [33mgrpo-Qwen3-4B-Base-gsm8k-unsloth-lora[0m at: [34mhttps://wandb.ai/jaegookyou-personal/tfct-smoke/runs/2jcighnn[0m
-[36m(tfct-grpo-unsloth, pid=3117)[0m [1;34mwandb[0m: Find logs at: [1;35mwandb/run-20260729_204905-2jcighnn/logs[0m
-[0m[32m✓ Job finished (status: SUCCEEDED).[0m[0m
-
-📋 Useful Commands
-Job ID: 1
-├── To cancel the job:		sky cancel tfct-grpo-unsloth 1
-├── To stream job logs:		sky logs tfct-grpo-unsloth 1
-└── To view job queue:		sky queue tfct-grpo-unsloth
-Cluster name: tfct-grpo-unsloth
-├── To log into the head VM:	ssh tfct-grpo-unsloth
-├── To submit a job:		sky exec tfct-grpo-unsloth yaml_file
-├── To stop the cluster:	sky stop tfct-grpo-unsloth
-└── To teardown the cluster:	sky down tfct-grpo-unsloth
