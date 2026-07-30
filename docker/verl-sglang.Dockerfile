@@ -26,6 +26,16 @@ ENV PIP_NO_CACHE_DIR=1
 RUN printf 'torch==2.9.1\nsglang==0.5.8\ntransformers==4.57.1\n' > /tmp/verl-constraints.txt \
     && pip install -c /tmp/verl-constraints.txt "verl==0.8.0" "cachetools"
 
+# ★ sglang 0.5.8.post1 자기모순 우회 (2026-07-30 라이브 GPU 검증). sglang 의 requires_dist 는
+# sgl-kernel==0.3.21 을 요구(이미지가 맞게 설치)하는데, 런타임 launch_server→assert_pkg_version 은
+# **다른 이름 `sglang_kernel`(≥0.1.1)** 을 메타데이터로 찾아 PackageNotFoundError 로 죽는다(upstream 버그).
+# assert_pkg_version 은 importlib.metadata.version() 으로 **메타데이터만** 읽는다(모듈 import 아님) →
+# **메타데이터-only dist-info 스텁**을 심어 체크만 통과시키고 실제 커널(sgl-kernel 0.3.21)은 안 건드린다.
+# (진짜 sglang_kernel 0.4.x 휠 설치는 sgl-kernel 의 common_ops 를 깨뜨림 — 라이브 실측 배제.)
+RUN SP=$(python -c "import site; print(site.getsitepackages()[0])") \
+    && D="$SP/sglang_kernel-0.3.21.dist-info" && mkdir -p "$D" \
+    && printf 'Metadata-Version: 2.1\nName: sglang_kernel\nVersion: 0.3.21\n' > "$D/METADATA"
+
 # flash-attn: base 에 있으면 no-op, 없으면 cu13torch2.9 prebuilt(cxx11abi 는 빌드시 판별, torch 2.9=TRUE).
 RUN python -c "import flash_attn" 2>/dev/null && echo "flash_attn 이미 존재" || { \
       ABI=$(python -c "import torch; print('TRUE' if torch._C._GLIBCXX_USE_CXX11_ABI else 'FALSE')"); \
